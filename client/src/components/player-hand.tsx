@@ -20,7 +20,7 @@ export default function PlayerHand({
   handlePass,
 }: PlayerHandProps) {
   return (
-    <div className="mt-10">
+    <div className="mt-10 relative isolate">
       <h2 className="text-xl font-semibold mb-4">Your Hand</h2>
       
       <div className="flex justify-between items-center mb-4">
@@ -45,15 +45,24 @@ export default function PlayerHand({
         </div>
       </div>
       
-      <div className="flex flex-wrap items-center justify-center py-4 px-2 gap-2">
+      {/* This hidden div ensures that no card details leak outside their containers */}
+      <div className="hidden absolute -top-96 left-0 right-0 opacity-0 pointer-events-none">
+        {currentPlayer.hand.map((card) => (
+          <span key={`label-blocker-${card.suit}-${card.value}`}>{card.suit}-{card.value}</span>
+        ))}
+      </div>
+      
+      <div className="flex flex-wrap items-center justify-center py-4 px-2 gap-2 relative overflow-hidden">
         {currentPlayer.hand.map((card, index) => (
-          <CardComponent
-            key={`hand-${index}`}
-            card={card}
-            selected={selectedCard === index}
-            onClick={() => isCurrentTurn && !currentPlayer.pass && handlePlayCard(index)}
-            disabled={!isCurrentTurn || currentPlayer.pass}
-          />
+          <div key={`hand-card-wrapper-${index}`} className="relative overflow-hidden">
+            <CardComponent
+              key={`hand-${index}`}
+              card={card}
+              selected={selectedCard === index}
+              onClick={() => isCurrentTurn && !currentPlayer.pass && handlePlayCard(index)}
+              disabled={!isCurrentTurn || currentPlayer.pass}
+            />
+          </div>
         ))}
       </div>
     </div>

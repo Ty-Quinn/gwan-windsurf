@@ -19,7 +19,7 @@ export default function GameHeader({
   showRules,
 }: GameHeaderProps) {
   return (
-    <header className="mb-8">
+    <header className="mb-8 relative z-50">
       <div className="flex flex-col md:flex-row justify-between items-center">
         <h1 className="text-3xl font-bold text-primary mb-2 md:mb-0">GWAN</h1>
         <div className="flex space-x-4">
