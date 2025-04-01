@@ -59,19 +59,19 @@ export default function CardComponent({
   }
 
   const getCardType = () => {
-    if (card.isCommander) return { border: "border-yellow-400", text: "text-yellow-400", label: `Commander (${card.baseValue})` }
-    if (card.isWeather) return { border: "border-red-500", text: "text-red-500", label: getWeatherLabel() }
-    if (card.isSpy) return { border: "border-blue-500", text: "text-blue-400", label: "Spy (Draw 2)" }
-    if (card.isMedic) return { border: "border-green-500", text: "text-green-400", label: "Medic (3)" }
-    if (card.suit === "hearts") return { border: "border-purple-500", text: "text-white", label: "Flexible" }
-    return { border: "", text: "text-white", label: "" }
+    if (card.isCommander) return { border: "border-yellow-400", text: "text-yellow-400", label: "Commander", value: card.baseValue }
+    if (card.isWeather) return { border: "border-red-500", text: "text-red-500", label: getWeatherLabel(), value: 15 }
+    if (card.isSpy) return { border: "border-blue-500", text: "text-blue-400", label: "Spy", value: 0 }
+    if (card.isMedic) return { border: "border-green-500", text: "text-green-400", label: "Medic", value: 3 }
+    if (card.suit === "hearts") return { border: "border-purple-500", text: "text-white", label: "Flexible", value: 0 }
+    return { border: "", text: "text-white", label: "", value: 0 }
   }
 
   const getWeatherLabel = () => {
-    if (card.suit === "clubs") return "Weather: Tundra (15)"
-    if (card.suit === "spades") return "Weather: Rain (15)"
-    if (card.suit === "diamonds") return "Weather: Fog (15)"
-    if (card.suit === "hearts") return "Clear Weather (15)"
+    if (card.suit === "clubs") return "Tundra"
+    if (card.suit === "spades") return "Rain"
+    if (card.suit === "diamonds") return "Fog"
+    if (card.suit === "hearts") return "Clear"
     return ""
   }
   
@@ -136,8 +136,9 @@ export default function CardComponent({
       </div>
       
       {cardType.label && (
-        <div className="absolute bottom-1 left-0 right-0 text-center text-xs text-white">
-          {cardType.label}
+        <div className="absolute bottom-0 left-0 right-0 text-center text-xs py-1 bg-black/60">
+          <span className={cardType.text}>{cardType.label}</span>
+          {cardType.value > 0 && <span> ({cardType.value})</span>}
         </div>
       )}
     </div>
