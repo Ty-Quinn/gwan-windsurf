@@ -32,6 +32,21 @@ export default function CardComponent({
         return ""
     }
   }
+  
+  const getSuitName = (suit: string) => {
+    switch (suit) {
+      case "clubs":
+        return "Infantry"
+      case "spades":
+        return "Archer"
+      case "diamonds":
+        return "Ballista"
+      case "hearts":
+        return "Mercenary"
+      default:
+        return ""
+    }
+  }
 
   const getSuitColor = (suit: string) => {
     switch (suit) {
@@ -62,19 +77,21 @@ export default function CardComponent({
 
   const cardType = getCardType()
   const suitSymbol = getSuitSymbol(card.suit)
+  const suitName = getSuitName(card.suit)
   const suitColor = getSuitColor(card.suit)
 
   if (compact) {
     return (
       <div 
         className={cn(
-          "bg-secondary text-white font-semibold rounded-md flex flex-col items-center justify-center w-14 h-16 relative",
+          "bg-secondary text-white font-semibold rounded-md flex flex-col items-center justify-center w-14 h-18 relative",
           cardType.border && `border-2 ${cardType.border}`,
           cardType.text
         )}
       >
         <div className={`absolute top-1 left-1 text-xs ${suitColor}`}>{suitSymbol}</div>
-        <div className={`text-xl mt-2 ${cardType.text}`}>{card.value}</div>
+        <div className={`text-xl ${cardType.text}`}>{card.value}</div>
+        <div className={`text-[10px] mt-0.5 ${suitColor}`}>{suitName}</div>
         <div className={`absolute bottom-1 right-1 text-xs ${suitColor}`}>{suitSymbol}</div>
       </div>
     )
@@ -95,13 +112,17 @@ export default function CardComponent({
         <div className={`text-lg ${suitColor}`}>{suitSymbol}</div>
         <div className={`text-lg ${cardType.text}`}>{card.value}</div>
       </div>
-      <div className="flex-grow flex items-center justify-center">
-        <div className={`text-4xl ${cardType.text}`}>{card.value}</div>
+      
+      <div className="flex-grow flex flex-col items-center justify-center">
+        <div className={`text-4xl ${cardType.text} mb-1`}>{card.value}</div>
+        <div className={`text-xs ${suitColor} mb-2 font-medium`}>{suitName}</div>
       </div>
+      
       <div className="w-full flex justify-between items-center p-2">
         <div className={`text-lg ${cardType.text}`}>{card.value}</div>
         <div className={`text-lg ${suitColor}`}>{suitSymbol}</div>
       </div>
+      
       {cardType.label && (
         <div className="absolute bottom-1 left-0 right-0 text-center text-xs text-white">
           {cardType.label}
