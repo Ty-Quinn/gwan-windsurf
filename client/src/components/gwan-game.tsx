@@ -204,21 +204,26 @@ export default function GwanGame() {
         </div>
       </div>
 
-      <GameBoard
-        gameState={gameState}
-        currentPlayer={opponent}
-        isOpponent={true}
-        targetRowSelection={false}
-        handleRowSelect={() => {}}
-      />
+      {/* Remove any debug or hidden text that might be showing */}
+      <div style={{ position: 'relative', overflow: 'hidden' }}>
+        <GameBoard
+          gameState={gameState}
+          currentPlayer={opponent}
+          isOpponent={true}
+          targetRowSelection={false}
+          handleRowSelect={() => {}}
+        />
+      </div>
 
-      <GameBoard
-        gameState={gameState}
-        currentPlayer={currentPlayer}
-        isOpponent={false}
-        targetRowSelection={targetRowSelection}
-        handleRowSelect={handleRowSelect}
-      />
+      <div style={{ position: 'relative', overflow: 'hidden' }}>
+        <GameBoard
+          gameState={gameState}
+          currentPlayer={currentPlayer}
+          isOpponent={false}
+          targetRowSelection={targetRowSelection}
+          handleRowSelect={handleRowSelect}
+        />
+      </div>
 
       <PlayerHand
         currentPlayer={currentPlayer}

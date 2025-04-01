@@ -41,8 +41,11 @@ export default function GameBoard({
     diamonds: "Fog"
   }
   
+  // Debug the possible source of overlapping text labels
+  console.log("Rendering game board", isOpponent ? "opponent" : "player")
+  
   return (
-    <div className="mb-8">
+    <div className="mb-8 relative overflow-visible">
       <div className="flex justify-between items-center mb-2">
         {isOpponent ? (
           <h2 className="text-xl font-semibold">
