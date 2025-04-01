@@ -204,8 +204,8 @@ export default function GwanGame() {
         </div>
       </div>
 
-      {/* Remove any debug or hidden text that might be showing */}
-      <div style={{ position: 'relative', overflow: 'hidden' }}>
+      {/* Remove any debug or hidden text that might be showing with our overlay patch */}
+      <div className="gwan-board-container">
         <GameBoard
           gameState={gameState}
           currentPlayer={opponent}
@@ -215,7 +215,7 @@ export default function GwanGame() {
         />
       </div>
 
-      <div style={{ position: 'relative', overflow: 'hidden' }}>
+      <div className="gwan-board-container">
         <GameBoard
           gameState={gameState}
           currentPlayer={currentPlayer}
