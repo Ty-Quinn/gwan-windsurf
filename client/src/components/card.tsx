@@ -91,30 +91,20 @@ export default function CardComponent({
   const suitName = getSuitName(card.suit)
   const suitColor = getSuitColor(card.suit)
 
+  // For compact mode, used in the game board display
   if (compact) {
     return (
       <div 
         className={cn(
-          "bg-secondary text-white font-semibold rounded-md flex flex-col items-center justify-center w-14 h-20 relative",
+          "bg-secondary text-white font-semibold rounded-md flex flex-col items-center justify-center w-14 h-16 relative",
           cardType.border && `border-2 ${cardType.border}`,
           cardType.text
         )}
       >
-        <div className={`absolute top-1 left-1 text-xs ${suitColor}`}>{suitSymbol}</div>
-        <div className={`text-xl ${cardType.text}`}>{card.value}</div>
-        <div className={`text-[10px] mt-0.5 ${suitColor}`}>{suitName}</div>
-        <div className={`absolute bottom-1 right-1 text-xs ${suitColor}`}>{suitSymbol}</div>
-        
-        {/* Show simplified mini-indicator for special card types */}
-        {cardType.label && (
-          <div className="absolute bottom-0 left-0 right-0 text-center text-[8px] bg-black/50 py-0.5 rounded-b overflow-hidden text-ellipsis whitespace-nowrap">
-            {card.isCommander ? "Commander" : 
-             card.isWeather ? getWeatherTypeLabel(card.suit) : 
-             card.isSpy ? "Spy" : 
-             card.isMedic ? "Medic" : 
-             card.suit === "hearts" ? "Flexible" : ""}
-          </div>
-        )}
+        <div className={`absolute top-0.5 left-0.5 text-xs ${suitColor}`}>{suitSymbol}</div>
+        <div className={`text-lg ${cardType.text}`}>{card.value}</div>
+        <div className={`text-[8px] ${suitColor} mt-0`}>{suitName}</div>
+        <div className={`absolute bottom-0.5 right-0.5 text-xs ${suitColor}`}>{suitSymbol}</div>
       </div>
     )
   }

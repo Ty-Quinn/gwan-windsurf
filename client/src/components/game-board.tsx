@@ -68,7 +68,7 @@ export default function GameBoard({
               <div className="text-yellow-400">({rowLabels[rowKey].bonus})</div>
             </div>
             <div 
-              className={`flex-1 h-24 flex items-center p-2 pt-5 rounded-lg ${gameState.weatherEffects[rowKey] ? "bg-red-900/20" : "bg-card"} relative
+              className={`flex-1 h-20 flex items-center p-2 pt-5 rounded-lg ${gameState.weatherEffects[rowKey] ? "bg-red-900/20" : "bg-card"} relative
                 ${targetRowSelection ? "border-2 border-yellow-400 cursor-pointer" : ""}`}
               onClick={() => targetRowSelection && handleRowSelect(rowKey)}
             >
