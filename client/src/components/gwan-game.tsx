@@ -38,9 +38,13 @@ export default function GwanGame() {
     setMessage("Game started! Play a card or pass.")
   }, [])
   
-  // Show rules on first load
+  // Show rules only on first load of the game
   useEffect(() => {
-    if (gameState) {
+    // Only show rules when the game is first initialized
+    if (gameState && gameState.currentRound === 1 && gameState.players[0].field.clubs.length === 0 
+        && gameState.players[0].field.spades.length === 0 && gameState.players[0].field.diamonds.length === 0
+        && gameState.players[1].field.clubs.length === 0 && gameState.players[1].field.spades.length === 0 
+        && gameState.players[1].field.diamonds.length === 0) {
       setShowRules(true)
     }
   }, [gameState])
@@ -52,7 +56,9 @@ export default function GwanGame() {
     // For hearts or Ace of Hearts, we need to select a target row
     const card = gameState.players[playerView].hand[cardIndex]
 
-    if ((card.suit === "hearts" || (card.isWeather && card.suit === "hearts")) && !targetRow) {
+    // Check if it's a hearts card - needs special handling for targeting a row
+    // Using type assertion to handle the comparison properly
+    if ((card.suit as string) === "hearts" && !targetRow) {
       setSelectedCard(cardIndex)
       setTargetRowSelection(true)
       setMessage("Select a row for this card")

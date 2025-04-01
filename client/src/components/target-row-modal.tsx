@@ -11,6 +11,13 @@ export default function TargetRowModal({
   handleRowSelect,
   onCancel,
 }: TargetRowModalProps) {
+  // Define row information for consistency
+  const rows = [
+    { key: "diamonds", name: "Long Range", bonus: "+5" },
+    { key: "spades", name: "Mid Range", bonus: "+3" },
+    { key: "clubs", name: "Close Range", bonus: "+2" }
+  ]
+  
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
       <div className="bg-card p-6 rounded-lg shadow-lg max-w-md w-full">
@@ -18,30 +25,17 @@ export default function TargetRowModal({
         <p className="mb-4">Select which row to place your Hearts card or apply Clear Weather effect:</p>
         
         <div className="space-y-2 mb-6">
-          <Button 
-            onClick={() => handleRowSelect("clubs")}
-            variant="secondary"
-            className="w-full justify-between"
-          >
-            <span>Close Range</span>
-            <span className="text-xs text-yellow-400">(+2)</span>
-          </Button>
-          <Button 
-            onClick={() => handleRowSelect("spades")}
-            variant="secondary"
-            className="w-full justify-between"
-          >
-            <span>Mid Range</span>
-            <span className="text-xs text-yellow-400">(+3)</span>
-          </Button>
-          <Button 
-            onClick={() => handleRowSelect("diamonds")}
-            variant="secondary"
-            className="w-full justify-between"
-          >
-            <span>Long Range</span>
-            <span className="text-xs text-yellow-400">(+5)</span>
-          </Button>
+          {rows.map((row) => (
+            <Button 
+              key={row.key}
+              onClick={() => handleRowSelect(row.key)}
+              variant="secondary"
+              className="w-full justify-between"
+            >
+              <span>{row.name}</span>
+              <span className="text-xs text-yellow-400">({row.bonus})</span>
+            </Button>
+          ))}
         </div>
         
         <div className="flex justify-end space-x-2">

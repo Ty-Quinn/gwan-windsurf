@@ -1,7 +1,10 @@
 "use client"
 
-import type { GameState, Player, Card } from "@/lib/types"
+import type { GameState, Player, Card, Field, WeatherEffects } from "@/lib/types"
 import CardComponent from "./card"
+
+// Define type for field keys
+type FieldKey = keyof Field;
 
 interface GameBoardProps {
   gameState: GameState
@@ -18,6 +21,26 @@ export default function GameBoard({
   targetRowSelection,
   handleRowSelect,
 }: GameBoardProps) {
+  // Determine the order to display rows based on whether this is opponent or player board
+  // For opponent: Close Range (top) -> Mid Range -> Long Range (bottom)
+  // For player: Long Range (top) -> Mid Range -> Close Range (bottom)
+  // This creates a logical battlefield with long range rows furthest apart from each other
+  const rowOrder: FieldKey[] = isOpponent 
+    ? ["clubs", "spades", "diamonds"] // Close -> Mid -> Long
+    : ["diamonds", "spades", "clubs"] // Long -> Mid -> Close
+  
+  const rowLabels: Record<FieldKey, { name: string; bonus: string }> = {
+    clubs: { name: "Close Range", bonus: "+2" },
+    spades: { name: "Mid Range", bonus: "+3" },
+    diamonds: { name: "Long Range", bonus: "+5" }
+  }
+  
+  const weatherLabels: Record<FieldKey, string> = {
+    clubs: "Tundra",
+    spades: "Rain",
+    diamonds: "Fog"
+  }
+  
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center mb-2">
@@ -38,98 +61,41 @@ export default function GameBoard({
       
       {/* Game Rows */}
       <div className="space-y-3">
-        {/* Long Range Row */}
-        <div className="flex items-center">
-          <div className="w-28 text-right pr-3 font-semibold">
-            <div className="text-sm">Long Range</div>
-            <div className="text-yellow-400">(+5)</div>
-          </div>
-          <div 
-            className={`flex-1 h-20 flex items-center p-2 rounded-lg ${gameState.weatherEffects.diamonds ? "bg-red-900/20" : "bg-card"} relative
-              ${targetRowSelection ? "border-2 border-yellow-400 cursor-pointer" : ""}`}
-            onClick={() => targetRowSelection && handleRowSelect("diamonds")}
-          >
-            {gameState.weatherEffects.diamonds && (
-              <div className="absolute -top-3 left-4 text-xs bg-destructive px-2 py-1 rounded-full">Weather: Fog</div>
-            )}
-            
-            {currentPlayer.field.diamonds.length > 0 ? (
-              currentPlayer.field.diamonds.map((card, index) => (
-                <div key={`${isOpponent ? "op" : "pl"}-dia-${index}`} className="mx-1">
-                  <CardComponent 
-                    card={card}
-                    compact={true}
-                    disabled={true}
-                  />
+        {rowOrder.map((rowKey) => (
+          <div key={`${isOpponent ? "op" : "pl"}-${rowKey}-row`} className="flex items-center">
+            <div className="w-28 text-right pr-3 font-semibold">
+              <div className="text-sm">{rowLabels[rowKey].name}</div>
+              <div className="text-yellow-400">({rowLabels[rowKey].bonus})</div>
+            </div>
+            <div 
+              className={`flex-1 h-20 flex items-center p-2 rounded-lg ${gameState.weatherEffects[rowKey] ? "bg-red-900/20" : "bg-card"} relative
+                ${targetRowSelection ? "border-2 border-yellow-400 cursor-pointer" : ""}`}
+              onClick={() => targetRowSelection && handleRowSelect(rowKey)}
+            >
+              {gameState.weatherEffects[rowKey] && (
+                <div className="absolute -top-3 left-4 text-xs bg-destructive px-2 py-1 rounded-full">
+                  Weather: {weatherLabels[rowKey]}
                 </div>
-              ))
-            ) : (
-              <div className="text-muted-foreground">No cards</div>
-            )}
-          </div>
-        </div>
-        
-        {/* Mid Range Row */}
-        <div className="flex items-center">
-          <div className="w-28 text-right pr-3 font-semibold">
-            <div className="text-sm">Mid Range</div>
-            <div className="text-yellow-400">(+3)</div>
-          </div>
-          <div 
-            className={`flex-1 h-20 flex items-center p-2 rounded-lg ${gameState.weatherEffects.spades ? "bg-red-900/20" : "bg-card"} relative
-              ${targetRowSelection ? "border-2 border-yellow-400 cursor-pointer" : ""}`}
-            onClick={() => targetRowSelection && handleRowSelect("spades")}
-          >
-            {gameState.weatherEffects.spades && (
-              <div className="absolute -top-3 left-4 text-xs bg-destructive px-2 py-1 rounded-full">Weather: Rain</div>
-            )}
-            
-            {currentPlayer.field.spades.length > 0 ? (
-              currentPlayer.field.spades.map((card, index) => (
-                <div key={`${isOpponent ? "op" : "pl"}-spa-${index}`} className="mx-1">
-                  <CardComponent 
-                    card={card}
-                    compact={true}
-                    disabled={true}
-                  />
+              )}
+              
+              {currentPlayer.field[rowKey].length > 0 ? (
+                <div className="flex flex-wrap">
+                  {currentPlayer.field[rowKey].map((card, index) => (
+                    <div key={`${isOpponent ? "op" : "pl"}-${rowKey}-${index}`} className="mx-1">
+                      <CardComponent 
+                        card={card}
+                        compact={true}
+                        disabled={true}
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))
-            ) : (
-              <div className="text-muted-foreground">No cards</div>
-            )}
+              ) : (
+                <div className="text-muted-foreground">No cards</div>
+              )}
+            </div>
           </div>
-        </div>
-        
-        {/* Close Range Row */}
-        <div className="flex items-center">
-          <div className="w-28 text-right pr-3 font-semibold">
-            <div className="text-sm">Close Range</div>
-            <div className="text-yellow-400">(+2)</div>
-          </div>
-          <div 
-            className={`flex-1 h-20 flex items-center p-2 rounded-lg ${gameState.weatherEffects.clubs ? "bg-red-900/20" : "bg-card"} relative
-              ${targetRowSelection ? "border-2 border-yellow-400 cursor-pointer" : ""}`}
-            onClick={() => targetRowSelection && handleRowSelect("clubs")}
-          >
-            {gameState.weatherEffects.clubs && (
-              <div className="absolute -top-3 left-4 text-xs bg-destructive px-2 py-1 rounded-full">Weather: Tundra</div>
-            )}
-            
-            {currentPlayer.field.clubs.length > 0 ? (
-              currentPlayer.field.clubs.map((card, index) => (
-                <div key={`${isOpponent ? "op" : "pl"}-clu-${index}`} className="mx-1">
-                  <CardComponent 
-                    card={card}
-                    compact={true}
-                    disabled={true}
-                  />
-                </div>
-              ))
-            ) : (
-              <div className="text-muted-foreground">No cards</div>
-            )}
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   )
