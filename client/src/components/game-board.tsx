@@ -22,12 +22,12 @@ export default function GameBoard({
   handleRowSelect,
 }: GameBoardProps) {
   // Determine the order to display rows based on whether this is opponent or player board
-  // For opponent: Close Range (top) -> Mid Range -> Long Range (bottom)
-  // For player: Long Range (top) -> Mid Range -> Close Range (bottom)
+  // For opponent: Long Range (top) -> Mid Range -> Close Range (bottom)
+  // For player: Close Range (top) -> Mid Range -> Long Range (bottom)
   // This creates a logical battlefield with long range rows furthest apart from each other
   const rowOrder: FieldKey[] = isOpponent 
-    ? ["clubs", "spades", "diamonds"] // Close -> Mid -> Long
-    : ["diamonds", "spades", "clubs"] // Long -> Mid -> Close
+    ? ["diamonds", "spades", "clubs"] // Long -> Mid -> Close
+    : ["clubs", "spades", "diamonds"] // Close -> Mid -> Long
   
   const rowLabels: Record<FieldKey, { name: string; bonus: string }> = {
     clubs: { name: "Close Range", bonus: "+2" },
@@ -68,13 +68,13 @@ export default function GameBoard({
               <div className="text-yellow-400">({rowLabels[rowKey].bonus})</div>
             </div>
             <div 
-              className={`flex-1 h-20 flex items-center p-2 rounded-lg ${gameState.weatherEffects[rowKey] ? "bg-red-900/20" : "bg-card"} relative
+              className={`flex-1 h-20 flex items-center p-2 pt-5 rounded-lg ${gameState.weatherEffects[rowKey] ? "bg-red-900/20" : "bg-card"} relative
                 ${targetRowSelection ? "border-2 border-yellow-400 cursor-pointer" : ""}`}
               onClick={() => targetRowSelection && handleRowSelect(rowKey)}
             >
               {gameState.weatherEffects[rowKey] && (
-                <div className="absolute -top-3 left-4 text-xs bg-destructive px-2 py-1 rounded-full">
-                  Weather: {weatherLabels[rowKey]}
+                <div className="absolute -top-2 left-3 text-xs bg-destructive px-2 py-0.5 rounded text-white shadow-md z-10">
+                  {weatherLabels[rowKey]} Effect
                 </div>
               )}
               

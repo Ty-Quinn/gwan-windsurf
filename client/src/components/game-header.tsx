@@ -39,7 +39,7 @@ export default function GameHeader({
               onClick={switchPlayerView}
               variant="secondary"
             >
-              Switch View
+              End Turn
             </Button>
             <Button 
               onClick={showRules}
