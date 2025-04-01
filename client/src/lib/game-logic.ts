@@ -1,0 +1,388 @@
+import type { Card, Field, Player, GameState, WeatherEffects, PlayResult } from "./types";
+
+export class GwanGameLogic {
+  private players: Player[];
+  private deck: Card[];
+  private currentPlayer: number;
+  private currentRound: number;
+  private weatherEffects: WeatherEffects;
+  private gameEnded: boolean;
+
+  constructor() {
+    this.players = [];
+    this.deck = [];
+    this.currentPlayer = 0;
+    this.currentRound = 1;
+    this.weatherEffects = {
+      clubs: false,
+      spades: false,
+      diamonds: false,
+    };
+    this.gameEnded = false;
+  }
+
+  // Initialize the game
+  public initializeGame(): void {
+    // Create players
+    this.players = [
+      {
+        name: "Player 1",
+        hand: [],
+        field: { clubs: [], spades: [], diamonds: [] },
+        score: 0,
+        roundsWon: 0,
+        pass: false,
+      },
+      {
+        name: "Player 2",
+        hand: [],
+        field: { clubs: [], spades: [], diamonds: [] },
+        score: 0,
+        roundsWon: 0,
+        pass: false,
+      },
+    ];
+
+    // Create and shuffle the deck
+    this.createDeck();
+    this.shuffleDeck();
+
+    // Set initial game state
+    this.currentPlayer = 0;
+    this.currentRound = 1;
+    this.weatherEffects = {
+      clubs: false,
+      spades: false,
+      diamonds: false,
+    };
+    this.gameEnded = false;
+  }
+
+  // Initialize a new round
+  public initializeRound(): void {
+    // Clear player fields and reset pass status
+    for (const player of this.players) {
+      player.field = { clubs: [], spades: [], diamonds: [] };
+      player.score = 0;
+      player.pass = false;
+    }
+
+    // Clear weather effects
+    this.weatherEffects = {
+      clubs: false,
+      spades: false,
+      diamonds: false,
+    };
+
+    // Deal cards to players
+    this.dealCards();
+
+    // Set starting player (loser of previous round goes first, or player 0 for first round)
+    if (this.currentRound === 1) {
+      this.currentPlayer = 0;
+    } else {
+      // Find the player with fewer rounds won
+      const p0Wins = this.players[0].roundsWon;
+      const p1Wins = this.players[1].roundsWon;
+      this.currentPlayer = p0Wins <= p1Wins ? 0 : 1;
+    }
+  }
+
+  // Create a standard deck of cards
+  private createDeck(): void {
+    const suits = ["clubs", "spades", "diamonds", "hearts"] as const;
+    const values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+
+    this.deck = [];
+
+    for (const suit of suits) {
+      for (const value of values) {
+        const baseValue = this.getCardBaseValue(value);
+        const card: Card = {
+          suit,
+          value,
+          baseValue,
+          isCommander: ["J", "Q", "K"].includes(value),
+          isWeather: value === "A",
+          isSpy: value === "5",
+          isMedic: value === "3",
+        };
+        this.deck.push(card);
+      }
+    }
+  }
+
+  // Get the base value of a card
+  private getCardBaseValue(value: string): number {
+    switch (value) {
+      case "J":
+        return 11;
+      case "Q":
+        return 12;
+      case "K":
+        return 13;
+      case "A":
+        return 15;
+      default:
+        return Number.parseInt(value);
+    }
+  }
+
+  // Shuffle the deck
+  private shuffleDeck(): void {
+    for (let i = this.deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
+    }
+  }
+
+  // Deal cards to players
+  private dealCards(): void {
+    const cardsPerPlayer = this.currentRound === 1 ? 10 : 7;
+
+    for (const player of this.players) {
+      // Keep any cards the player already has
+      const existingCards = [...player.hand];
+      player.hand = [];
+
+      // Deal new cards
+      for (let i = 0; i < cardsPerPlayer; i++) {
+        if (this.deck.length > 0) {
+          player.hand.push(this.deck.pop()!);
+        }
+      }
+    }
+  }
+
+  // Play a card
+  public playCard(playerIndex: number, cardIndex: number, targetRow: string | null = null): PlayResult {
+    // Check if it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+
+    // Check if the player has already passed
+    if (this.players[playerIndex].pass) {
+      return { success: false, message: "You have already passed" };
+    }
+
+    // Check if the card index is valid
+    if (cardIndex < 0 || cardIndex >= this.players[playerIndex].hand.length) {
+      return { success: false, message: "Invalid card index" };
+    }
+
+    const card = this.players[playerIndex].hand[cardIndex];
+
+    // Handle hearts cards (need a target row)
+    if (card.suit === "hearts" && !targetRow) {
+      return { success: false, message: "You need to select a target row for hearts cards" };
+    }
+
+    // Handle Ace of Hearts (Clear Weather)
+    if (card.isWeather && card.suit === "hearts") {
+      if (!targetRow) {
+        return { success: false, message: "You need to select a row to clear weather from" };
+      }
+
+      // Clear weather from the selected row
+      if (targetRow === "clubs" || targetRow === "spades" || targetRow === "diamonds") {
+        this.weatherEffects[targetRow] = false;
+      }
+
+      // Remove the card from hand
+      this.players[playerIndex].hand.splice(cardIndex, 1);
+
+      // Switch to the next player
+      this.currentPlayer = 1 - this.currentPlayer;
+
+      return { success: true, message: `Cleared weather from ${targetRow} row` };
+    }
+
+    // Handle other weather cards
+    if (card.isWeather && card.suit !== "hearts") {
+      // Apply weather effect
+      if (card.suit === "clubs" || card.suit === "spades" || card.suit === "diamonds") {
+        this.weatherEffects[card.suit] = true;
+      }
+
+      // Remove the card from hand
+      this.players[playerIndex].hand.splice(cardIndex, 1);
+
+      // Switch to the next player
+      this.currentPlayer = 1 - this.currentPlayer;
+
+      return { success: true, message: `Applied weather effect to ${card.suit} row` };
+    }
+
+    // Handle spy cards (5s)
+    if (card.isSpy) {
+      const opponentIndex = 1 - playerIndex;
+      const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
+
+      // Add the card to the opponent's field
+      this.players[opponentIndex].field[row].push(card);
+
+      // Draw 2 cards if available
+      for (let i = 0; i < 2; i++) {
+        if (this.deck.length > 0) {
+          this.players[playerIndex].hand.push(this.deck.pop()!);
+        }
+      }
+
+      // Remove the card from hand
+      this.players[playerIndex].hand.splice(cardIndex, 1);
+
+      // Switch to the next player
+      this.currentPlayer = 1 - this.currentPlayer;
+
+      return { success: true, message: `Played spy card to opponent's ${row} row and drew 2 cards` };
+    }
+
+    // Handle regular cards
+    const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
+
+    // Add the card to the player's field
+    this.players[playerIndex].field[row].push(card);
+
+    // Remove the card from hand
+    this.players[playerIndex].hand.splice(cardIndex, 1);
+
+    // Switch to the next player
+    this.currentPlayer = 1 - this.currentPlayer;
+
+    return { success: true, message: `Played ${card.value} of ${card.suit} to ${row} row` };
+  }
+
+  // Pass turn
+  public pass(playerIndex: number): PlayResult {
+    // Check if it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+
+    // Check if the player has already passed
+    if (this.players[playerIndex].pass) {
+      return { success: false, message: "You have already passed" };
+    }
+
+    // Mark the player as passed
+    this.players[playerIndex].pass = true;
+
+    // Calculate scores
+    this.calculateScores();
+
+    // Check if both players have passed
+    if (this.players[0].pass && this.players[1].pass) {
+      // Determine the winner of the round
+      let roundWinner: number | undefined;
+      let roundTied = false;
+
+      if (this.players[0].score > this.players[1].score) {
+        roundWinner = 0;
+        this.players[0].roundsWon++;
+      } else if (this.players[1].score > this.players[0].score) {
+        roundWinner = 1;
+        this.players[1].roundsWon++;
+      } else {
+        roundTied = true;
+      }
+
+      // Check if the game has ended
+      let gameEnded = false;
+      let gameWinner: number | undefined;
+
+      if (this.players[0].roundsWon >= 2) {
+        gameEnded = true;
+        gameWinner = 0;
+      } else if (this.players[1].roundsWon >= 2) {
+        gameEnded = true;
+        gameWinner = 1;
+      } else {
+        // Prepare for the next round
+        this.currentRound++;
+      }
+
+      // Construct the result message
+      let message = "You passed. ";
+
+      if (roundWinner !== undefined) {
+        message += `Player ${roundWinner + 1} won the round! `;
+      } else if (roundTied) {
+        message += "The round ended in a tie! ";
+      }
+
+      if (gameEnded && gameWinner !== undefined) {
+        message += `Player ${gameWinner + 1} won the game!`;
+        this.gameEnded = true;
+      }
+
+      return {
+        success: true,
+        message,
+        roundWinner,
+        roundTied,
+        gameEnded,
+      };
+    }
+
+    // Switch to the next player if they haven't passed yet
+    if (!this.players[1 - playerIndex].pass) {
+      this.currentPlayer = 1 - playerIndex;
+    }
+
+    return { success: true, message: "You passed" };
+  }
+
+  // Calculate scores for both players
+  private calculateScores(): void {
+    for (let i = 0; i < this.players.length; i++) {
+      const player = this.players[i];
+      let totalScore = 0;
+
+      // Calculate score for each row
+      for (const row of ["clubs", "spades", "diamonds"] as const) {
+        let rowScore = 0;
+
+        // Add up the values of all cards in the row
+        for (const card of player.field[row]) {
+          // If there's a weather effect and the card is not a commander, its value is 1
+          if (this.weatherEffects[row] && !card.isCommander) {
+            rowScore += 1;
+          } else {
+            rowScore += card.baseValue;
+          }
+        }
+
+        // Add row bonus if there are cards in the row and no weather effect
+        if (player.field[row].length > 0 && !this.weatherEffects[row]) {
+          switch (row) {
+            case "clubs":
+              rowScore += 2;
+              break;
+            case "spades":
+              rowScore += 3;
+              break;
+            case "diamonds":
+              rowScore += 5;
+              break;
+          }
+        }
+
+        totalScore += rowScore;
+      }
+
+      player.score = totalScore;
+    }
+  }
+
+  // Get the current game state
+  public getGameState(): GameState {
+    return {
+      players: this.players.map((player) => ({ ...player })),
+      currentPlayer: this.currentPlayer,
+      currentRound: this.currentRound,
+      deckCount: this.deck.length,
+      weatherEffects: { ...this.weatherEffects },
+    };
+  }
+}
