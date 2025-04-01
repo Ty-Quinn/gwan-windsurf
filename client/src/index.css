@@ -2,21 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Fix for unwanted text overlays */
+/* Game board container */
 .gwan-board-container {
   position: relative;
   overflow: hidden;
-}
-
-.gwan-board-container::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 200px;
-  height: 40px;
-  background-color: #09090b;
-  z-index: 50;
 }
 
 @layer base {

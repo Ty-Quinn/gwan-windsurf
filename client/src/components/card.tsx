@@ -63,7 +63,7 @@ export default function CardComponent({
     if (card.isWeather) return { border: "border-red-500", text: "text-red-500", label: getWeatherLabel(), value: 15 }
     if (card.isSpy) return { border: "border-blue-500", text: "text-blue-400", label: "Spy", value: 0 }
     if (card.isMedic) return { border: "border-green-500", text: "text-green-400", label: "Medic", value: 3 }
-    if (card.suit === "hearts") return { border: "border-purple-500", text: "text-white", label: "Flexible", value: 0 }
+    if (card.suit === "hearts") return { border: "border-purple-500", text: "text-white", label: "", value: 0 } // Removed "Flexible" text
     return { border: "", text: "text-white", label: "", value: 0 }
   }
 
