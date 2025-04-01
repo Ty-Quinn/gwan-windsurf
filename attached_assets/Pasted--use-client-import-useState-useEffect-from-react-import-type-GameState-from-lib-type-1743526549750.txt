@@ -1,0 +1,145 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import type { GameState } from "@/lib/types"
+import { GwanGameLogic } from "@/lib/game-logic"
+import GameBoard from "./game-board"
+import PlayerHand from "./player-hand"
+import GameHeader from "./game-header"
+import TargetRowModal from "./target-row-modal"
+
+export default function GwanGame() {
+  // Game state
+  const [game, setGame] = useState<GwanGameLogic | null>(null)
+  const [gameState, setGameState] = useState<GameState | null>(null)
+  const [playerView, setPlayerView] = useState<number>(0)
+  const [message, setMessage] = useState<string>("Welcome to GWAN!")
+  const [selectedCard, setSelectedCard] = useState<number | null>(null)
+  const [targetRowSelection, setTargetRowSelection] = useState<boolean>(false)
+
+  // Initialize the game
+  useEffect(() => {
+    const newGame = new GwanGameLogic()
+    newGame.initializeGame()
+    newGame.initializeRound()
+
+    setGame(newGame)
+    setGameState(newGame.getGameState())
+    setMessage("Game started! Play a card or pass.")
+  }, [])
+
+  // Handle playing a card
+  const handlePlayCard = (cardIndex: number, targetRow: string | null = null) => {
+    if (!game || !gameState) return
+
+    // For hearts or Ace of Hearts, we need to select a target row
+    const card = gameState.players[playerView].hand[cardIndex]
+
+    if ((card.suit === "hearts" || (card.isWeather && card.suit === "hearts")) && !targetRow) {
+      setSelectedCard(cardIndex)
+      setTargetRowSelection(true)
+      setMessage("Select a row for this card")
+      return
+    }
+
+    const result = game.playCard(playerView, cardIndex, targetRow)
+
+    if (result.success) {
+      setGameState(game.getGameState())
+      setMessage(result.message)
+      setSelectedCard(null)
+      setTargetRowSelection(false)
+    } else {
+      setMessage(result.message)
+    }
+  }
+
+  // Handle passing turn
+  const handlePass = () => {
+    if (!game || !gameState) return
+
+    const result = game.pass(playerView)
+
+    if (result.success) {
+      setGameState(game.getGameState())
+      setMessage(result.message)
+
+      // Check for round end
+      if (result.roundWinner !== undefined || result.roundTied) {
+        setTimeout(() => {
+          game.initializeRound()
+          setGameState(game.getGameState())
+          setMessage(`Round ${gameState.currentRound} starting! ${result.message}`)
+        }, 2000)
+      }
+
+      // Check for game end
+      if (result.gameEnded) {
+        setMessage(result.message)
+      }
+    } else {
+      setMessage(result.message)
+    }
+  }
+
+  // Handle row selection for hearts cards
+  const handleRowSelect = (row: string) => {
+    if (selectedCard !== null) {
+      handlePlayCard(selectedCard, row)
+    }
+  }
+
+  // Switch player view
+  const switchPlayerView = () => {
+    setPlayerView(1 - playerView)
+  }
+
+  if (!game || !gameState) {
+    return <div className="flex items-center justify-center h-screen">Loading game...</div>
+  }
+
+  const currentPlayer = gameState.players[playerView]
+  const opponent = gameState.players[1 - playerView]
+  const isCurrentTurn = gameState.currentPlayer === playerView
+
+  return (
+    <div className="container mx-auto max-w-6xl">
+      <GameHeader gameState={gameState} playerView={playerView} switchPlayerView={switchPlayerView} message={message} />
+
+      <GameBoard
+        gameState={gameState}
+        currentPlayer={opponent}
+        isOpponent={true}
+        targetRowSelection={false}
+        handleRowSelect={() => {}}
+      />
+
+      <GameBoard
+        gameState={gameState}
+        currentPlayer={currentPlayer}
+        isOpponent={false}
+        targetRowSelection={targetRowSelection}
+        handleRowSelect={handleRowSelect}
+      />
+
+      <PlayerHand
+        currentPlayer={currentPlayer}
+        isCurrentTurn={isCurrentTurn}
+        selectedCard={selectedCard}
+        handlePlayCard={handlePlayCard}
+        handlePass={handlePass}
+      />
+
+      {targetRowSelection && (
+        <TargetRowModal
+          handleRowSelect={handleRowSelect}
+          onCancel={() => {
+            setSelectedCard(null)
+            setTargetRowSelection(false)
+          }}
+        />
+      )}
+    </div>
+  )
+}
+

@@ -1,0 +1,72 @@
+Game Overview
+GWAN is a strategic card game where players compete to score the highest total value across their side of the board. Players take turns playing cards or passing, with each card providing both value and potential special abilities.
+Game Structure
+
+1 game = Best 2 of 3 rounds
+Each round ends when both players pass or run out of cards
+
+Setup
+
+Each player is dealt 10 cards from the standard deck.
+Players roll to determine who goes first in round 1.
+
+Gameplay Basics
+Objective:
+Score the highest total value on your side of the field by strategically placing cards and using their special abilities.
+On Your Turn:
+
+Play one card to the appropriate row OR pass your turn
+Once you pass, you cannot play more cards that round
+
+Card Placement:
+Cards are placed in rows according to their suit:
+
+Clubs (Close Combat row): +2 row bonus when no weather effects
+Spades (Mid Range row): +3 row bonus when no weather effects
+Diamonds (Long Range row): +5 row bonus when no weather effects
+Hearts (Flexible): Can be played in either Close or Mid Range rows
+
+Scoring:
+
+Each card contributes its base value to your score
+Each row with at least one card gets its row bonus (if no weather effect)
+Your total score is the sum of all cards plus row bonuses
+
+Special Card Types
+Commander Cards (Face Cards)
+
+Jacks (11), Queens (12), Kings (13)
+Maintain their full value even under weather effects
+
+Weather Cards (Aces)
+
+Affect both players and last until cleared
+Ace of Clubs (Tundra): Nullifies Close Combat row bonus; reduces non-Commander cards to value 1
+Ace of Spades (Rain): Nullifies Mid Range row bonus; reduces non-Commander cards to value 1
+Ace of Diamonds (Fog): Nullifies Long Range row bonus; reduces non-Commander cards to value 1
+Ace of Hearts (Clear Skies): Clears weather effect from one row of your choice
+
+Spy Cards (5s)
+
+Played to your opponent's matching row
+Let you draw 2 new cards from the deck
+Add their value to your opponent's score (strategic sacrifice)
+
+Medic Cards (3s)
+
+No special abilities in the simplified version, just played for their value
+
+Rounds and Victory
+
+The player with the highest total score when both players pass wins the round
+First player to win 2 rounds wins the game
+For subsequent rounds, the loser of the previous round goes first
+In subsequent rounds, each player draws 7 new cards
+
+Strategy Tips
+
+Weather timing: Play weather cards to weaken rows where your opponent is strong
+Commanders: Save commander cards for rows affected by weather since they keep their value
+Row distribution: Try to spread your cards to benefit from multiple row bonuses
+Spy cards: Use these strategically - they help your opponent's score but let you draw more cards
+Passing: Knowing when to pass is key - sometimes letting your opponent play more cards while you conserve yours for later rounds is beneficial
