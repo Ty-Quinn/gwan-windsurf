@@ -28,21 +28,7 @@ export default function PlayerHand({
   handleUndo,
   canUndo,
 }: PlayerHandProps) {
-  const [justSwitched, setJustSwitched] = useState(false);
   const [showDiscardPile, setShowDiscardPile] = useState(false);
-
-  // Handle the End Turn animation effect
-  const handleEndTurn = () => {
-    if (switchPlayerView) {
-      setJustSwitched(true);
-      switchPlayerView();
-      
-      // Reset animation state after animation completes
-      setTimeout(() => {
-        setJustSwitched(false);
-      }, 1000);
-    }
-  };
 
   return (
     <div className="mt-10 relative isolate">
@@ -53,65 +39,60 @@ export default function PlayerHand({
           <div className="flex space-x-2">
             {/* Undo button */}
             {handleUndo && (
-              <Button 
-                onClick={handleUndo}
-                disabled={!canUndo}
-                variant="outline"
+              <motion.div
+                whileHover={{ scale: canUndo ? 1.05 : 1 }}
+                whileTap={{ scale: canUndo ? 0.95 : 1 }}
                 className="relative"
               >
-                Undo Last Card
-              </Button>
-            )}
-          
-            <Button 
-              onClick={handlePass}
-              disabled={!isCurrentTurn || currentPlayer.pass}
-              variant="destructive"
-              className="relative"
-            >
-              Pass Turn
-            </Button>
-            
-            {switchPlayerView && (
-              <AnimatePresence>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <Button 
+                  onClick={handleUndo}
+                  disabled={!canUndo}
+                  variant="outline"
                   className="relative"
                 >
-                  <Button 
-                    onClick={handleEndTurn}
-                    variant="secondary"
-                    className="relative overflow-hidden"
-                  >
-                    <span className="z-10 relative">End Turn</span>
-                    
-                    {/* Pulse effect only if it's current turn and player has played at least one card */}
-                    <AnimatePresence>
-                      {isCurrentTurn && 
-                        // Check if player has already played cards (hand size is less than max)
-                        currentPlayer.hand.length < 10 && !currentPlayer.pass && (
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ 
-                            scale: [1, 1.2, 1.2, 1], 
-                            opacity: [0.7, 0.5, 0.5, 0.7] 
-                          }}
-                          exit={{ scale: 0, opacity: 0 }}
-                          transition={{ 
-                            duration: 2,
-                            repeat: 2,
-                            repeatType: "loop"
-                          }}
-                          className="absolute inset-0 bg-primary rounded-md"
-                          style={{ zIndex: 0 }}
-                        />
-                      )}
-                    </AnimatePresence>
-                  </Button>
-                </motion.div>
-              </AnimatePresence>
+                  Undo Last Card
+                </Button>
+              </motion.div>
             )}
+          
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative"
+            >
+              <Button 
+                onClick={handlePass}
+                disabled={!isCurrentTurn || currentPlayer.pass}
+                variant="destructive"
+                className="relative overflow-hidden"
+              >
+                <span className="z-10 relative">Pass Turn</span>
+                
+                {/* Pulse effect only if it's current turn and player has played at least one card */}
+                <AnimatePresence>
+                  {isCurrentTurn && 
+                    // Check if player has already played cards (hand size is less than max)
+                    currentPlayer.hand.length < 10 && !currentPlayer.pass && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ 
+                        scale: [1, 1.2, 1.2, 1], 
+                        opacity: [0.7, 0.5, 0.5, 0.7] 
+                      }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ 
+                        duration: 2,
+                        repeat: 2,
+                        repeatType: "loop"
+                      }}
+                      className="absolute inset-0 bg-destructive/40 rounded-md"
+                      style={{ zIndex: 0 }}
+                    />
+                  )}
+                </AnimatePresence>
+              </Button>
+            </motion.div>
+
           </div>
           <div className="flex flex-col text-sm text-muted-foreground items-end">
             <div>{currentPlayer.hand.length} cards in hand</div>
@@ -120,9 +101,7 @@ export default function PlayerHand({
               onClick={() => setShowDiscardPile(true)}
             >
               {currentPlayer.discardPile.length} cards in discard pile
-              {currentPlayer.discardPile.length > 0 && (
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-              )}
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
             </div>
           </div>
         </div>
