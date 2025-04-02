@@ -105,23 +105,94 @@ export default function GwanGame() {
     }
   }
 
-  // Handle undo last card placement
+  // Handle undo last card placement - returning the exact card to hand
   const handleUndo = () => {
-    if (!game || !lastAction || turnEnded) return
-
-    // Restore the previous game state
-    if (prevGameState) {
-      // The game logic would need an undo method, but since we don't have that,
-      // we'll need to reset the game to the previous state
-      const newGame = new GwanGameLogic()
-      newGame.initializeGameFromState(prevGameState)
-      
-      setGame(newGame)
-      setGameState(prevGameState)
-      setLastAction(null)
-      setPrevGameState(null)
-      setMessage("Last move undone. Play again.")
+    if (!game || !lastAction || turnEnded || !prevGameState) return
+    
+    // Get the current game state
+    const currentState = game.getGameState();
+    
+    // Find where the card was played (player field or opponent field for spy cards)
+    const playerIndex = lastAction.playerIndex;
+    const opponentIndex = 1 - playerIndex;
+    
+    // We need to figure out which row the card was played in
+    let rowKey: "clubs" | "spades" | "diamonds";
+    
+    if (lastAction.card.suit === "hearts") {
+      // For hearts cards, we use the target row that was selected
+      if (lastAction.targetRow === "clubs" || lastAction.targetRow === "spades" || lastAction.targetRow === "diamonds") {
+        rowKey = lastAction.targetRow;
+      } else {
+        // If for some reason the target row is invalid, default to clubs
+        rowKey = "clubs";
+      }
+    } else if (lastAction.card.suit === "clubs" || lastAction.card.suit === "spades" || lastAction.card.suit === "diamonds") {
+      // For other cards, the suit is the row
+      rowKey = lastAction.card.suit;
+    } else {
+      // Default fallback, should never happen
+      rowKey = "clubs";
     }
+    
+    // Create a modified game state
+    const modifiedState = JSON.parse(JSON.stringify(currentState)) as GameState;
+    
+    // For spy cards that get played on opponent's field
+    if (lastAction.card.isSpy) {
+      // Find and remove the spy card from opponent's field
+      const cardIndex = modifiedState.players[opponentIndex].field[rowKey]
+        .findIndex((c: Card) => c.suit === lastAction.card.suit && c.value === lastAction.card.value);
+      
+      if (cardIndex !== -1) {
+        // Remove the card from opponent's field
+        modifiedState.players[opponentIndex].field[rowKey].splice(cardIndex, 1);
+        
+        // Remove the 2 cards that were drawn (if any), by truncating hand back to original size
+        if (modifiedState.players[playerIndex].hand.length > prevGameState.players[playerIndex].hand.length) {
+          const originalHandSize = prevGameState.players[playerIndex].hand.length;
+          modifiedState.players[playerIndex].hand = modifiedState.players[playerIndex].hand.slice(0, originalHandSize);
+        }
+      }
+    } else {
+      // For regular cards on player's own field
+      const cardIndex = modifiedState.players[playerIndex].field[rowKey]
+        .findIndex((c: Card) => c.suit === lastAction.card.suit && c.value === lastAction.card.value);
+      
+      if (cardIndex !== -1) {
+        // Remove the card from field
+        modifiedState.players[playerIndex].field[rowKey].splice(cardIndex, 1);
+      }
+    }
+    
+    // Return the card to player's hand
+    modifiedState.players[playerIndex].hand.push(lastAction.card);
+    
+    // For weather cards, handle the weather effect
+    if (lastAction.card.isWeather) {
+      if (lastAction.card.suit === "hearts" && lastAction.targetRow) {
+        // For Ace of Hearts, revert the weather clear effect
+        if (lastAction.targetRow === "clubs" || lastAction.targetRow === "spades" || lastAction.targetRow === "diamonds") {
+          modifiedState.weatherEffects[lastAction.targetRow] = prevGameState.weatherEffects[lastAction.targetRow];
+        }
+      } else if (lastAction.card.suit === "clubs" || lastAction.card.suit === "spades" || lastAction.card.suit === "diamonds") {
+        // For other weather cards, remove the weather effect
+        modifiedState.weatherEffects[lastAction.card.suit] = false;
+      }
+    }
+    
+    // Restore turn to the current player
+    modifiedState.currentPlayer = playerIndex;
+    
+    // Apply the modified state
+    const newGame = new GwanGameLogic();
+    newGame.initializeGameFromState(modifiedState);
+    
+    setGame(newGame);
+    setGameState(modifiedState);
+    setLastAction(null);
+    setPrevGameState(null);
+    setMessage("Card returned to your hand. Play again.");
   }
 
   // Handle passing turn
