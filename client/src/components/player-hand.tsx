@@ -69,14 +69,43 @@ export default function PlayerHand({
               </motion.div>
             )}
           
-            <Button 
-              onClick={handlePass}
-              disabled={!isCurrentTurn || currentPlayer.pass}
-              variant="destructive"
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               className="relative"
             >
-              Pass Turn
-            </Button>
+              <Button 
+                onClick={handlePass}
+                disabled={!isCurrentTurn || currentPlayer.pass}
+                variant="destructive"
+                className="relative overflow-hidden"
+              >
+                <span className="z-10 relative">Pass Turn</span>
+                
+                {/* Pulse effect only if opponent has already passed */}
+                <AnimatePresence>
+                  {isCurrentTurn && 
+                    // Highlight pass button when opponent has passed and this player can still play
+                    !currentPlayer.pass && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ 
+                        scale: [1, 1.2, 1.2, 1], 
+                        opacity: [0.7, 0.5, 0.5, 0.7] 
+                      }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ 
+                        duration: 2,
+                        repeat: 2,
+                        repeatType: "loop"
+                      }}
+                      className="absolute inset-0 bg-destructive/40 rounded-md"
+                      style={{ zIndex: 0 }}
+                    />
+                  )}
+                </AnimatePresence>
+              </Button>
+            </motion.div>
             
             {switchPlayerView && (
               <AnimatePresence>

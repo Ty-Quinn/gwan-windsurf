@@ -214,6 +214,11 @@ export default function GwanGame() {
     const result = game.pass(playerView)
 
     if (result.success) {
+      // Calculate and update scores before switching player view
+      if (game) {
+        game.calculateScores()
+      }
+      
       setGameState(game.getGameState())
       setMessage(result.message)
       setTurnEnded(true) // Can't undo after passing
@@ -227,11 +232,14 @@ export default function GwanGame() {
         setShowRoundSummary(true)
         setNextRoundPending(true)
       }
-
       // Check for game end
-      if (result.gameEnded) {
+      else if (result.gameEnded) {
         setGameWinner(result.roundWinner)
         setShowGameEnd(true)
+      }
+      // If round isn't over, automatically switch to the other player
+      else {
+        setPlayerView(1 - playerView)
       }
     } else {
       setMessage(result.message)
