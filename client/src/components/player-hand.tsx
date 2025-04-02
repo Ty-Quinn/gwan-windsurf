@@ -21,17 +21,10 @@ export default function PlayerHand({
 }: PlayerHandProps) {
   return (
     <div className="mt-10 relative isolate">
-      <h2 className="text-xl font-semibold mb-4">Your Hand</h2>
-      
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex space-x-2">
-          <Button 
-            onClick={() => selectedCard !== null && handlePlayCard(selectedCard)}
-            disabled={!isCurrentTurn || selectedCard === null || currentPlayer.pass}
-            className="bg-primary hover:bg-primary/80"
-          >
-            Play Selected Card
-          </Button>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">Your Hand</h2>
+        
+        <div className="flex items-center space-x-4">
           <Button 
             onClick={handlePass}
             disabled={!isCurrentTurn || currentPlayer.pass}
@@ -39,9 +32,9 @@ export default function PlayerHand({
           >
             Pass Turn
           </Button>
-        </div>
-        <div className="text-sm text-muted-foreground">
-          {currentPlayer.hand.length} cards remaining
+          <div className="text-sm text-muted-foreground">
+            {currentPlayer.hand.length} cards remaining
+          </div>
         </div>
       </div>
       
