@@ -209,8 +209,53 @@ export class GwanGameLogic {
       // Remove the card from hand
       this.players[playerIndex].hand.splice(cardIndex, 1);
 
-      // Switch to the next player
-      this.currentPlayer = 1 - this.currentPlayer;
+      // Check if player has run out of cards after playing
+      if (this.players[playerIndex].hand.length === 0) {
+        // Calculate scores before deciding round winner
+        this.calculateScores();
+        
+        // Determine the winner of the round
+        let roundWinner: number | undefined;
+        let roundTied = false;
+        
+        if (this.players[0].score > this.players[1].score) {
+          roundWinner = 0;
+          this.players[0].roundsWon++;
+        } else if (this.players[1].score > this.players[0].score) {
+          roundWinner = 1;
+          this.players[1].roundsWon++;
+        } else {
+          roundTied = true;
+        }
+        
+        // Check if the game has ended
+        let gameEnded = false;
+        
+        if (this.players[0].roundsWon >= 2) {
+          gameEnded = true;
+        } else if (this.players[1].roundsWon >= 2) {
+          gameEnded = true;
+        } else {
+          this.currentRound++;
+        }
+        
+        // Construct result message
+        let message = `Cleared weather from ${targetRow} row. You're out of cards! `;
+        
+        return {
+          success: true,
+          message,
+          roundWinner,
+          roundTied,
+          gameEnded
+        };
+      }
+
+      // If player still has cards, switch to the next player
+      // Only switch if the other player hasn't passed
+      if (!this.players[1 - playerIndex].pass) {
+        this.currentPlayer = 1 - this.currentPlayer;
+      }
 
       return { success: true, message: `Cleared weather from ${targetRow} row` };
     }
@@ -225,8 +270,53 @@ export class GwanGameLogic {
       // Remove the card from hand
       this.players[playerIndex].hand.splice(cardIndex, 1);
 
-      // Switch to the next player
-      this.currentPlayer = 1 - this.currentPlayer;
+      // Check if player has run out of cards after playing
+      if (this.players[playerIndex].hand.length === 0) {
+        // Calculate scores before deciding round winner
+        this.calculateScores();
+        
+        // Determine the winner of the round
+        let roundWinner: number | undefined;
+        let roundTied = false;
+        
+        if (this.players[0].score > this.players[1].score) {
+          roundWinner = 0;
+          this.players[0].roundsWon++;
+        } else if (this.players[1].score > this.players[0].score) {
+          roundWinner = 1;
+          this.players[1].roundsWon++;
+        } else {
+          roundTied = true;
+        }
+        
+        // Check if the game has ended
+        let gameEnded = false;
+        
+        if (this.players[0].roundsWon >= 2) {
+          gameEnded = true;
+        } else if (this.players[1].roundsWon >= 2) {
+          gameEnded = true;
+        } else {
+          this.currentRound++;
+        }
+        
+        // Construct result message
+        let message = `Applied weather effect to ${card.suit} row. You're out of cards! `;
+        
+        return {
+          success: true,
+          message,
+          roundWinner,
+          roundTied,
+          gameEnded
+        };
+      }
+
+      // If player still has cards, switch to the next player
+      // Only switch if the other player hasn't passed
+      if (!this.players[1 - playerIndex].pass) {
+        this.currentPlayer = 1 - this.currentPlayer;
+      }
 
       return { success: true, message: `Applied weather effect to ${card.suit} row` };
     }
@@ -249,8 +339,53 @@ export class GwanGameLogic {
       // Remove the card from hand
       this.players[playerIndex].hand.splice(cardIndex, 1);
 
-      // Switch to the next player
-      this.currentPlayer = 1 - this.currentPlayer;
+      // Check if player has run out of cards after playing and drawing
+      if (this.players[playerIndex].hand.length === 0) {
+        // Calculate scores before deciding round winner
+        this.calculateScores();
+        
+        // Determine the winner of the round
+        let roundWinner: number | undefined;
+        let roundTied = false;
+        
+        if (this.players[0].score > this.players[1].score) {
+          roundWinner = 0;
+          this.players[0].roundsWon++;
+        } else if (this.players[1].score > this.players[0].score) {
+          roundWinner = 1;
+          this.players[1].roundsWon++;
+        } else {
+          roundTied = true;
+        }
+        
+        // Check if the game has ended
+        let gameEnded = false;
+        
+        if (this.players[0].roundsWon >= 2) {
+          gameEnded = true;
+        } else if (this.players[1].roundsWon >= 2) {
+          gameEnded = true;
+        } else {
+          this.currentRound++;
+        }
+        
+        // Construct result message
+        let message = `Played spy card to opponent's ${row} row. You're out of cards! `;
+        
+        return {
+          success: true,
+          message,
+          roundWinner,
+          roundTied,
+          gameEnded
+        };
+      }
+
+      // If player still has cards, switch to the next player
+      // Only switch if the other player hasn't passed
+      if (!this.players[1 - playerIndex].pass) {
+        this.currentPlayer = 1 - this.currentPlayer;
+      }
 
       return { success: true, message: `Played spy card to opponent's ${row} row and drew 2 cards` };
     }
@@ -294,8 +429,53 @@ export class GwanGameLogic {
     // Remove the card from hand
     this.players[playerIndex].hand.splice(cardIndex, 1);
 
-    // Switch to the next player
-    this.currentPlayer = 1 - this.currentPlayer;
+    // Check if player has run out of cards after playing this card
+    if (this.players[playerIndex].hand.length === 0) {
+      // Calculate scores before deciding round winner
+      this.calculateScores();
+      
+      // Determine the winner of the round
+      let roundWinner: number | undefined;
+      let roundTied = false;
+      
+      if (this.players[0].score > this.players[1].score) {
+        roundWinner = 0;
+        this.players[0].roundsWon++;
+      } else if (this.players[1].score > this.players[0].score) {
+        roundWinner = 1;
+        this.players[1].roundsWon++;
+      } else {
+        roundTied = true;
+      }
+      
+      // Check if the game has ended
+      let gameEnded = false;
+      
+      if (this.players[0].roundsWon >= 2) {
+        gameEnded = true;
+      } else if (this.players[1].roundsWon >= 2) {
+        gameEnded = true;
+      } else {
+        this.currentRound++;
+      }
+      
+      // Construct result message
+      let message = `Played ${card.value} of ${card.suit} to ${row} row. You're out of cards! `;
+      
+      return {
+        success: true,
+        message,
+        roundWinner,
+        roundTied,
+        gameEnded
+      };
+    }
+
+    // If player still has cards, switch to the next player
+    // Only switch if the other player hasn't passed
+    if (!this.players[1 - playerIndex].pass) {
+      this.currentPlayer = 1 - this.currentPlayer;
+    }
 
     return { success: true, message: `Played ${card.value} of ${card.suit} to ${row} row` };
   }
@@ -468,8 +648,54 @@ export class GwanGameLogic {
     // Add the card to player's hand
     this.players[playerIndex].hand.push(revivedCard);
     
-    // Now switch to the next player
-    this.currentPlayer = 1 - this.currentPlayer;
+    // Check if player has no cards left after playing the medic
+    // Even though they just added a card, if they had 0 before, they might have 0 again after playing
+    if (this.players[playerIndex].hand.length === 0) {
+      // Calculate scores before deciding round winner
+      this.calculateScores();
+      
+      // Determine the winner of the round
+      let roundWinner: number | undefined;
+      let roundTied = false;
+      
+      if (this.players[0].score > this.players[1].score) {
+        roundWinner = 0;
+        this.players[0].roundsWon++;
+      } else if (this.players[1].score > this.players[0].score) {
+        roundWinner = 1;
+        this.players[1].roundsWon++;
+      } else {
+        roundTied = true;
+      }
+      
+      // Check if the game has ended
+      let gameEnded = false;
+      
+      if (this.players[0].roundsWon >= 2) {
+        gameEnded = true;
+      } else if (this.players[1].roundsWon >= 2) {
+        gameEnded = true;
+      } else {
+        this.currentRound++;
+      }
+      
+      // Construct result message
+      let message = `Medic revived ${revivedCard.value} of ${revivedCard.suit} from your discard pile. You're out of cards! `;
+      
+      return {
+        success: true,
+        message,
+        roundWinner,
+        roundTied,
+        gameEnded
+      };
+    }
+    
+    // If player still has cards, switch to the next player
+    // Only switch if the other player hasn't passed
+    if (!this.players[1 - playerIndex].pass) {
+      this.currentPlayer = 1 - this.currentPlayer;
+    }
     
     return { 
       success: true, 
