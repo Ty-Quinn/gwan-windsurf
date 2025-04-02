@@ -113,7 +113,7 @@ export default function CardComponent({
     <div 
       className={cn(
         "transition-transform bg-gradient-to-b from-card to-secondary text-white font-semibold rounded-lg shadow-md flex flex-col items-center justify-center w-28 h-40 cursor-pointer",
-        "hover:-translate-y-2",
+        "hover:-translate-y-2 mt-3", /* Added margin-top to prevent cutting off during hover */
         selected && "translate-y-[-12px] shadow-xl border-2 border-primary",
         cardType.border && `border-2 ${cardType.border}`,
         disabled && "opacity-60 cursor-not-allowed"

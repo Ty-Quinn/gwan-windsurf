@@ -52,9 +52,9 @@ export default function PlayerHand({
         ))}
       </div>
       
-      <div className="flex flex-wrap items-center justify-center py-4 px-2 gap-2 relative overflow-hidden">
+      <div className="flex flex-wrap items-center justify-center py-6 px-2 gap-4 relative overflow-visible">
         {currentPlayer.hand.map((card, index) => (
-          <div key={`hand-card-wrapper-${index}`} className="relative overflow-hidden">
+          <div key={`hand-card-wrapper-${index}`} className="relative overflow-visible">
             <CardComponent
               key={`hand-${index}`}
               card={card}

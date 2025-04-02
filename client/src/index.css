@@ -2,18 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Hard fix for overlay issues */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background-color: #09090b;
-  z-index: 100;
-  pointer-events: none;
-}
+/* No longer needed - removed overlay that was cutting off header */
 
 /* Game board container */
 .gwan-board-container {
