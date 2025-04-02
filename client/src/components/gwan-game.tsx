@@ -324,6 +324,31 @@ export default function GwanGame() {
     // Log for debugging
     console.log("New game started, players:", newGame.getGameState().players)
   }
+  
+  // Start a completely new match
+  const startNewMatch = () => {
+    // Reset everything, similar to startNewGame
+    const newGame = new GwanGameLogic()
+    newGame.initializeGame()
+    newGame.initializeRound()
+
+    setGame(newGame)
+    setGameState(newGame.getGameState())
+    setMessage("New match started! Play a card or pass.")
+    setShowGameEnd(false)
+    setRoundWinner(undefined)
+    setRoundTied(false)
+    setGameWinner(undefined)
+    setTurnEnded(false)
+    setLastAction(null)
+    setPrevGameState(null)
+    
+    // Reset player view to 0 (Player 1)
+    setPlayerView(0)
+    
+    // Log for debugging
+    console.log("New match started, players:", newGame.getGameState().players)
+  }
 
   if (!game || !gameState) {
     return <div className="flex items-center justify-center h-screen">Loading game...</div>
@@ -441,6 +466,7 @@ export default function GwanGame() {
           players={gameState.players}
           gameWinner={gameWinner}
           onPlayAgain={startNewGame}
+          onNewMatch={startNewMatch}
         />
       )}
       

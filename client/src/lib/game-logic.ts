@@ -107,6 +107,7 @@ export class GwanGameLogic {
 
     this.deck = [];
 
+    // Add standard cards
     for (const suit of suits) {
       for (const value of values) {
         const baseValue = this.getCardBaseValue(value);
@@ -121,6 +122,21 @@ export class GwanGameLogic {
         };
         this.deck.push(card);
       }
+    }
+    
+    // Add Joker cards (2 of them)
+    for (let i = 0; i < 2; i++) {
+      const jokerCard: Card = {
+        suit: "joker",
+        value: "Joker",
+        baseValue: 1,  // Jokers have a value of 1
+        isCommander: false,
+        isWeather: false,
+        isSpy: true,   // Jokers act as spy cards
+        isMedic: false,
+        isJoker: true
+      };
+      this.deck.push(jokerCard);
     }
   }
 
@@ -321,10 +337,19 @@ export class GwanGameLogic {
       return { success: true, message: `Applied weather effect to ${card.suit} row` };
     }
 
-    // Handle spy cards (5s)
+    // Handle spy cards (5s) and Joker cards
     if (card.isSpy) {
       const opponentIndex = 1 - playerIndex;
-      const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
+      
+      // For Joker cards, the player needs to specify a target row
+      if (card.isJoker && !targetRow) {
+        return { success: false, message: "You need to select a target row for Joker cards" };
+      }
+      
+      // Determine which row to play the card to
+      const row = card.suit === "hearts" || card.isJoker
+        ? (targetRow as keyof Field)
+        : (card.suit as keyof Field);
 
       // Add the card to the opponent's field
       this.players[opponentIndex].field[row].push(card);
@@ -370,7 +395,8 @@ export class GwanGameLogic {
         }
         
         // Construct result message
-        let message = `Played spy card to opponent's ${row} row. You're out of cards! `;
+        let cardType = card.isJoker ? "Joker" : "spy card";
+        let message = `Played ${cardType} to opponent's ${row} row. You're out of cards! `;
         
         return {
           success: true,
@@ -387,7 +413,9 @@ export class GwanGameLogic {
         this.currentPlayer = 1 - this.currentPlayer;
       }
 
-      return { success: true, message: `Played spy card to opponent's ${row} row and drew 2 cards` };
+      // Success message
+      let cardType = card.isJoker ? "Joker" : "spy card";
+      return { success: true, message: `Played ${cardType} to opponent's ${row} row and drew 2 cards` };
     }
     
     // Handle medic cards (3s)

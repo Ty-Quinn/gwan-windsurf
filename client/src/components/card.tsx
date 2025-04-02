@@ -28,6 +28,8 @@ export default function CardComponent({
         return "♦"
       case "hearts":
         return "♥"
+      case "joker":
+        return "★"
       default:
         return ""
     }
@@ -43,6 +45,8 @@ export default function CardComponent({
         return "Ballista"
       case "hearts":
         return "Mercenary"
+      case "joker":
+        return "Joker"
       default:
         return ""
     }
@@ -53,6 +57,8 @@ export default function CardComponent({
       case "diamonds":
       case "hearts":
         return "text-red-400"
+      case "joker":
+        return "text-purple-400"
       default:
         return "text-white"
     }
@@ -61,7 +67,8 @@ export default function CardComponent({
   const getCardType = () => {
     if (card.isCommander) return { border: "border-yellow-400", text: "text-yellow-400", label: "Commander", value: card.baseValue }
     if (card.isWeather) return { border: "border-red-500", text: "text-red-500", label: getWeatherLabel(), value: 15 }
-    if (card.isSpy) return { border: "border-blue-500", text: "text-blue-400", label: "Spy", value: 0 }
+    if (card.isJoker) return { border: "border-purple-500", text: "text-purple-400", label: "Joker", value: 0 }
+    if (card.isSpy && !card.isJoker) return { border: "border-blue-500", text: "text-blue-400", label: "Spy", value: 0 }
     if (card.isMedic) return { border: "border-green-500", text: "text-green-400", label: "Medic", value: 3 }
     if (card.suit === "hearts") return { border: "border-purple-500", text: "text-white", label: "", value: 0 } // Removed "Flexible" text
     return { border: "", text: "text-white", label: "", value: 0 }

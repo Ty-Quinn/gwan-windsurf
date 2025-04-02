@@ -1,11 +1,12 @@
 export interface Card {
-  suit: "clubs" | "spades" | "diamonds" | "hearts";
+  suit: "clubs" | "spades" | "diamonds" | "hearts" | "joker";
   value: string;
   baseValue: number;
   isCommander: boolean;
   isWeather: boolean;
   isSpy: boolean;
   isMedic: boolean;
+  isJoker?: boolean;
 }
 
 export interface Field {
