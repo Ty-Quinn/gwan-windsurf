@@ -53,7 +53,7 @@ export default function PlayerHand({
             {handleUndo && (
               <Button 
                 onClick={handleUndo}
-                disabled={!canUndo || !isCurrentTurn || currentPlayer.pass}
+                disabled={!canUndo}
                 variant="outline"
                 className="relative"
               >

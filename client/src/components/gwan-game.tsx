@@ -68,9 +68,8 @@ export default function GwanGame() {
     if (!game || !gameState) return
 
     // Save the current game state for potential undo
-    if (!prevGameState) {
-      setPrevGameState(JSON.parse(JSON.stringify(gameState)))
-    }
+    // Always save the state before playing a card
+    setPrevGameState(JSON.parse(JSON.stringify(gameState)))
 
     // For hearts or Ace of Hearts, we need to select a target row
     const card = gameState.players[playerView].hand[cardIndex]
@@ -95,11 +94,15 @@ export default function GwanGame() {
         targetRow
       })
       
+      // Always keep turnEnded false when a card is played so undo is available
       setTurnEnded(false)
       setGameState(game.getGameState())
       setMessage(result.message)
       setSelectedCard(null)
       setTargetRowSelection(false)
+      
+      // Log for debugging
+      console.log("Card played, undo available:", !turnEnded && !!lastAction)
     } else {
       setMessage(result.message)
     }
@@ -370,7 +373,7 @@ export default function GwanGame() {
         handlePass={handlePass}
         switchPlayerView={switchPlayerView}
         handleUndo={handleUndo}
-        canUndo={!!lastAction && !turnEnded && prevGameState !== null}
+        canUndo={!!lastAction && !turnEnded}
       />
 
       {targetRowSelection && (
