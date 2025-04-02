@@ -21,6 +21,7 @@ export interface Player {
   score: number;
   roundsWon: number;
   pass: boolean;
+  discardPile: Card[];
 }
 
 export interface WeatherEffects {

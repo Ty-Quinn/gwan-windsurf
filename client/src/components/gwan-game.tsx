@@ -282,6 +282,9 @@ export default function GwanGame() {
     setTurnEnded(false)
     setLastAction(null)
     setPrevGameState(null)
+    
+    // Log for debugging
+    console.log("New game started, players:", newGame.getGameState().players)
   }
 
   if (!game || !gameState) {

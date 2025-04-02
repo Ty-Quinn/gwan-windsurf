@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Player } from "@/lib/types"
 import CardComponent from "./card"
+import DiscardPileModal from "./discard-pile-modal"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -28,6 +29,7 @@ export default function PlayerHand({
   canUndo,
 }: PlayerHandProps) {
   const [justSwitched, setJustSwitched] = useState(false);
+  const [showDiscardPile, setShowDiscardPile] = useState(false);
 
   // Handle the End Turn animation effect
   const handleEndTurn = () => {
@@ -111,8 +113,17 @@ export default function PlayerHand({
               </AnimatePresence>
             )}
           </div>
-          <div className="text-sm text-muted-foreground">
-            {currentPlayer.hand.length} cards remaining
+          <div className="flex flex-col text-sm text-muted-foreground items-end">
+            <div>{currentPlayer.hand.length} cards in hand</div>
+            <div 
+              className="cursor-pointer hover:text-primary flex items-center"
+              onClick={() => setShowDiscardPile(true)}
+            >
+              {currentPlayer.discardPile.length} cards in discard pile
+              {currentPlayer.discardPile.length > 0 && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -137,6 +148,14 @@ export default function PlayerHand({
           </div>
         ))}
       </div>
+      
+      {/* Discard pile modal */}
+      {showDiscardPile && (
+        <DiscardPileModal
+          player={currentPlayer}
+          onClose={() => setShowDiscardPile(false)}
+        />
+      )}
     </div>
   )
 }

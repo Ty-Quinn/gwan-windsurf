@@ -32,6 +32,7 @@ export class GwanGameLogic {
         score: 0,
         roundsWon: 0,
         pass: false,
+        discardPile: [],
       },
       {
         name: "Player 2",
@@ -40,6 +41,7 @@ export class GwanGameLogic {
         score: 0,
         roundsWon: 0,
         pass: false,
+        discardPile: [],
       },
     ];
 
@@ -60,11 +62,21 @@ export class GwanGameLogic {
 
   // Initialize a new round
   public initializeRound(): void {
-    // Clear player fields and reset pass status
+    // Move cards from fields to discard piles
     for (const player of this.players) {
-      player.field = { clubs: [], spades: [], diamonds: [] };
+      // For each row in the field
+      for (const row of ['clubs', 'spades', 'diamonds'] as const) {
+        // Move cards from field to discard pile
+        player.discardPile.push(...player.field[row]);
+        // Clear the field
+        player.field[row] = [];
+      }
+      
+      // Reset score and pass status
       player.score = 0;
       player.pass = false;
+      
+      // Note: We don't clear the hand - players keep their unplayed cards
     }
 
     // Clear weather effects
@@ -74,7 +86,7 @@ export class GwanGameLogic {
       diamonds: false,
     };
 
-    // Deal cards to players
+    // Deal additional cards to players
     this.dealCards();
 
     // Set starting player (loser of previous round goes first, or player 0 for first round)
@@ -141,16 +153,21 @@ export class GwanGameLogic {
     const cardsPerPlayer = this.currentRound === 1 ? 10 : 7;
 
     for (const player of this.players) {
-      // Keep any cards the player already has
+      // Keep existing cards in player's hand
       const existingCards = [...player.hand];
-      player.hand = [];
-
-      // Deal new cards
-      for (let i = 0; i < cardsPerPlayer; i++) {
+      
+      // Calculate how many additional cards are needed
+      const additionalCardsNeeded = Math.max(0, cardsPerPlayer - existingCards.length);
+      
+      // Deal additional cards to reach the target hand size
+      for (let i = 0; i < additionalCardsNeeded; i++) {
         if (this.deck.length > 0) {
-          player.hand.push(this.deck.pop()!);
+          existingCards.push(this.deck.pop()!);
         }
       }
+      
+      // Update player's hand with retained cards plus new cards
+      player.hand = existingCards;
     }
   }
 
@@ -236,6 +253,32 @@ export class GwanGameLogic {
       this.currentPlayer = 1 - this.currentPlayer;
 
       return { success: true, message: `Played spy card to opponent's ${row} row and drew 2 cards` };
+    }
+    
+    // Handle medic cards (3s)
+    if (card.isMedic) {
+      // Check if player has any cards in their discard pile
+      if (this.players[playerIndex].discardPile.length === 0) {
+        return { success: false, message: "No cards in your discard pile to revive" };
+      }
+      
+      // Remove the medic card from hand
+      this.players[playerIndex].hand.splice(cardIndex, 1);
+      
+      // Get a random card from the discard pile
+      const randomIndex = Math.floor(Math.random() * this.players[playerIndex].discardPile.length);
+      const revivedCard = this.players[playerIndex].discardPile[randomIndex];
+      
+      // Remove the card from the discard pile
+      this.players[playerIndex].discardPile.splice(randomIndex, 1);
+      
+      // Add the card to player's hand
+      this.players[playerIndex].hand.push(revivedCard);
+      
+      // Switch to the next player
+      this.currentPlayer = 1 - this.currentPlayer;
+      
+      return { success: true, message: `Medic revived ${revivedCard.value} of ${revivedCard.suit} from your discard pile` };
     }
 
     // Handle regular cards
