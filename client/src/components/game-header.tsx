@@ -36,12 +36,6 @@ export default function GameHeader({
           </div>
           <div className="flex space-x-2">
             <Button 
-              onClick={switchPlayerView}
-              variant="secondary"
-            >
-              End Turn
-            </Button>
-            <Button 
               onClick={showRules}
               variant="outline"
             >

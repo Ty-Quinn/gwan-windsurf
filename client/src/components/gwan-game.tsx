@@ -231,6 +231,7 @@ export default function GwanGame() {
         selectedCard={selectedCard}
         handlePlayCard={handlePlayCard}
         handlePass={handlePass}
+        switchPlayerView={switchPlayerView}
       />
 
       {targetRowSelection && (

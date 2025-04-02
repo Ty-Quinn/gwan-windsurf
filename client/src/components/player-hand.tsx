@@ -10,6 +10,7 @@ interface PlayerHandProps {
   selectedCard: number | null
   handlePlayCard: (cardIndex: number) => void
   handlePass: () => void
+  switchPlayerView?: () => void  // Added for End Turn button
 }
 
 export default function PlayerHand({
@@ -18,6 +19,7 @@ export default function PlayerHand({
   selectedCard,
   handlePlayCard,
   handlePass,
+  switchPlayerView,
 }: PlayerHandProps) {
   return (
     <div className="mt-10 relative isolate">
@@ -25,13 +27,23 @@ export default function PlayerHand({
         <h2 className="text-xl font-semibold">Your Hand</h2>
         
         <div className="flex items-center space-x-4">
-          <Button 
-            onClick={handlePass}
-            disabled={!isCurrentTurn || currentPlayer.pass}
-            variant="destructive"
-          >
-            Pass Turn
-          </Button>
+          <div className="flex space-x-2">
+            <Button 
+              onClick={handlePass}
+              disabled={!isCurrentTurn || currentPlayer.pass}
+              variant="destructive"
+            >
+              Pass Turn
+            </Button>
+            {switchPlayerView && (
+              <Button 
+                onClick={switchPlayerView}
+                variant="secondary"
+              >
+                End Turn
+              </Button>
+            )}
+          </div>
           <div className="text-sm text-muted-foreground">
             {currentPlayer.hand.length} cards remaining
           </div>
