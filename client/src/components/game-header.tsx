@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import type { GameState } from "@/lib/types"
+import ScoreDisplay from "./score-display"
 
 interface GameHeaderProps {
   gameState: GameState
@@ -43,6 +44,18 @@ export default function GameHeader({
             </Button>
           </div>
         </div>
+      </div>
+      
+      {/* Score displays with animation */}
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {gameState.players.map((player, index) => (
+          <ScoreDisplay 
+            key={index}
+            player={player}
+            isActive={gameState.currentPlayer === index}
+            playerNumber={index + 1}
+          />
+        ))}
       </div>
       
       <div className="mt-4 p-3 bg-card rounded-lg text-center">
