@@ -13,6 +13,8 @@ interface PlayerHandProps {
   handlePlayCard: (cardIndex: number) => void
   handlePass: () => void
   switchPlayerView?: () => void
+  handleUndo?: () => void
+  canUndo?: boolean
 }
 
 export default function PlayerHand({
@@ -22,6 +24,8 @@ export default function PlayerHand({
   handlePlayCard,
   handlePass,
   switchPlayerView,
+  handleUndo,
+  canUndo,
 }: PlayerHandProps) {
   const [justSwitched, setJustSwitched] = useState(false);
 
@@ -45,6 +49,18 @@ export default function PlayerHand({
         
         <div className="flex items-center space-x-4">
           <div className="flex space-x-2">
+            {/* Undo button */}
+            {handleUndo && (
+              <Button 
+                onClick={handleUndo}
+                disabled={!canUndo || !isCurrentTurn || currentPlayer.pass}
+                variant="outline"
+                className="relative"
+              >
+                Undo Last Card
+              </Button>
+            )}
+          
             <Button 
               onClick={handlePass}
               disabled={!isCurrentTurn || currentPlayer.pass}
@@ -68,19 +84,21 @@ export default function PlayerHand({
                   >
                     <span className="z-10 relative">End Turn</span>
                     
-                    {/* Pulse effect for attention */}
+                    {/* Pulse effect only if it's current turn and player has played at least one card */}
                     <AnimatePresence>
-                      {isCurrentTurn && (
+                      {isCurrentTurn && 
+                        // Check if player has already played cards (hand size is less than max)
+                        currentPlayer.hand.length < 10 && !currentPlayer.pass && (
                         <motion.div
                           initial={{ scale: 0, opacity: 0 }}
                           animate={{ 
-                            scale: [1, 1.5, 1.5, 1], 
-                            opacity: [0.7, 0.5, 0.5, 0] 
+                            scale: [1, 1.2, 1.2, 1], 
+                            opacity: [0.7, 0.5, 0.5, 0.7] 
                           }}
                           exit={{ scale: 0, opacity: 0 }}
                           transition={{ 
                             duration: 2,
-                            repeat: Infinity,
+                            repeat: 2,
                             repeatType: "loop"
                           }}
                           className="absolute inset-0 bg-primary rounded-md"

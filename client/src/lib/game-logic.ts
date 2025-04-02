@@ -333,8 +333,33 @@ export class GwanGameLogic {
     return { success: true, message: "You passed" };
   }
 
-  // Calculate scores for both players
-  private calculateScores(): void {
+  // Initialize game from a saved state (for undo functionality)
+  public initializeGameFromState(state: GameState): void {
+    this.players = JSON.parse(JSON.stringify(state.players));
+    this.currentPlayer = state.currentPlayer;
+    this.currentRound = state.currentRound;
+    this.weatherEffects = JSON.parse(JSON.stringify(state.weatherEffects));
+    
+    // Recreate the deck with remaining cards
+    this.deck = [];
+    for (let i = 0; i < state.deckCount; i++) {
+      // Create placeholder cards to match the correct count
+      this.deck.push({
+        suit: "clubs",
+        value: "placeholder",
+        baseValue: 0,
+        isCommander: false,
+        isWeather: false,
+        isSpy: false,
+        isMedic: false
+      });
+    }
+    
+    this.gameEnded = false;
+  }
+
+  // Calculate scores for both players - made public for end-of-turn score updates
+  public calculateScores(): void {
     for (let i = 0; i < this.players.length; i++) {
       const player = this.players[i];
       let totalScore = 0;

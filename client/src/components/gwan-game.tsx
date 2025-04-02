@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { GameState } from "@/lib/types"
+import type { GameState, Card } from "@/lib/types"
 import { GwanGameLogic } from "@/lib/game-logic"
 import GameBoard from "./game-board"
 import PlayerHand from "./player-hand"
@@ -10,6 +10,15 @@ import TargetRowModal from "./target-row-modal"
 import RoundSummaryModal from "./round-summary-modal"
 import GameEndModal from "./game-end-modal"
 import GameRulesModal from "./game-rules-modal"
+import { Button } from "@/components/ui/button"
+
+// Interface for tracking last played card action for undo functionality
+interface LastAction {
+  playerIndex: number;
+  cardIndex: number;
+  card: Card;
+  targetRow: string | null;
+}
 
 export default function GwanGame() {
   // Game state
@@ -26,6 +35,11 @@ export default function GwanGame() {
   const [roundTied, setRoundTied] = useState<boolean>(false)
   const [gameWinner, setGameWinner] = useState<number | undefined>(undefined)
   const [nextRoundPending, setNextRoundPending] = useState<boolean>(false)
+  
+  // Undo functionality
+  const [lastAction, setLastAction] = useState<LastAction | null>(null)
+  const [turnEnded, setTurnEnded] = useState<boolean>(false)
+  const [prevGameState, setPrevGameState] = useState<GameState | null>(null)
 
   // Initialize the game
   useEffect(() => {
@@ -53,6 +67,11 @@ export default function GwanGame() {
   const handlePlayCard = (cardIndex: number, targetRow: string | null = null) => {
     if (!game || !gameState) return
 
+    // Save the current game state for potential undo
+    if (!prevGameState) {
+      setPrevGameState(JSON.parse(JSON.stringify(gameState)))
+    }
+
     // For hearts or Ace of Hearts, we need to select a target row
     const card = gameState.players[playerView].hand[cardIndex]
 
@@ -68,12 +87,40 @@ export default function GwanGame() {
     const result = game.playCard(playerView, cardIndex, targetRow)
 
     if (result.success) {
+      // Store the action for undo
+      setLastAction({
+        playerIndex: playerView,
+        cardIndex,
+        card: JSON.parse(JSON.stringify(card)), // Deep copy the card
+        targetRow
+      })
+      
+      setTurnEnded(false)
       setGameState(game.getGameState())
       setMessage(result.message)
       setSelectedCard(null)
       setTargetRowSelection(false)
     } else {
       setMessage(result.message)
+    }
+  }
+
+  // Handle undo last card placement
+  const handleUndo = () => {
+    if (!game || !lastAction || turnEnded) return
+
+    // Restore the previous game state
+    if (prevGameState) {
+      // The game logic would need an undo method, but since we don't have that,
+      // we'll need to reset the game to the previous state
+      const newGame = new GwanGameLogic()
+      newGame.initializeGameFromState(prevGameState)
+      
+      setGame(newGame)
+      setGameState(prevGameState)
+      setLastAction(null)
+      setPrevGameState(null)
+      setMessage("Last move undone. Play again.")
     }
   }
 
@@ -86,6 +133,8 @@ export default function GwanGame() {
     if (result.success) {
       setGameState(game.getGameState())
       setMessage(result.message)
+      setTurnEnded(true) // Can't undo after passing
+      setPrevGameState(null)
 
       // Check for round end
       if (result.roundWinner !== undefined || result.roundTied) {
@@ -112,8 +161,19 @@ export default function GwanGame() {
     }
   }
 
-  // Switch player view
+  // Switch player view and update scores at end of turn
   const switchPlayerView = () => {
+    // This is called when End Turn button is clicked
+    setTurnEnded(true) // Can't undo after ending turn
+    setPrevGameState(null)
+    setLastAction(null)
+    
+    // Calculate and update scores at end of turn
+    if (game) {
+      game.calculateScores()
+      setGameState(game.getGameState())
+    }
+    
     setPlayerView(1 - playerView)
   }
   
@@ -123,6 +183,9 @@ export default function GwanGame() {
     
     setShowRoundSummary(false)
     setNextRoundPending(false)
+    setTurnEnded(false)
+    setLastAction(null)
+    setPrevGameState(null)
     
     game.initializeRound()
     setGameState(game.getGameState())
@@ -142,6 +205,9 @@ export default function GwanGame() {
     setRoundWinner(undefined)
     setRoundTied(false)
     setGameWinner(undefined)
+    setTurnEnded(false)
+    setLastAction(null)
+    setPrevGameState(null)
   }
 
   if (!game || !gameState) {
@@ -232,6 +298,8 @@ export default function GwanGame() {
         handlePlayCard={handlePlayCard}
         handlePass={handlePass}
         switchPlayerView={switchPlayerView}
+        handleUndo={handleUndo}
+        canUndo={!!lastAction && !turnEnded && prevGameState !== null}
       />
 
       {targetRowSelection && (
