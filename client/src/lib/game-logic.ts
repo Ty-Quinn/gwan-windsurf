@@ -262,23 +262,27 @@ export class GwanGameLogic {
         return { success: false, message: "No cards in your discard pile to revive" };
       }
       
+      // For medic cards, we handle the revival process in the UI component
+      // We need to let the UI know this is a medic card so it can prompt user to select a card to revive
+      // The actual card placement will be handled separately
+      
+      // Regular card placement logic for the medic card itself
+      const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
+      
+      // Add the medic card to the player's field
+      this.players[playerIndex].field[row].push(card);
+      
       // Remove the medic card from hand
       this.players[playerIndex].hand.splice(cardIndex, 1);
       
-      // Get a random card from the discard pile
-      const randomIndex = Math.floor(Math.random() * this.players[playerIndex].discardPile.length);
-      const revivedCard = this.players[playerIndex].discardPile[randomIndex];
+      // Don't switch player yet, let the UI complete the revival process
+      // This is different from other cards - we'll switch player after revival is complete
       
-      // Remove the card from the discard pile
-      this.players[playerIndex].discardPile.splice(randomIndex, 1);
-      
-      // Add the card to player's hand
-      this.players[playerIndex].hand.push(revivedCard);
-      
-      // Switch to the next player
-      this.currentPlayer = 1 - this.currentPlayer;
-      
-      return { success: true, message: `Medic revived ${revivedCard.value} of ${revivedCard.suit} from your discard pile` };
+      return { 
+        success: true, 
+        message: "Choose a card to revive from your discard pile",
+        isMedicRevival: true  // Signal to the UI that we need to show the revival modal
+      };
     }
 
     // Handle regular cards
@@ -441,6 +445,36 @@ export class GwanGameLogic {
 
       player.score = totalScore;
     }
+  }
+
+  // Special function to complete medic revival (called from UI after user selects card)
+  public completeMedicRevival(playerIndex: number, discardIndex: number): PlayResult {
+    // Make sure it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+    
+    // Check if the discard index is valid
+    if (discardIndex < 0 || discardIndex >= this.players[playerIndex].discardPile.length) {
+      return { success: false, message: "Invalid discard card index" };
+    }
+    
+    // Get the selected card from the discard pile
+    const revivedCard = this.players[playerIndex].discardPile[discardIndex];
+    
+    // Remove the card from the discard pile
+    this.players[playerIndex].discardPile.splice(discardIndex, 1);
+    
+    // Add the card to player's hand
+    this.players[playerIndex].hand.push(revivedCard);
+    
+    // Now switch to the next player
+    this.currentPlayer = 1 - this.currentPlayer;
+    
+    return { 
+      success: true, 
+      message: `Medic revived ${revivedCard.value} of ${revivedCard.suit} from your discard pile`
+    };
   }
 
   // Get the current game state

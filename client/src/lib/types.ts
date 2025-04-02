@@ -44,4 +44,5 @@ export interface PlayResult {
   roundWinner?: number;
   roundTied?: boolean;
   gameEnded?: boolean;
+  isMedicRevival?: boolean;
 }

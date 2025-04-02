@@ -10,6 +10,7 @@ import TargetRowModal from "./target-row-modal"
 import RoundSummaryModal from "./round-summary-modal"
 import GameEndModal from "./game-end-modal"
 import GameRulesModal from "./game-rules-modal"
+import MedicRevivalModal from "./medic-revival-modal"
 import { Button } from "@/components/ui/button"
 
 // Interface for tracking last played card action for undo functionality
@@ -35,6 +36,9 @@ export default function GwanGame() {
   const [roundTied, setRoundTied] = useState<boolean>(false)
   const [gameWinner, setGameWinner] = useState<number | undefined>(undefined)
   const [nextRoundPending, setNextRoundPending] = useState<boolean>(false)
+  
+  // Medic card functionality
+  const [showMedicRevival, setShowMedicRevival] = useState<boolean>(false)
   
   // Undo functionality
   const [lastAction, setLastAction] = useState<LastAction | null>(null)
@@ -100,6 +104,11 @@ export default function GwanGame() {
       setMessage(result.message)
       setSelectedCard(null)
       setTargetRowSelection(false)
+      
+      // If this is a medic card, show the revival modal
+      if (result.isMedicRevival) {
+        setShowMedicRevival(true)
+      }
       
       // Log for debugging
       console.log("Card played, undo available:", !turnEnded && !!lastAction)
@@ -232,6 +241,21 @@ export default function GwanGame() {
   const handleRowSelect = (row: string) => {
     if (selectedCard !== null) {
       handlePlayCard(selectedCard, row)
+    }
+  }
+
+  // Handle card selection from discard pile for medic revival
+  const handleMedicRevival = (card: Card, discardIndex: number) => {
+    if (!game || !gameState) return
+
+    const result = game.completeMedicRevival(playerView, discardIndex)
+    
+    if (result.success) {
+      setGameState(game.getGameState())
+      setMessage(result.message || "Card revived from discard pile!")
+      setShowMedicRevival(false)
+    } else {
+      setMessage(result.message || "Failed to revive card")
     }
   }
 
@@ -409,6 +433,14 @@ export default function GwanGame() {
       {showRules && (
         <GameRulesModal
           onClose={() => setShowRules(false)}
+        />
+      )}
+      
+      {showMedicRevival && (
+        <MedicRevivalModal
+          player={currentPlayer}
+          onSelectCard={handleMedicRevival}
+          onCancel={() => setShowMedicRevival(false)}
         />
       )}
     </div>
