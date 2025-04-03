@@ -1485,8 +1485,17 @@ export class GwanGameLogic {
         
         const opponentRow = this.players[opponentIndex].field[targetRowName];
         
+        console.log("Magician effect - targetRowName:", targetRowName);
+        console.log("Magician effect - opponentRow before:", JSON.stringify(opponentRow));
+        console.log("Magician effect - opponentIndex:", opponentIndex);
+        console.log("Magician effect - success param:", success);
+        console.log("Magician effect - diceTotal:", diceTotal);
+        
         // Calculate the total base value of all cards in the row (without row bonuses)
         const rowValue = opponentRow.reduce((sum, card) => sum + card.baseValue, 0);
+        
+        console.log("Magician effect - rowValue:", rowValue);
+        console.log("Magician effect - comparison:", diceTotal > rowValue ? "Success" : "Failure");
         
         if (diceTotal > rowValue) {
           // Move all cards from the row to discard pile
@@ -1494,6 +1503,9 @@ export class GwanGameLogic {
           
           // Clear the row
           this.players[opponentIndex].field[targetRowName] = [];
+          
+          console.log("Magician effect - discard pile after:", JSON.stringify(this.players[opponentIndex].discardPile));
+          console.log("Magician effect - opponent field after:", JSON.stringify(this.players[opponentIndex].field));
           
           message = `Used The Magician - Rolled ${diceTotal}, exceeding the ${targetRowName} row's combined value of ${rowValue}. All cards in that row were discarded!`;
         } else {
