@@ -1498,15 +1498,17 @@ export class GwanGameLogic {
         if (success) {
           // Success - move cards to discard pile and clear the row
           if (targetRow.length > 0) {
-            // Create a copy of all cards in the row
+            // Create a deep copy of all cards in the row
             const cardsToDiscard = [...targetRow];
-
+            
             // Add cards to discard pile
             this.players[opponentIndex].discardPile.push(...cardsToDiscard);
-
-            // Clear the row using direct assignment
-            this.players[opponentIndex].field[targetRowName] = [];
-
+            
+            // Important: Clear the row by using splice to remove all elements
+            // This is a more reliable way to ensure the array is emptied
+            this.players[opponentIndex].field[targetRowName].splice(0, this.players[opponentIndex].field[targetRowName].length);
+            
+            // Double-check that the row is now empty
             console.log("Target row AFTER effect:", targetRowName, 
                         "cards:", this.players[opponentIndex].field[targetRowName],
                         "discarded:", cardsToDiscard.length);

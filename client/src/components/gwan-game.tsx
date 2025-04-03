@@ -700,6 +700,13 @@ export default function GwanGame() {
     // Get target row for the Magician effect from state
     const targetRow = blightTargetRow;
     
+    // Extra validation for Magician effect
+    if (effect === BlightEffect.MAGICIAN && !targetRow) {
+      console.error("Missing target row for Magician effect");
+      setMessage("Error: No target row selected for Magician effect");
+      return;
+    }
+    
     console.log("Processing blight dice roll:", { 
       effect, 
       diceResults, 
