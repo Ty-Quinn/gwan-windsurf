@@ -684,22 +684,13 @@ export class GwanGameLogic {
     this.currentRound = state.currentRound;
     this.weatherEffects = JSON.parse(JSON.stringify(state.weatherEffects));
     
-    // Recreate the deck with remaining cards
-    this.deck = [];
-    for (let i = 0; i < state.deckCount; i++) {
-      // Create placeholder cards to match the correct count
-      this.deck.push({
-        suit: "clubs",
-        value: "placeholder",
-        baseValue: 0,
-        isCommander: false,
-        isWeather: false,
-        isSpy: false,
-        isMedic: false,
-        isDecoy: false,
-        isRogue: false,
-        isSniper: false
-      });
+    // Create a proper deck and shuffle it
+    this.createDeck();
+    this.shuffleDeck();
+    
+    // Trim the deck to match the expected count
+    if (this.deck.length > state.deckCount) {
+      this.deck = this.deck.slice(0, state.deckCount);
     }
     
     this.gameEnded = false;
