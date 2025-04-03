@@ -174,7 +174,7 @@ export default function GameBoard({
                     {currentPlayer.field[rowKey].map((card, index) => (
                       <motion.div 
                         key={`${isOpponent ? "op" : "pl"}-${rowKey}-${index}`} 
-                        className="mx-1"
+                        className="mx-1 relative group"
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.8, opacity: 0 }}
@@ -185,6 +185,22 @@ export default function GameBoard({
                           compact={true}
                           disabled={true}
                         />
+                        {/* Tooltip displaying card details on hover */}
+                        <div className="absolute left-1/2 bottom-full -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none">
+                          <div className="bg-black/90 text-white p-2 rounded text-sm whitespace-nowrap">
+                            <div className="font-bold">{card.value} of {card.suit}</div>
+                            {card.isRogue && card.diceValue && (
+                              <div className="text-amber-400">Rogue value: {card.diceValue}</div>
+                            )}
+                            {card.isSniper && (
+                              <div className="text-indigo-400">Sniper value: 2</div>
+                            )}
+                            {card.isCommander && (
+                              <div className="text-yellow-400">Commander value: {card.baseValue}</div>
+                            )}
+                          </div>
+                          <div className="w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-black/90 absolute left-1/2 top-full -translate-x-1/2"></div>
+                        </div>
                       </motion.div>
                     ))}
                   </motion.div>

@@ -14,6 +14,8 @@ import MedicRevivalModal from "./medic-revival-modal"
 import DecoyRetrievalModal from "./decoy-retrieval-modal"
 import DiceRollModal from "./dice-roll-modal"
 import DiceRoller from "./dice-roller"
+import RogueDiceModal from "./rogue-dice-modal"
+import SniperDiceModal from "./sniper-dice-modal"
 import { Button } from "@/components/ui/button"
 
 // Interface for tracking last played card action for undo functionality
@@ -708,99 +710,43 @@ export default function GwanGame() {
       />
       
       {/* Dice roll for Rogue card value determination */}
-      {showRogueDiceRoll && (
-        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 bg-black z-50">
-          <div className="bg-card border rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4 text-center">Rogue Card Dice Roll</h2>
-            <p className="mb-4 text-center">Roll 2d6 to determine the card's value</p>
-            <div className="flex justify-center mb-4">
-              <div className="w-64">
-                <div className="card-illustration bg-gray-800 mb-4 rounded-md p-4 text-center">
-                  <span className="text-3xl">🎲</span>
-                </div>
-              </div>
-            </div>
-            <div className="text-center pb-4">
-              <div className="dice-container flex justify-center">
-                {/* Use DiceRoller component with 2d6 */}
-                <div className="mt-2">
-                  <div className="dice-roller-section">
-                    <div className="dice-roller-container">
-                      {/* Auto roll the dice for Rogue card */}
-                      <div className="dice-box">
-                        <div className="dice-roller">
-                          {pendingRogueCardIndex !== null && (
-                            <div>
-                              {/* Here we're using the DiceRoller component from your imports */}
-                              <DiceRoller
-                                count={2}
-                                sides={6}
-                                onRollComplete={handleRogueDiceRoll}
-                                autoRoll={false}
-                                label="Roll Dice"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <p className="text-center text-sm text-gray-400 mt-2">
-              The total value of the dice will be your Rogue card's value
-            </p>
-          </div>
-        </div>
+      {showRogueDiceRoll && pendingRogueCardIndex !== null && gameState && (
+        <RogueDiceModal
+          open={showRogueDiceRoll}
+          card={gameState.players[playerView].hand[pendingRogueCardIndex]}
+          onComplete={(diceValue) => {
+            handleRogueDiceRoll([0, 0], diceValue); // We're only interested in the total
+            setShowRogueDiceRoll(false);
+            setPendingRogueCardIndex(null);
+            setPendingCardTargetRow(null);
+          }}
+          onCancel={() => {
+            setShowRogueDiceRoll(false);
+            setPendingRogueCardIndex(null);
+            setPendingCardTargetRow(null);
+            setMessage("Card play cancelled");
+          }}
+        />
       )}
       
       {/* Dice roll for Sniper card effect */}
-      {showSniperDiceRoll && (
-        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 bg-black z-50">
-          <div className="bg-card border rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4 text-center">Sniper Card Dice Roll</h2>
-            <p className="mb-4 text-center">Roll 2d6 - if you get doubles, you'll eliminate the opponent's highest card!</p>
-            <div className="flex justify-center mb-4">
-              <div className="w-64">
-                <div className="card-illustration bg-gray-800 mb-4 rounded-md p-4 text-center">
-                  <span className="text-3xl">🎯</span>
-                </div>
-              </div>
-            </div>
-            <div className="text-center pb-4">
-              <div className="dice-container flex justify-center">
-                {/* Use DiceRoller component with 2d6 */}
-                <div className="mt-2">
-                  <div className="dice-roller-section">
-                    <div className="dice-roller-container">
-                      {/* Auto roll the dice for Sniper card */}
-                      <div className="dice-box">
-                        <div className="dice-roller">
-                          {pendingSniperCardIndex !== null && (
-                            <div>
-                              {/* Here we're using the DiceRoller component from your imports */}
-                              <DiceRoller
-                                count={2}
-                                sides={6}
-                                onRollComplete={handleSniperDiceRoll}
-                                autoRoll={false}
-                                label="Roll Dice"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <p className="text-center text-sm text-gray-400 mt-2">
-              If you roll doubles, your Sniper will eliminate the opponent's highest value card!
-            </p>
-          </div>
-        </div>
+      {showSniperDiceRoll && pendingSniperCardIndex !== null && gameState && (
+        <SniperDiceModal
+          open={showSniperDiceRoll}
+          card={gameState.players[playerView].hand[pendingSniperCardIndex]}
+          onComplete={(diceValues, isDoubles) => {
+            handleSniperDiceRoll(diceValues, diceValues.reduce((a, b) => a + b, 0), isDoubles);
+            setShowSniperDiceRoll(false);
+            setPendingSniperCardIndex(null);
+            setPendingCardTargetRow(null);
+          }}
+          onCancel={() => {
+            setShowSniperDiceRoll(false);
+            setPendingSniperCardIndex(null);
+            setPendingCardTargetRow(null);
+            setMessage("Card play cancelled");
+          }}
+        />
       )}
     </div>
   )
