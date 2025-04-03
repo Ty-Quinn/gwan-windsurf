@@ -1497,11 +1497,17 @@ export class GwanGameLogic {
         console.log("Magician effect - rowValue:", rowValue);
         console.log("Magician effect - comparison:", diceTotal > rowValue ? "Success" : "Failure");
         
-        if (diceTotal > rowValue) {
-          // Move all cards from the row to discard pile
-          this.players[opponentIndex].discardPile.push(...opponentRow);
+        // Force recalculation of success based on actual values in case the parameter is wrong
+        const actualSuccess = diceTotal > rowValue;
+        
+        if (actualSuccess) {
+          // Create a copy of the cards to add to discard pile
+          const cardsToDiscard = [...opponentRow];
           
-          // Clear the row
+          // Add to discard pile before clearing the row
+          this.players[opponentIndex].discardPile.push(...cardsToDiscard);
+          
+          // Clear the row using direct assignment to ensure reactivity
           this.players[opponentIndex].field[targetRowName] = [];
           
           console.log("Magician effect - discard pile after:", JSON.stringify(this.players[opponentIndex].discardPile));

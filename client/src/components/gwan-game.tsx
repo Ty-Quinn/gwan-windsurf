@@ -662,6 +662,13 @@ export default function GwanGame() {
   ) => {
     if (!game || !gameState || !currentBlightEffect) return
     
+    console.log("Handling blight dice roll:", {
+      effect,
+      diceResults,
+      success,
+      targetRow: blightTargetRow
+    });
+    
     // Use the target row that was stored when the player selected it in BlightCardTargetModal
     const result = game.completeBlightCardDiceRoll(
       playerView,
@@ -672,20 +679,25 @@ export default function GwanGame() {
     )
     
     if (result.success) {
-      setGameState(game.getGameState())
-      setShowBlightDiceRoll(false)
+      // Fetch the fresh state immediately after the operation
+      const updatedState = game.getGameState();
+      console.log("Updated game state after blight effect:", updatedState);
+      
+      // Update state with the latest data
+      setGameState(updatedState);
+      setShowBlightDiceRoll(false);
       
       // Special handling for Devil card effect if successful
       if (effect === BlightEffect.DEVIL && success) {
-        setShowDevilRevival(true)
-        setMessage("Select a card to revive from any discard pile")
+        setShowDevilRevival(true);
+        setMessage("Select a card to revive from any discard pile");
       } else {
-        setCurrentBlightEffect(null)
-        setBlightTargetRow(undefined) // Clear the target row state
-        setMessage(result.message || "Blight card effect completed")
+        setCurrentBlightEffect(null);
+        setBlightTargetRow(undefined); // Clear the target row state
+        setMessage(result.message || "Blight card effect completed");
       }
     } else {
-      setMessage(result.message || "Failed to complete Blight card effect")
+      setMessage(result.message || "Failed to complete Blight card effect");
     }
   }
   
