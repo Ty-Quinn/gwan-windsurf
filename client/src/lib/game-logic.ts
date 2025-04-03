@@ -919,7 +919,7 @@ export class GwanGameLogic {
 
     // For hearts cards, we need a target row
     if (card.suit === "hearts" && !targetRow) {
-      return { success: falsemessage: "You need to select a target row for hearts cards" };
+      return { success: false, message: "You need to select a target row for hearts cards" };
     }
 
     // Create a copy of the card with the dice value
