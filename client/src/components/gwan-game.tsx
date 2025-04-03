@@ -77,6 +77,7 @@ export default function GwanGame() {
   const [showBlightDiceRoll, setShowBlightDiceRoll] = useState<boolean>(false)
   const [showDevilRevival, setShowDevilRevival] = useState<boolean>(false)
   const [currentBlightEffect, setCurrentBlightEffect] = useState<BlightEffect | null>(null)
+  const [blightTargetRow, setBlightTargetRow] = useState<keyof Field | undefined>(undefined)
 
   // Initialize the game
   useEffect(() => {
@@ -614,6 +615,11 @@ export default function GwanGame() {
   ) => {
     if (!game || !gameState || !currentBlightEffect) return
     
+    // Store the target row for later use in dice rolls (especially for Magician effect)
+    if (targetRowName) {
+      setBlightTargetRow(targetRowName);
+    }
+    
     // When passing to game-logic, we send the current effect from state
     const result = game.completeBlightCardTarget(
       playerView,
@@ -626,7 +632,13 @@ export default function GwanGame() {
     if (result.success) {
       setGameState(game.getGameState())
       setShowBlightCardTarget(false)
-      setCurrentBlightEffect(null)
+      
+      // Don't clear currentBlightEffect if we're going to show a dice roll next
+      if (!result.requiresBlightDiceRoll) {
+        setCurrentBlightEffect(null)
+        setBlightTargetRow(undefined)
+      }
+      
       setMessage(result.message || "Blight card effect applied successfully")
     } else {
       setMessage(result.message || "Failed to apply Blight card effect")
@@ -641,13 +653,13 @@ export default function GwanGame() {
   ) => {
     if (!game || !gameState || !currentBlightEffect) return
     
-    // When passing to game-logic, we send the current effect from state and undefined for optional targetRow
+    // Use the target row that was stored when the player selected it in BlightCardTargetModal
     const result = game.completeBlightCardDiceRoll(
       playerView,
       currentBlightEffect, 
       diceResults, 
       success,
-      undefined // No target row for dice effects
+      blightTargetRow // Use the stored target row from state
     )
     
     if (result.success) {
@@ -660,6 +672,7 @@ export default function GwanGame() {
         setMessage("Select a card to revive from any discard pile")
       } else {
         setCurrentBlightEffect(null)
+        setBlightTargetRow(undefined) // Clear the target row state
         setMessage(result.message || "Blight card effect completed")
       }
     } else {
@@ -971,6 +984,7 @@ export default function GwanGame() {
           onCancel={() => {
             setShowBlightDiceRoll(false);
             setCurrentBlightEffect(null);
+            setBlightTargetRow(undefined); // Clear the target row state on cancel
             setMessage("Blight card effect cancelled");
           }}
         />
