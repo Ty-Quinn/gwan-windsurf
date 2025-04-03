@@ -1463,13 +1463,10 @@ export class GwanGameLogic {
       return { success: false, message: "You don't have a blight card" };
     }
 
-    // We want to continue to process this even if the blight card has been marked as used
-    // by the target selection step before the dice roll
-    
     const blightCard = this.players[playerIndex].blightCard!;
     const opponentIndex = 1 - playerIndex;
     
-    // Mark the blight card as used if not already
+    // Mark the blight card as used
     this.players[playerIndex].hasUsedBlightCard = true;
     this.isBlightCardBeingPlayed = false;
     
@@ -1478,23 +1475,30 @@ export class GwanGameLogic {
 
     switch (effect) {
       case BlightEffect.MAGICIAN:
-        // SIMPLIFIED IMPLEMENTATION - FOCUS ON CLEARING THE ROW
+        // COMPLETELY NEW IMPLEMENTATION
         if (!targetRowName) {
           return { success: false, message: "No target row specified for The Magician effect" };
         }
         
-        // Get the opponent field and target row
-        const rowCards = this.players[opponentIndex].field[targetRowName];
+        // Get the target row
+        const targetRow = this.players[opponentIndex].field[targetRowName];
         
-        // Calculate the total value of the row (without bonuses)
-        const rowValue = rowCards.reduce((sum, card) => sum + card.baseValue, 0);
+        // Calculate total value of the row
+        const rowValue = targetRow.reduce((sum, card) => sum + card.baseValue, 0);
         
+        // Check if the dice roll succeeded
         if (diceTotal > rowValue) {
-          // SUCCESS: SIMPLY CLEAR THE ROW - FORGET ABOUT DISCARD PILE FOR NOW
-          // The important thing is that the cards disappear visually
+          // Success - move cards to discard pile and clear the row
           
-          // Clear the row directly 
-          this.players[opponentIndex].field[targetRowName] = [];
+          // First, make a copy of all cards in the row to add to discard pile
+          if (targetRow.length > 0) {
+            // Push copies of the cards to discard pile first
+            const cardsToDiscard = [...targetRow];
+            this.players[opponentIndex].discardPile.push(...cardsToDiscard);
+            
+            // Then empty the row
+            this.players[opponentIndex].field[targetRowName] = [];
+          }
           
           message = `Used The Magician - Rolled ${diceTotal}, exceeding the ${targetRowName} row's combined value of ${rowValue}. All cards in that row were discarded!`;
         } else {

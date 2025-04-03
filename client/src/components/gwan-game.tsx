@@ -21,6 +21,7 @@ import BlightCardPlayModal from "./blight-card-play-modal"
 import BlightCardTargetModal from "./blight-card-target-modal"
 import BlightDiceModal from "./blight-dice-modal"
 import DevilRevivalModal from "./devil-revival-modal"
+import MagicianEffectModal from "./magician-effect-modal"
 import { Button } from "@/components/ui/button"
 
 // Interface for tracking last played card action for undo functionality
@@ -78,6 +79,9 @@ export default function GwanGame() {
   const [showDevilRevival, setShowDevilRevival] = useState<boolean>(false)
   const [currentBlightEffect, setCurrentBlightEffect] = useState<BlightEffect | null>(null)
   const [blightTargetRow, setBlightTargetRow] = useState<keyof Field | undefined>(undefined)
+  
+  // Dedicated modal for Magician effect
+  const [showMagicianEffect, setShowMagicianEffect] = useState<boolean>(false)
 
   // Initialize the game
   useEffect(() => {
@@ -583,6 +587,19 @@ export default function GwanGame() {
   const handlePlayBlightCard = () => {
     if (!game || !gameState) return
     
+    // Get the current blight card and check if it's the Magician
+    const blightCard = gameState.players[playerView].blightCard;
+    
+    // If it's the Magician, use our dedicated modal
+    if (blightCard && blightCard.effect === BlightEffect.MAGICIAN) {
+      setShowBlightCardPlay(false);
+      setCurrentBlightEffect(BlightEffect.MAGICIAN);
+      setShowMagicianEffect(true);
+      setMessage("Select a row to target with the Magician's effect");
+      return;
+    }
+    
+    // For all other blight cards, use the regular flow
     const result = game.playBlightCard(playerView)
     
     if (result.success) {
@@ -676,45 +693,15 @@ export default function GwanGame() {
   ) => {
     if (!game || !gameState || !currentBlightEffect) return
     
-    // For Magician effect, simplify the process
-    if (effect === BlightEffect.MAGICIAN && blightTargetRow) {
-      const opponentIndex = 1 - playerView;
-      const opponentField = gameState.players[opponentIndex].field;
-      const targetRow = opponentField[blightTargetRow];
-      
-      // Calculate values for message
-      const diceTotal = diceResults.reduce((sum, val) => sum + val, 0);
-      const rowTotal = targetRow.reduce((sum, card) => sum + card.baseValue, 0);
-      
-      if (success) {
-        // IMMEDIATELY CLEAR THE ROW IN GAME LOGIC
-        game.completeBlightCardDiceRoll(
-          playerView,
-          currentBlightEffect,
-          diceResults,
-          success,
-          blightTargetRow
-        );
-        
-        // Update state directly
-        setGameState(game.getGameState());
-        setShowBlightDiceRoll(false);
-        setCurrentBlightEffect(null);
-        setBlightTargetRow(undefined);
-        
-        // Clear message
-        setMessage(`Used The Magician - Rolled ${diceTotal}, exceeding the ${blightTargetRow} row's combined value of ${rowTotal}. All cards were discarded!`);
-        return;
-      }
-    }
+    console.log("Processing blight dice roll:", { effect, diceResults, success, targetRow: blightTargetRow });
     
-    // For other effects, use the regular flow
+    // Apply the effect in the game logic
     const result = game.completeBlightCardDiceRoll(
       playerView,
       currentBlightEffect, 
       diceResults, 
       success,
-      blightTargetRow // Use the stored target row from state
+      blightTargetRow
     )
     
     if (result.success) {
@@ -1056,6 +1043,26 @@ export default function GwanGame() {
             setShowDevilRevival(false);
             setCurrentBlightEffect(null);
             setMessage("Card revival cancelled");
+          }}
+        />
+      )}
+      
+      {/* Magician Effect Modal - Special handling for Magician blight card */}
+      {showMagicianEffect && gameState && (
+        <MagicianEffectModal
+          open={showMagicianEffect}
+          playerView={playerView}
+          players={gameState.players}
+          onComplete={(targetPlayerIndex, targetRowName, diceResults, success) => {
+            // When Magician effect is complete, directly call the blight dice roll handler
+            // This bypasses the need for separate target/dice roll steps
+            handleBlightDiceRoll(BlightEffect.MAGICIAN, diceResults, success);
+            setShowMagicianEffect(false);
+          }}
+          onCancel={() => {
+            setShowMagicianEffect(false);
+            setCurrentBlightEffect(null);
+            setMessage("Magician effect cancelled");
           }}
         />
       )}
