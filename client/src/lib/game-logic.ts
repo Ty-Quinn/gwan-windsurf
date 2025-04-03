@@ -168,7 +168,7 @@ export class GwanGameLogic {
 
   // Deal cards to players
   private dealCards(): void {
-    const cardsPerPlayer = this.currentRound === 1 ? 10 : 7;
+    const cardsPerPlayer = this.currentRound === 1 ? 10 : 1;
 
     for (const player of this.players) {
       // Keep existing cards in player's hand

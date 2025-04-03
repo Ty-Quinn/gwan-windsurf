@@ -146,7 +146,7 @@ export default function GameRulesModal({
               <li>The player with the highest total score when both players pass wins the round</li>
               <li>First player to win 2 rounds wins the game</li>
               <li>For subsequent rounds, the loser of the previous round goes first</li>
-              <li>In subsequent rounds, each player draws 7 new cards</li>
+              <li>In subsequent rounds, each player draws 1 new card</li>
             </ul>
           </div>
           
