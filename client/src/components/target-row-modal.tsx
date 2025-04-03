@@ -22,7 +22,7 @@ export default function TargetRowModal({
     <div className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
       <div className="bg-card p-6 rounded-lg shadow-lg max-w-md w-full">
         <h3 className="text-xl font-bold mb-4">Select Target Row</h3>
-        <p className="mb-4">Select which row to place your Hearts card or apply Clear Weather effect:</p>
+        <p className="mb-4">Select which row to place your Hearts card, Joker card, or apply Clear Weather effect:</p>
         
         <div className="space-y-2 mb-6">
           {rows.map((row) => (

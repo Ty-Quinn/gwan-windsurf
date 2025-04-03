@@ -129,7 +129,7 @@ export class GwanGameLogic {
       const jokerCard: Card = {
         suit: "joker",
         value: "Joker",
-        baseValue: 1,  // Jokers have a value of 1
+        baseValue: 5,  // Initially 5 like a spy card, will be modified to 1 when played
         isCommander: false,
         isWeather: false,
         isSpy: true,   // Jokers act as spy cards
@@ -351,10 +351,19 @@ export class GwanGameLogic {
         ? (targetRow as keyof Field)
         : (card.suit as keyof Field);
 
-      // Add the card to the opponent's field
-      this.players[opponentIndex].field[row].push(card);
+      // Create a copy of the card with modified properties if it's a Joker
+      // Joker cards only add 1 point to opponent's row instead of 5
+      let cardToPlay: Card;
+      if (card.isJoker) {
+        cardToPlay = { ...card, baseValue: 1 };
+      } else {
+        cardToPlay = card;
+      }
 
-      // Draw 2 cards if available
+      // Add the card to the opponent's field
+      this.players[opponentIndex].field[row].push(cardToPlay);
+
+      // Draw 2 cards if available (for both spy cards and joker cards)
       for (let i = 0; i < 2; i++) {
         if (this.deck.length > 0) {
           this.players[playerIndex].hand.push(this.deck.pop()!);

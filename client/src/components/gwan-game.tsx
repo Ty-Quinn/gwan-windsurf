@@ -87,12 +87,12 @@ export default function GwanGame() {
     // For hearts or Ace of Hearts, we need to select a target row
     const card = gameState.players[playerView].hand[cardIndex]
 
-    // Check if it's a hearts card - needs special handling for targeting a row
+    // Check if it's a hearts card or Joker - both need special handling for targeting a row
     // Using type assertion to handle the comparison properly
-    if ((card.suit as string) === "hearts" && !targetRow) {
+    if (((card.suit as string) === "hearts" || card.isJoker) && !targetRow) {
       setSelectedCard(cardIndex)
       setTargetRowSelection(true)
-      setMessage("Select a row for this card")
+      setMessage(card.isJoker ? "Select a row for this Joker card" : "Select a row for this card")
       return
     }
 
@@ -155,8 +155,8 @@ export default function GwanGame() {
     // We need to figure out which row the card was played in
     let rowKey: "clubs" | "spades" | "diamonds";
     
-    if (lastAction.card.suit === "hearts") {
-      // For hearts cards, we use the target row that was selected
+    if (lastAction.card.suit === "hearts" || lastAction.card.isJoker) {
+      // For hearts cards and Joker cards, we use the target row that was selected
       if (lastAction.targetRow === "clubs" || lastAction.targetRow === "spades" || lastAction.targetRow === "diamonds") {
         rowKey = lastAction.targetRow;
       } else {
@@ -272,7 +272,7 @@ export default function GwanGame() {
     }
   }
 
-  // Handle row selection for hearts cards
+  // Handle row selection for hearts cards or Joker cards
   const handleRowSelect = (row: string) => {
     if (selectedCard !== null) {
       handlePlayCard(selectedCard, row)

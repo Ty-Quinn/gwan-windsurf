@@ -106,14 +106,26 @@ export default function GameRulesModal({
               <ul className="list-disc list-inside ml-4">
                 <li>Played to your opponent's matching row</li>
                 <li>Let you draw 2 new cards from the deck</li>
-                <li>Add their value to your opponent's score (strategic sacrifice)</li>
+                <li>Add their value (5) to your opponent's score (strategic sacrifice)</li>
+              </ul>
+            </div>
+            
+            <div className="ml-4 mb-2">
+              <h5 className="font-semibold text-purple-400">Joker Cards</h5>
+              <ul className="list-disc list-inside ml-4">
+                <li>Act similarly to spy cards, but with special benefits</li>
+                <li>Can be played to any row (target row must be selected)</li>
+                <li>Only add 1 point to your opponent's score (instead of 5)</li>
+                <li>Let you draw 2 new cards from the deck</li>
               </ul>
             </div>
             
             <div className="ml-4">
               <h5 className="font-semibold text-green-400">Medic Cards (3s)</h5>
               <ul className="list-disc list-inside ml-4">
-                <li>No special abilities in the simplified version, just played for their value</li>
+                <li>Allow you to revive a card from your discard pile</li>
+                <li>Play to your side of the board like normal cards</li>
+                <li>After playing, choose any card from your discard pile to add to your hand</li>
               </ul>
             </div>
           </div>
@@ -135,6 +147,7 @@ export default function GameRulesModal({
               <li>Commanders: Save commander cards for rows affected by weather since they keep their value</li>
               <li>Row distribution: Try to spread your cards to benefit from multiple row bonuses</li>
               <li>Spy cards: Use these strategically - they help your opponent's score but let you draw more cards</li>
+              <li>Joker cards: Great for late-game plays - minimal point boost to opponent but gives you card advantage</li>
               <li>Passing: Knowing when to pass is key - sometimes letting your opponent play more cards while you conserve yours for later rounds is beneficial</li>
             </ul>
           </div>
