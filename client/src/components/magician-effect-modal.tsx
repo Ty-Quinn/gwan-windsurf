@@ -69,11 +69,23 @@ export default function MagicianEffectModal({
     const rowValue = calculateRowValue(selectedRow as keyof Field)
     const rollSucceeded = total > rowValue
     setSuccess(rollSucceeded)
+    
+    console.log("Dice roll completed:", {
+      results,
+      total,
+      rowValue,
+      success: rollSucceeded,
+      selectedRow
+    });
   }
   
   // Handle completion of the effect
   const handleComplete = () => {
     if (!selectedRow || !diceRolled) return
+    
+    // Log for debugging
+    console.log("MagicianEffectModal completing with row:", selectedRow, 
+                "cards:", players[opponentIndex].field[selectedRow].length);
     
     onComplete(
       opponentIndex,

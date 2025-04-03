@@ -691,9 +691,22 @@ export default function GwanGame() {
     diceResults: number[], 
     success: boolean
   ) => {
-    if (!game || !gameState || !currentBlightEffect) return
+    if (!game || !gameState || !currentBlightEffect) {
+      console.error("Missing required states for handleBlightDiceRoll:", 
+        { game: !!game, gameState: !!gameState, currentBlightEffect });
+      return;
+    }
     
-    console.log("Processing blight dice roll:", { effect, diceResults, success, targetRow: blightTargetRow });
+    // Get target row for the Magician effect from state
+    const targetRow = blightTargetRow;
+    
+    console.log("Processing blight dice roll:", { 
+      effect, 
+      diceResults, 
+      success, 
+      targetRow,
+      opponentCards: targetRow ? gameState.players[1-playerView].field[targetRow] : 'none'
+    });
     
     // Apply the effect in the game logic
     const result = game.completeBlightCardDiceRoll(
@@ -701,7 +714,7 @@ export default function GwanGame() {
       currentBlightEffect, 
       diceResults, 
       success,
-      blightTargetRow
+      targetRow
     )
     
     if (result.success) {
@@ -1054,6 +1067,16 @@ export default function GwanGame() {
           playerView={playerView}
           players={gameState.players}
           onComplete={(targetPlayerIndex, targetRowName, diceResults, success) => {
+            console.log("Magician effect completed with:", {
+              targetPlayerIndex,
+              targetRowName,
+              diceResults,
+              success
+            });
+            
+            // Set the target row first, before calling handleBlightDiceRoll
+            setBlightTargetRow(targetRowName);
+            
             // When Magician effect is complete, directly call the blight dice roll handler
             // This bypasses the need for separate target/dice roll steps
             handleBlightDiceRoll(BlightEffect.MAGICIAN, diceResults, success);
