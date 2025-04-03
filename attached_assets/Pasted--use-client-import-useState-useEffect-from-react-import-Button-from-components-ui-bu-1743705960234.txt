@@ -1,0 +1,236 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+// Generic DiceRoller component that can handle any type of dice
+const DiceRoller = ({ sides = 6, count = 1, onRollComplete = null, autoRoll = false, label = `D${sides}` }) => {
+  const [rolling, setRolling] = useState(false)
+  const [results, setResults] = useState(Array(count).fill(1))
+  const [totalValue, setTotalValue] = useState(count)
+
+  // Handle auto-roll on mount
+  useEffect(() => {
+    if (autoRoll) {
+      rollDice()
+    }
+  }, [autoRoll])
+
+  const rollDice = () => {
+    setRolling(true)
+
+    // Simulate dice rolls with animation
+    let rollCount = 0
+    const maxRolls = 10 // Number of visual "rolls" before settling
+    const interval = setInterval(() => {
+      // Generate random dice values
+      const newResults = Array(count)
+        .fill(0)
+        .map(() => Math.floor(Math.random() * sides) + 1)
+      setResults(newResults)
+      setTotalValue(newResults.reduce((sum, val) => sum + val, 0))
+
+      rollCount++
+      if (rollCount >= maxRolls) {
+        clearInterval(interval)
+        setRolling(false)
+        if (onRollComplete) {
+          onRollComplete(
+            newResults,
+            newResults.reduce((sum, val) => sum + val, 0),
+          )
+        }
+      }
+    }, 100)
+  }
+
+  // Render a visual representation of a die
+  const renderDie = (value, index) => {
+    // For D6, render pips like a real die
+    if (sides === 6) {
+      return (
+        <div
+          key={`die-${index}`}
+          className={`w-12 h-12 bg-white rounded-lg shadow-lg relative m-2 ${rolling ? "animate-bounce" : ""}`}
+        >
+          {/* Render pips based on value */}
+          {value === 1 && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-2 h-2 bg-black rounded-full"></div>
+            </div>
+          )}
+
+          {value === 2 && (
+            <div className="absolute inset-0">
+              <div className="absolute top-2 left-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute bottom-2 right-2 w-2 h-2 bg-black rounded-full"></div>
+            </div>
+          )}
+
+          {value === 3 && (
+            <div className="absolute inset-0">
+              <div className="absolute top-2 left-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-2 h-2 bg-black rounded-full"></div>
+              </div>
+              <div className="absolute bottom-2 right-2 w-2 h-2 bg-black rounded-full"></div>
+            </div>
+          )}
+
+          {value === 4 && (
+            <div className="absolute inset-0">
+              <div className="absolute top-2 left-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute top-2 right-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute bottom-2 left-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute bottom-2 right-2 w-2 h-2 bg-black rounded-full"></div>
+            </div>
+          )}
+
+          {value === 5 && (
+            <div className="absolute inset-0">
+              <div className="absolute top-2 left-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute top-2 right-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-2 h-2 bg-black rounded-full"></div>
+              </div>
+              <div className="absolute bottom-2 left-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute bottom-2 right-2 w-2 h-2 bg-black rounded-full"></div>
+            </div>
+          )}
+
+          {value === 6 && (
+            <div className="absolute inset-0">
+              <div className="absolute top-2 left-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute top-2 right-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute top-1/2 transform -translate-y-1/2 left-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute top-1/2 transform -translate-y-1/2 right-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute bottom-2 left-2 w-2 h-2 bg-black rounded-full"></div>
+              <div className="absolute bottom-2 right-2 w-2 h-2 bg-black rounded-full"></div>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    // For other dice (D10, D20), render number
+    return (
+      <div
+        key={`die-${index}`}
+        className={`w-12 h-12 bg-white rounded-lg shadow-lg relative m-2 flex items-center justify-center ${rolling ? "animate-bounce" : ""}`}
+      >
+        <span className="text-black font-bold">{value}</span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-center p-2">
+      <div className="flex flex-wrap justify-center mb-2">{results.map((value, index) => renderDie(value, index))}</div>
+
+      {count > 1 && (
+        <div className="text-center mb-2">
+          <span className="font-bold">Total: {totalValue}</span>
+        </div>
+      )}
+
+      <Button onClick={rollDice} disabled={rolling} className="w-full">
+        {rolling ? "Rolling..." : `Roll ${count}${label}`}
+      </Button>
+    </div>
+  )
+}
+
+// Main component that combines all dice types
+export default function DiceRollerApp() {
+  const [d20Results, setD20Results] = useState([])
+  const [d10Results, setD10Results] = useState([])
+  const [d6Results, setD6Results] = useState([])
+  const [d6x2Results, setD6x2Results] = useState([])
+  const [d6x3Results, setD6x3Results] = useState([])
+
+  const handleD20Complete = (results) => {
+    setD20Results(results)
+    console.log("D20 roll complete:", results)
+  }
+
+  const handleD10Complete = (results) => {
+    setD10Results(results)
+    console.log("D10 roll complete:", results)
+  }
+
+  const handleD6Complete = (results) => {
+    setD6Results(results)
+    console.log("D6 roll complete:", results)
+  }
+
+  const handleD6x2Complete = (results) => {
+    setD6x2Results(results)
+    console.log("2D6 roll complete:", results)
+  }
+
+  const handleD6x3Complete = (results) => {
+    setD6x3Results(results)
+    console.log("3D6 roll complete:", results)
+  }
+
+  return (
+    <div className="grid gap-6 md:grid-cols-3">
+      {/* D20 Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>D20</CardTitle>
+          <CardDescription>20-sided dice</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DiceRoller sides={20} count={1} onRollComplete={handleD20Complete} label="D20" />
+        </CardContent>
+      </Card>
+
+      {/* D10 Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>D10</CardTitle>
+          <CardDescription>10-sided dice</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DiceRoller sides={10} count={1} onRollComplete={handleD10Complete} label="D10" />
+        </CardContent>
+      </Card>
+
+      {/* D6 Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>D6</CardTitle>
+          <CardDescription>6-sided dice</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DiceRoller sides={6} count={1} onRollComplete={handleD6Complete} label="D6" />
+        </CardContent>
+      </Card>
+
+      {/* 2D6 Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>2D6</CardTitle>
+          <CardDescription>Roll two 6-sided dice</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DiceRoller sides={6} count={2} onRollComplete={handleD6x2Complete} label="D6" />
+        </CardContent>
+      </Card>
+
+      {/* 3D6 Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>3D6</CardTitle>
+          <CardDescription>Roll three 6-sided dice</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DiceRoller sides={6} count={3} onRollComplete={handleD6x3Complete} label="D6" />
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+

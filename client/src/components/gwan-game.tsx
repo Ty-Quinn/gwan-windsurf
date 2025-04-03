@@ -12,6 +12,7 @@ import GameEndModal from "./game-end-modal"
 import GameRulesModal from "./game-rules-modal"
 import MedicRevivalModal from "./medic-revival-modal"
 import DecoyRetrievalModal from "./decoy-retrieval-modal"
+import DiceRollModal from "./dice-roll-modal"
 import { Button } from "@/components/ui/button"
 
 // Interface for tracking last played card action for undo functionality
@@ -45,6 +46,10 @@ export default function GwanGame() {
   const [showMedicRevival, setShowMedicRevival] = useState<boolean>(false)
   const [showDecoyRetrieval, setShowDecoyRetrieval] = useState<boolean>(false)
   
+  // Dice roll functionality
+  const [showDiceRoll, setShowDiceRoll] = useState<boolean>(false)
+  const [gameStarted, setGameStarted] = useState<boolean>(false)
+  
   // Undo functionality
   const [lastAction, setLastAction] = useState<LastAction | null>(null)
   const [turnEnded, setTurnEnded] = useState<boolean>(false)
@@ -58,8 +63,30 @@ export default function GwanGame() {
 
     setGame(newGame)
     setGameState(newGame.getGameState())
-    setMessage("Game started! Play a card or pass.")
+    
+    // Show dice roll modal at the start of the game
+    setShowDiceRoll(true)
+    setMessage("Roll to determine who goes first!")
   }, [])
+  
+  // Handle dice roll completion and set the first player
+  const handleDiceRollComplete = (firstPlayerIndex: number) => {
+    if (!game || !gameState) return
+    
+    // Update the game state with the first player determined by dice roll
+    const updatedGameState = {...gameState, currentPlayer: firstPlayerIndex}
+    
+    // Get a new instance of the game and set the state
+    const updatedGame = new GwanGameLogic()
+    updatedGame.initializeGameFromState(updatedGameState)
+    
+    setGame(updatedGame)
+    setGameState(updatedGameState)
+    setPlayerView(firstPlayerIndex) // Set the view to the player who goes first
+    setShowDiceRoll(false)
+    setGameStarted(true)
+    setMessage(`Player ${firstPlayerIndex + 1} won the roll and goes first! Play a card or pass.`)
+  }
   
   // Show rules only on first load of the game if they haven't been shown before
   useEffect(() => {
@@ -390,7 +417,6 @@ export default function GwanGame() {
 
     setGame(newGame)
     setGameState(newGame.getGameState())
-    setMessage("New game started! Play a card or pass.")
     setShowGameEnd(false)
     setRoundWinner(undefined)
     setRoundTied(false)
@@ -398,6 +424,11 @@ export default function GwanGame() {
     setTurnEnded(false)
     setLastAction(null)
     setPrevGameState(null)
+    setGameStarted(false)
+    
+    // Show dice roll to determine who goes first
+    setShowDiceRoll(true)
+    setMessage("Roll to determine who goes first!")
     
     // Log for debugging
     console.log("New game started, players:", newGame.getGameState().players)
@@ -412,7 +443,6 @@ export default function GwanGame() {
 
     setGame(newGame)
     setGameState(newGame.getGameState())
-    setMessage("New match started! Play a card or pass.")
     setShowGameEnd(false)
     setRoundWinner(undefined)
     setRoundTied(false)
@@ -420,9 +450,11 @@ export default function GwanGame() {
     setTurnEnded(false)
     setLastAction(null)
     setPrevGameState(null)
+    setGameStarted(false)
     
-    // Reset player view to 0 (Player 1)
-    setPlayerView(0)
+    // Show dice roll to determine who goes first
+    setShowDiceRoll(true)
+    setMessage("Roll to determine who goes first!")
     
     // Log for debugging
     console.log("New match started, players:", newGame.getGameState().players)
@@ -573,6 +605,12 @@ export default function GwanGame() {
           onCancel={() => setShowDecoyRetrieval(false)}
         />
       )}
+      
+      {/* Dice roll modal to determine first player */}
+      <DiceRollModal 
+        open={showDiceRoll}
+        onDiceRollComplete={handleDiceRollComplete}
+      />
     </div>
   )
 }
