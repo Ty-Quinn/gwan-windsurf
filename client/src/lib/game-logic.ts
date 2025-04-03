@@ -1485,29 +1485,27 @@ export class GwanGameLogic {
           return { success: false, message: "No target row specified for The Magician effect" };
         }
         
-        // Get the target row directly from the players array
-        const targetCards = this.players[opponentIndex].field[targetRowName];
+        // Get the target row
+        const targetField = this.players[opponentIndex].field;
+        const targetRow = targetField[targetRowName];
         
-        console.log("Target row before effect:", targetRowName, "cards:", [...targetCards]);
+        console.log("Target row before effect:", targetRowName, "cards:", [...targetRow]);
         
         // Calculate total value of the row
-        const rowValue = targetCards.reduce((sum, card) => sum + card.baseValue, 0);
+        const rowValue = targetRow.reduce((sum, card) => sum + card.baseValue, 0);
         
         // Check if the dice roll succeeded
         if (success) {
           // Success - move cards to discard pile and clear the row
-          
-          // First, make a copy of all cards in the row to add to discard pile
-          if (targetCards.length > 0) {
-            // Push copies of the cards to discard pile
-            const cardsToDiscard = [...targetCards];
-            this.players[opponentIndex].discardPile.push(...cardsToDiscard);
+          if (targetRow.length > 0) {
+            // Add all cards to the discard pile
+            this.players[opponentIndex].discardPile.push(...targetRow);
             
-            // Then empty the row using direct assignment to ensure reactivity
-            this.players[opponentIndex].field[targetRowName] = [];
+            // Clear the row
+            targetField[targetRowName] = [];
             
             console.log("Target row AFTER effect:", targetRowName, 
-                        "cards:", this.players[opponentIndex].field[targetRowName]);
+                      "cards:", targetField[targetRowName]);
           }
           
           message = `Used The Magician - Rolled ${diceTotal}, exceeding the ${targetRowName} row's combined value of ${rowValue}. All cards in that row were discarded!`;
