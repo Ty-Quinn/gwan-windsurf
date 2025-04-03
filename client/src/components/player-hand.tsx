@@ -212,8 +212,8 @@ export default function PlayerHand({
       
       {/* This hidden div ensures that no card details leak outside their containers */}
       <div className="hidden absolute -top-96 left-0 right-0 opacity-0 pointer-events-none">
-        {currentPlayer.hand.map((card) => (
-          <span key={`label-blocker-${card.suit}-${card.value}`}>{card.suit}-{card.value}</span>
+        {currentPlayer.hand.map((card, index) => (
+          <span key={`label-blocker-${card.suit}-${card.value}-${index}`}>{card.suit}-{card.value}</span>
         ))}
       </div>
       

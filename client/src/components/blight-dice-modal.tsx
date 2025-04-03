@@ -157,6 +157,21 @@ export default function BlightDiceModal({
     else if (effect === BlightEffect.WHEEL) {
       return <p className="text-center py-2 text-lg font-medium">You rolled a {totalValue}! {totalValue} points will be added to your score.</p>
     }
+    else if (effect === BlightEffect.MAGICIAN) {
+      return (
+        <div className="text-center py-2">
+          <div className="flex items-center justify-center mb-2">
+            <span className="text-3xl font-bold text-amber-500">{totalValue}</span>
+            <span className="mx-2 text-xl">vs</span>
+            <span className="text-xl text-muted-foreground">Target Row Value</span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            If your roll exceeds the row's value, all cards in that row will be destroyed.
+            The outcome will be determined after you confirm.
+          </p>
+        </div>
+      )
+    }
     else {
       return <p className="text-center py-2 text-lg font-medium">You rolled a {totalValue}!</p>
     }
@@ -173,26 +188,35 @@ export default function BlightDiceModal({
         </DialogHeader>
 
         <div className="flex flex-col items-center space-y-4 py-4">
-          {devilRolls.length === 0 && (
+          {/* For Devil effect, show the dice roller after rolls have started */}
+          {(effect !== BlightEffect.DEVIL || devilRolls.length === 0) && (
             <DiceRoller
               {...getDiceConfig()}
               onRollComplete={handleDiceRollComplete}
               autoRoll={false}
               disabled={rolling || 
                 (effect === BlightEffect.DEVIL && (rollCount >= 6 || sixCount >= 3))}
+              label={effect === BlightEffect.DEVIL ? "Roll 3d6" : undefined}
             />
           )}
 
           {renderResultMessage()}
 
+          {/* For Devil effect, show dice roller for continued rolls */}
           {effect === BlightEffect.DEVIL && rollCount > 0 && rollCount < 6 && sixCount < 3 && (
-            <Button 
-              onClick={handleRollAgain}
-              variant="secondary"
-              disabled={rolling}
-            >
-              Roll Again ({rollCount}/6)
-            </Button>
+            <div className="flex flex-col items-center gap-3 w-full mt-2">
+              <p className="text-amber-500 font-medium text-sm text-center">
+                Roll additional dice - you need {3 - sixCount} more 6's in {6 - rollCount} attempts
+              </p>
+              <DiceRoller
+                sides={6}
+                count={3}
+                onRollComplete={handleDiceRollComplete}
+                autoRoll={false}
+                disabled={rolling}
+                label={`Roll Again (${rollCount}/6)`}
+              />
+            </div>
           )}
         </div>
 

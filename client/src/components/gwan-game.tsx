@@ -92,13 +92,21 @@ export default function GwanGame() {
     setMessage("Roll to determine who goes first!")
   }, [])
   
-  // Show Blight card selection after the game has started (after dice roll)
+  // Show Blight card selection for the current player at the start of their first turn in round 1
   useEffect(() => {
-    if (gameStarted && gameState && !gameState.blightCardsSelected) {
-      // Show Blight card selection for first player
-      setShowBlightCardSelection(true)
+    if (gameState && 
+        gameState.currentRound === 1 && 
+        isCurrentTurn && 
+        !gameState.blightCardsSelected && 
+        !currentBlightEffect) {
+      // Check if this player has already picked a Blight card
+      const currentPlayer = gameState.players[playerView]
+      if (!currentPlayer.blightCard) {
+        // Only show selection if this player doesn't have a Blight card yet
+        setShowBlightCardSelection(true)
+      }
     }
-  }, [gameStarted, gameState?.blightCardsSelected])
+  }, [gameState?.currentPlayer, gameState?.currentRound, gameState?.blightCardsSelected])
   
   // Handle dice roll completion and set the first player
   const handleDiceRollComplete = (firstPlayerIndex: number) => {
