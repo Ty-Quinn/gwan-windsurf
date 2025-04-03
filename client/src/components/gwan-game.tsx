@@ -32,6 +32,9 @@ export default function GwanGame() {
   const [showRoundSummary, setShowRoundSummary] = useState<boolean>(false)
   const [showGameEnd, setShowGameEnd] = useState<boolean>(false)
   const [showRules, setShowRules] = useState<boolean>(false)
+  const [rulesShownBefore, setRulesShownBefore] = useState<boolean>(
+    localStorage.getItem('gwanRulesShown') === 'true'
+  )
   const [roundWinner, setRoundWinner] = useState<number | undefined>(undefined)
   const [roundTied, setRoundTied] = useState<boolean>(false)
   const [gameWinner, setGameWinner] = useState<number | undefined>(undefined)
@@ -56,16 +59,22 @@ export default function GwanGame() {
     setMessage("Game started! Play a card or pass.")
   }, [])
   
-  // Show rules only on first load of the game
+  // Show rules only on first load of the game if they haven't been shown before
   useEffect(() => {
-    // Only show rules when the game is first initialized
-    if (gameState && gameState.currentRound === 1 && gameState.players[0].field.clubs.length === 0 
-        && gameState.players[0].field.spades.length === 0 && gameState.players[0].field.diamonds.length === 0
-        && gameState.players[1].field.clubs.length === 0 && gameState.players[1].field.spades.length === 0 
+    // Only show rules when the game is first initialized and not shown before in this session
+    if (!rulesShownBefore && gameState && gameState.currentRound === 1 
+        && gameState.players[0].field.clubs.length === 0 
+        && gameState.players[0].field.spades.length === 0 
+        && gameState.players[0].field.diamonds.length === 0
+        && gameState.players[1].field.clubs.length === 0 
+        && gameState.players[1].field.spades.length === 0 
         && gameState.players[1].field.diamonds.length === 0) {
       setShowRules(true)
+      // Mark that rules have been shown in this session
+      setRulesShownBefore(true)
+      localStorage.setItem('gwanRulesShown', 'true')
     }
-  }, [gameState])
+  }, [gameState, rulesShownBefore])
 
   // Handle playing a card
   const handlePlayCard = (cardIndex: number, targetRow: string | null = null) => {
@@ -397,7 +406,11 @@ export default function GwanGame() {
         playerView={playerView} 
         switchPlayerView={switchPlayerView} 
         message={message}
-        showRules={() => setShowRules(true)}
+        showRules={() => {
+          setShowRules(true)
+          setRulesShownBefore(true)
+          localStorage.setItem('gwanRulesShown', 'true')
+        }}
       />
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

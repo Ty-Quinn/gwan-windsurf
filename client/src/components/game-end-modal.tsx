@@ -62,13 +62,6 @@ export default function GameEndModal({
             Start New Match
           </Button>
           <Button 
-            onClick={onPlayAgain}
-            variant="outline"
-            className="w-full"
-          >
-            Continue Current Match
-          </Button>
-          <Button 
             onClick={() => setLocation("/")}
             variant="ghost"
             className="w-full"
