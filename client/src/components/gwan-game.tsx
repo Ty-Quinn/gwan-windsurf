@@ -611,13 +611,22 @@ export default function GwanGame() {
     effect: BlightEffect, 
     targetPlayerIndex: number, 
     targetRowName?: keyof Field, 
-    targetCardIndex?: number
+    targetCardIndex?: number,
+    diceResults?: number[],
+    success?: boolean
   ) => {
     if (!game || !gameState || !currentBlightEffect) return
     
     // Store the target row for later use in dice rolls (especially for Magician effect)
     if (targetRowName) {
       setBlightTargetRow(targetRowName);
+    }
+    
+    // Special handling for Magician effect when dice roll happened in the target modal
+    if (effect === BlightEffect.MAGICIAN && diceResults && success !== undefined && targetRowName) {
+      // If we already have dice results from the modal, call the dice roll handler directly
+      handleBlightDiceRoll(effect, diceResults, success);
+      return;
     }
     
     // When passing to game-logic, we send the current effect from state

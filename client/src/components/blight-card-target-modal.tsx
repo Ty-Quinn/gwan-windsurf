@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import CardComponent from './card'
+import DiceRoller from './dice-roller'
 
 interface BlightCardTargetModalProps {
   open: boolean
@@ -17,7 +18,9 @@ interface BlightCardTargetModalProps {
     effect: BlightEffect, 
     targetPlayerIndex: number, 
     targetRowName?: keyof Field, 
-    targetCardIndex?: number
+    targetCardIndex?: number,
+    diceResults?: number[],
+    success?: boolean
   ) => void
   onCancel: () => void
 }
@@ -33,6 +36,8 @@ export default function BlightCardTargetModal({
   const [selectedPlayerIndex, setSelectedPlayerIndex] = useState<number>(1 - playerView) // Default to opponent
   const [selectedRowName, setSelectedRowName] = useState<keyof Field | null>(null)
   const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null)
+  const [showDiceRoll, setShowDiceRoll] = useState<boolean>(false)
+  const [diceResults, setDiceResults] = useState<number[]>([])
 
   const opponentIndex = 1 - playerView
 
@@ -41,6 +46,8 @@ export default function BlightCardTargetModal({
     setSelectedPlayerIndex(opponentIndex)
     setSelectedRowName(null)
     setSelectedCardIndex(null)
+    setShowDiceRoll(false)
+    setDiceResults([])
   }
 
   const handleConfirmSelection = () => {
@@ -71,7 +78,8 @@ export default function BlightCardTargetModal({
       }
     } 
     else if (effect === BlightEffect.MAGICIAN && selectedRowName) {
-      onSelectTarget(effect, opponentIndex, selectedRowName)
+      // Instead of closing and using onSelectTarget, we'll show dice roll UI in the same modal
+      setShowDiceRoll(true)
     }
     else if (effect === BlightEffect.LOVERS && selectedPlayerIndex !== null && 
              selectedRowName && selectedCardIndex !== null) {
@@ -166,10 +174,65 @@ export default function BlightCardTargetModal({
       break
   }
 
+  // Handle dice roll completion for the Magician effect
+  const handleDiceRollComplete = (results: number[], total: number) => {
+    if (!selectedRowName) return;
+    
+    // Store the dice results
+    setDiceResults(results);
+    
+    // For the Magician effect, we need to check if the dice roll succeeded
+    if (effect === BlightEffect.MAGICIAN) {
+      const row = players[opponentIndex].field[selectedRowName];
+      const rowTotal = row.reduce((sum, card) => sum + card.baseValue, 0);
+      
+      // Dice roll success if total > row value
+      const success = total > rowTotal;
+      
+      // Pass the success parameter to the game logic through a modified version of the interface
+      // Add diceResults and success to the onSelectTarget call (needs to be handled in the parent component)
+      onSelectTarget(effect, opponentIndex, selectedRowName, undefined, diceResults, success);
+      
+      // Close the modal
+      onCancel();
+    } else {
+      // For other effects
+      onSelectTarget(effect, opponentIndex, selectedRowName);
+    }
+  };
+
   // Render card selection UI based on effect
   const renderSelectionUI = () => {
     switch (effect) {
       case BlightEffect.MAGICIAN:
+        // If we're showing the dice roller (after row selection), show that instead
+        if (showDiceRoll && selectedRowName) {
+          const row = players[opponentIndex].field[selectedRowName];
+          const rowTotal = row.reduce((sum, card) => sum + card.baseValue, 0);
+          
+          return (
+            <div className="space-y-6 text-center">
+              <div className="p-4 border rounded-lg bg-card/50">
+                <h3 className="text-lg font-medium mb-2">
+                  Target: <span className="capitalize">{selectedRowName}</span> Row
+                </h3>
+                <p className="text-muted-foreground">Current Value: {rowTotal}</p>
+                <p className="text-sm mt-2">
+                  Roll a d20 - if your roll is higher than {rowTotal}, all cards in this row will be discarded.
+                </p>
+              </div>
+              
+              <DiceRoller 
+                sides={20} 
+                count={1} 
+                onRollComplete={handleDiceRollComplete} 
+                label="Roll to determine destruction"
+              />
+            </div>
+          );
+        }
+        
+        // Otherwise show the row selection UI
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Select opponent's row to target:</h3>
@@ -281,12 +344,15 @@ export default function BlightCardTargetModal({
           <Button variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleConfirmSelection}
-            disabled={!isConfirmEnabled()}
-          >
-            Confirm
-          </Button>
+          {/* Only show Confirm button when not in dice roll phase for Magician */}
+          {!(effect === BlightEffect.MAGICIAN && showDiceRoll) && (
+            <Button 
+              onClick={handleConfirmSelection}
+              disabled={!isConfirmEnabled()}
+            >
+              Confirm
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
