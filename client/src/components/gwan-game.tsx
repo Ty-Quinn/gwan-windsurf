@@ -617,6 +617,15 @@ export default function GwanGame() {
   ) => {
     if (!game || !gameState || !currentBlightEffect) return
     
+    console.log("BlightTargetSelection called with:", {
+      effect,
+      targetPlayerIndex,
+      targetRowName,
+      targetCardIndex,
+      diceResults: diceResults ? diceResults.join(",") : "none", 
+      success
+    });
+    
     // Store the target row for later use in dice rolls (especially for Magician effect)
     if (targetRowName) {
       setBlightTargetRow(targetRowName);
@@ -624,6 +633,7 @@ export default function GwanGame() {
     
     // Special handling for Magician effect when dice roll happened in the target modal
     if (effect === BlightEffect.MAGICIAN && diceResults && success !== undefined && targetRowName) {
+      console.log("Calling handleBlightDiceRoll directly for Magician effect");
       // If we already have dice results from the modal, call the dice roll handler directly
       handleBlightDiceRoll(effect, diceResults, success);
       return;
@@ -639,13 +649,17 @@ export default function GwanGame() {
     )
     
     if (result.success) {
-      setGameState(game.getGameState())
-      setShowBlightCardTarget(false)
+      // Get updated state immediately
+      const freshState = game.getGameState();
+      console.log("Target selection succeeded, updating game state");
+      
+      setGameState(freshState);
+      setShowBlightCardTarget(false);
       
       // Don't clear currentBlightEffect if we're going to show a dice roll next
       if (!result.requiresBlightDiceRoll) {
-        setCurrentBlightEffect(null)
-        setBlightTargetRow(undefined)
+        setCurrentBlightEffect(null);
+        setBlightTargetRow(undefined);
       }
       
       setMessage(result.message || "Blight card effect applied successfully")

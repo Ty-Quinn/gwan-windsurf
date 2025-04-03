@@ -202,6 +202,14 @@ export default function BlightCardTargetModal({
     const diceTotal = diceResults.reduce((sum, val) => sum + val, 0);
     const success = diceTotal > rowTotal;
     
+    console.log("Confirming Magician effect with:", {
+      targetRow: selectedRowName,
+      rowTotal,
+      diceTotal,
+      success,
+      diceResults
+    });
+    
     // Pass the success parameter to the game logic
     onSelectTarget(effect, opponentIndex, selectedRowName, undefined, diceResults, success);
     
