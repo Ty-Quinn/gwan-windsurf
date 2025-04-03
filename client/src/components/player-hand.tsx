@@ -31,11 +31,14 @@ export default function PlayerHand({
   const [justSwitched, setJustSwitched] = useState(false);
   const [showDiscardPile, setShowDiscardPile] = useState(false);
 
-  // Handle the End Turn animation effect
-  const handleEndTurn = () => {
+  // Handle auto-switching to the other player after passing
+  const handlePassAndSwitch = () => {
+    // First handle passing
+    handlePass();
+    
+    // Then switch player view (will be handled by the pass logic in GwanGame)
     if (switchPlayerView) {
       setJustSwitched(true);
-      switchPlayerView();
       
       // Reset animation state after animation completes
       setTimeout(() => {
@@ -75,7 +78,7 @@ export default function PlayerHand({
               className="relative"
             >
               <Button 
-                onClick={handlePass}
+                onClick={handlePassAndSwitch}
                 disabled={!isCurrentTurn || currentPlayer.pass}
                 variant="destructive"
                 className="relative overflow-hidden"
@@ -107,46 +110,7 @@ export default function PlayerHand({
               </Button>
             </motion.div>
             
-            {switchPlayerView && (
-              <AnimatePresence>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="relative"
-                >
-                  <Button 
-                    onClick={handleEndTurn}
-                    variant="secondary"
-                    className="relative overflow-hidden"
-                  >
-                    <span className="z-10 relative">End Turn</span>
-                    
-                    {/* Pulse effect only if it's current turn and player has played at least one card */}
-                    <AnimatePresence>
-                      {isCurrentTurn && 
-                        // Check if player has already played cards (hand size is less than max)
-                        currentPlayer.hand.length < 10 && !currentPlayer.pass && (
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ 
-                            scale: [1, 1.2, 1.2, 1], 
-                            opacity: [0.7, 0.5, 0.5, 0.7] 
-                          }}
-                          exit={{ scale: 0, opacity: 0 }}
-                          transition={{ 
-                            duration: 2,
-                            repeat: 2,
-                            repeatType: "loop"
-                          }}
-                          className="absolute inset-0 bg-primary rounded-md"
-                          style={{ zIndex: 0 }}
-                        />
-                      )}
-                    </AnimatePresence>
-                  </Button>
-                </motion.div>
-              </AnimatePresence>
-            )}
+            {/* End Turn button removed - players must either play a card or pass their turn */}
 
           </div>
           <div className="flex flex-col text-sm text-muted-foreground items-end">
