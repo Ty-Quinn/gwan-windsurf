@@ -181,24 +181,32 @@ export default function BlightCardTargetModal({
     // Store the dice results
     setDiceResults(results);
     
-    // For the Magician effect, we need to check if the dice roll succeeded
+    // For the Magician effect, we switch to results display mode instead of closing
     if (effect === BlightEffect.MAGICIAN) {
-      const row = players[opponentIndex].field[selectedRowName];
-      const rowTotal = row.reduce((sum, card) => sum + card.baseValue, 0);
-      
-      // Dice roll success if total > row value
-      const success = total > rowTotal;
-      
-      // Pass the success parameter to the game logic through a modified version of the interface
-      // Add diceResults and success to the onSelectTarget call (needs to be handled in the parent component)
-      onSelectTarget(effect, opponentIndex, selectedRowName, undefined, diceResults, success);
-      
-      // Close the modal
-      onCancel();
+      // Show results and confirm button instead of auto-completing
+      setDiceResults(results);
     } else {
       // For other effects
       onSelectTarget(effect, opponentIndex, selectedRowName);
     }
+  };
+  
+  // Handle confirmation after dice roll for Magician effect
+  const handleConfirmDiceRoll = () => {
+    if (!selectedRowName || diceResults.length === 0) return;
+    
+    const row = players[opponentIndex].field[selectedRowName];
+    const rowTotal = row.reduce((sum, card) => sum + card.baseValue, 0);
+    
+    // Dice roll success if total > row value
+    const diceTotal = diceResults.reduce((sum, val) => sum + val, 0);
+    const success = diceTotal > rowTotal;
+    
+    // Pass the success parameter to the game logic
+    onSelectTarget(effect, opponentIndex, selectedRowName, undefined, diceResults, success);
+    
+    // Close the modal
+    onCancel();
   };
 
   // Render card selection UI based on effect
@@ -210,6 +218,11 @@ export default function BlightCardTargetModal({
           const row = players[opponentIndex].field[selectedRowName];
           const rowTotal = row.reduce((sum, card) => sum + card.baseValue, 0);
           
+          // Check if we already have dice results to display
+          const diceTotal = diceResults.length > 0 ? diceResults.reduce((sum, val) => sum + val, 0) : 0;
+          const hasRolled = diceResults.length > 0;
+          const success = diceTotal > rowTotal;
+          
           return (
             <div className="space-y-6 text-center">
               <div className="p-4 border rounded-lg bg-card/50">
@@ -217,17 +230,41 @@ export default function BlightCardTargetModal({
                   Target: <span className="capitalize">{selectedRowName}</span> Row
                 </h3>
                 <p className="text-muted-foreground">Current Value: {rowTotal}</p>
-                <p className="text-sm mt-2">
-                  Roll a d20 - if your roll is higher than {rowTotal}, all cards in this row will be discarded.
-                </p>
+                {hasRolled ? (
+                  <div className="mt-3 space-y-2">
+                    <div className="flex justify-center items-center gap-2">
+                      <p className="text-lg font-bold">Your Roll: {diceTotal}</p>
+                      <p className="text-lg font-bold">vs</p>
+                      <p className="text-lg font-bold">Row Value: {rowTotal}</p>
+                    </div>
+                    <div className={`text-lg font-bold ${success ? "text-green-500" : "text-red-500"}`}>
+                      {success 
+                        ? "Success! You can discard this row!" 
+                        : "Failed! The row remains intact."}
+                    </div>
+                    <Button 
+                      onClick={handleConfirmDiceRoll}
+                      className="mt-3"
+                      variant="default"
+                    >
+                      Confirm {success ? "Destruction" : "Result"}
+                    </Button>
+                  </div>
+                ) : (
+                  <p className="text-sm mt-2">
+                    Roll a d20 - if your roll is higher than {rowTotal}, all cards in this row will be discarded.
+                  </p>
+                )}
               </div>
               
-              <DiceRoller 
-                sides={20} 
-                count={1} 
-                onRollComplete={handleDiceRollComplete} 
-                label="Roll to determine destruction"
-              />
+              {!hasRolled && (
+                <DiceRoller 
+                  sides={20} 
+                  count={1} 
+                  onRollComplete={handleDiceRollComplete} 
+                  label="Roll to determine destruction"
+                />
+              )}
             </div>
           );
         }
