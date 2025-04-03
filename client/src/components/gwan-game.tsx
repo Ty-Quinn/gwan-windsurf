@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { GameState, Card, Field } from "@/lib/types"
+import { GameState, Card, Field, BlightCard, BlightEffect } from "@/lib/types"
 import { GwanGameLogic } from "@/lib/game-logic"
 import GameBoard from "./game-board"
 import PlayerHand from "./player-hand"
@@ -16,6 +16,11 @@ import DiceRollModal from "./dice-roll-modal"
 import DiceRoller from "./dice-roller"
 import RogueDiceModal from "./rogue-dice-modal"
 import SniperDiceModal from "./sniper-dice-modal"
+import BlightCardSelectionModal from "./blight-card-selection-modal"
+import BlightCardPlayModal from "./blight-card-play-modal"
+import BlightCardTargetModal from "./blight-card-target-modal"
+import BlightDiceModal from "./blight-dice-modal"
+import DevilRevivalModal from "./devil-revival-modal"
 import { Button } from "@/components/ui/button"
 
 // Interface for tracking last played card action for undo functionality
@@ -64,6 +69,14 @@ export default function GwanGame() {
   const [lastAction, setLastAction] = useState<LastAction | null>(null)
   const [turnEnded, setTurnEnded] = useState<boolean>(false)
   const [prevGameState, setPrevGameState] = useState<GameState | null>(null)
+  
+  // Blight cards functionality
+  const [showBlightCardSelection, setShowBlightCardSelection] = useState<boolean>(false)
+  const [showBlightCardPlay, setShowBlightCardPlay] = useState<boolean>(false)
+  const [showBlightCardTarget, setShowBlightCardTarget] = useState<boolean>(false)
+  const [showBlightDiceRoll, setShowBlightDiceRoll] = useState<boolean>(false)
+  const [showDevilRevival, setShowDevilRevival] = useState<boolean>(false)
+  const [currentBlightEffect, setCurrentBlightEffect] = useState<BlightEffect | null>(null)
 
   // Initialize the game
   useEffect(() => {
@@ -78,6 +91,14 @@ export default function GwanGame() {
     setShowDiceRoll(true)
     setMessage("Roll to determine who goes first!")
   }, [])
+  
+  // Show Blight card selection after the game has started (after dice roll)
+  useEffect(() => {
+    if (gameStarted && gameState && !gameState.blightCardsSelected) {
+      // Show Blight card selection for first player
+      setShowBlightCardSelection(true)
+    }
+  }, [gameStarted, gameState?.blightCardsSelected])
   
   // Handle dice roll completion and set the first player
   const handleDiceRollComplete = (firstPlayerIndex: number) => {
@@ -436,13 +457,13 @@ export default function GwanGame() {
   }
   
   // Handle Sniper dice roll completion (check for doubles)
-  const handleSniperDiceRoll = (results: number[], total: number) => {
+  const handleSniperDiceRoll = (results: number[], total: number, isDoubles?: boolean) => {
     if (!game || !gameState || pendingSniperCardIndex === null) return
     
-    // Check if the dice roll resulted in doubles
-    const isDoubles = results.length === 2 && results[0] === results[1]
+    // Use the provided isDoubles if available, otherwise calculate it
+    const hasDoubles = isDoubles !== undefined ? isDoubles : (results.length === 2 && results[0] === results[1])
     
-    const result = game.completeSniperPlay(playerView, pendingSniperCardIndex, results, isDoubles, pendingCardTargetRow)
+    const result = game.completeSniperPlay(playerView, pendingSniperCardIndex, results, hasDoubles, pendingCardTargetRow)
     
     if (result.success) {
       setGameState(game.getGameState())
@@ -504,6 +525,128 @@ export default function GwanGame() {
     setPlayerView(newState.currentPlayer)
     
     setMessage(`Round ${newState.currentRound} starting!`)
+  }
+  
+  // Blight Card Handling Functions
+  
+  // Handle selecting a blight card at the start of a match
+  const handleBlightCardSelection = (playerIndex: number, blightCard: BlightCard) => {
+    if (!game || !gameState) return
+    
+    const result = game.setBlightCard(playerIndex, blightCard)
+    
+    if (result.success) {
+      setGameState(game.getGameState())
+      setShowBlightCardSelection(false)
+      setMessage(result.message || `Player ${playerIndex + 1} selected a Blight card`)
+    } else {
+      setMessage(result.message || "Failed to select Blight card")
+    }
+  }
+  
+  // Handle playing a blight card
+  const handlePlayBlightCard = () => {
+    if (!game || !gameState) return
+    
+    const result = game.playBlightCard(playerView)
+    
+    if (result.success) {
+      setGameState(game.getGameState())
+      setShowBlightCardPlay(false)
+      
+      // Handle specific blight card effects that need further user input
+      if (result.requiresBlightSelection) {
+        setCurrentBlightEffect(result.blightEffect || null)
+        setShowBlightCardTarget(true)
+        setMessage("Select a target for your Blight card effect")
+      } else if (result.requiresBlightDiceRoll) {
+        setCurrentBlightEffect(result.blightEffect || null)
+        setShowBlightDiceRoll(true)
+        setMessage("Roll the dice for your Blight card effect")
+      } else {
+        setMessage(result.message || "Blight card effect completed")
+      }
+    } else {
+      setMessage(result.message || "Failed to play Blight card")
+    }
+  }
+  
+  // Handle selecting a target for blight card effect
+  const handleBlightTargetSelection = (
+    effect: BlightEffect, 
+    targetPlayerIndex: number, 
+    targetRowName?: keyof Field, 
+    targetCardIndex?: number
+  ) => {
+    if (!game || !gameState || !currentBlightEffect) return
+    
+    // When passing to game-logic, we send the current effect from state
+    const result = game.completeBlightCardTarget(
+      playerView,
+      currentBlightEffect, 
+      targetPlayerIndex, 
+      targetRowName, 
+      targetCardIndex
+    )
+    
+    if (result.success) {
+      setGameState(game.getGameState())
+      setShowBlightCardTarget(false)
+      setCurrentBlightEffect(null)
+      setMessage(result.message || "Blight card effect applied successfully")
+    } else {
+      setMessage(result.message || "Failed to apply Blight card effect")
+    }
+  }
+  
+  // Handle dice roll for blight card effect
+  const handleBlightDiceRoll = (
+    effect: BlightEffect, 
+    diceResults: number[], 
+    success: boolean
+  ) => {
+    if (!game || !gameState || !currentBlightEffect) return
+    
+    // When passing to game-logic, we send the current effect from state and undefined for optional targetRow
+    const result = game.completeBlightCardDiceRoll(
+      playerView,
+      currentBlightEffect, 
+      diceResults, 
+      success,
+      undefined // No target row for dice effects
+    )
+    
+    if (result.success) {
+      setGameState(game.getGameState())
+      setShowBlightDiceRoll(false)
+      
+      // Special handling for Devil card effect if successful
+      if (effect === BlightEffect.DEVIL && success) {
+        setShowDevilRevival(true)
+        setMessage("Select a card to revive from any discard pile")
+      } else {
+        setCurrentBlightEffect(null)
+        setMessage(result.message || "Blight card effect completed")
+      }
+    } else {
+      setMessage(result.message || "Failed to complete Blight card effect")
+    }
+  }
+  
+  // Handle reviving a card from any discard pile (Devil effect)
+  const handleDevilRevival = (playerIndex: number, cardIndex: number) => {
+    if (!game || !gameState) return
+    
+    const result = game.reviveCardFromDiscard(playerView, playerIndex, cardIndex)
+    
+    if (result.success) {
+      setGameState(game.getGameState())
+      setShowDevilRevival(false)
+      setCurrentBlightEffect(null)
+      setMessage(result.message || "Card revived from discard pile!")
+    } else {
+      setMessage(result.message || "Failed to revive card")
+    }
   }
   
   // Start a new game
@@ -651,6 +794,7 @@ export default function GwanGame() {
         switchPlayerView={switchPlayerView}
         handleUndo={handleUndo}
         canUndo={!!lastAction && !turnEnded}
+        showBlightCard={() => setShowBlightCardPlay(true)}
       />
 
       {targetRowSelection && (
@@ -736,15 +880,78 @@ export default function GwanGame() {
           card={gameState.players[playerView].hand[pendingSniperCardIndex]}
           onComplete={(diceValues, isDoubles) => {
             handleSniperDiceRoll(diceValues, diceValues.reduce((a, b) => a + b, 0), isDoubles);
-            setShowSniperDiceRoll(false);
-            setPendingSniperCardIndex(null);
-            setPendingCardTargetRow(null);
+            // The dice roll modal handles its own state
           }}
           onCancel={() => {
             setShowSniperDiceRoll(false);
             setPendingSniperCardIndex(null);
             setPendingCardTargetRow(null);
             setMessage("Card play cancelled");
+          }}
+        />
+      )}
+      
+      {/* Blight Card Selection Modal */}
+      {showBlightCardSelection && gameState && (
+        <BlightCardSelectionModal
+          open={showBlightCardSelection}
+          playerIndex={playerView}
+          onSelectCard={handleBlightCardSelection}
+          onClose={() => setShowBlightCardSelection(false)}
+        />
+      )}
+      
+      {/* Blight Card Play Modal */}
+      {showBlightCardPlay && gameState && currentPlayer.blightCard && !currentPlayer.hasUsedBlightCard && (
+        <BlightCardPlayModal
+          open={showBlightCardPlay}
+          player={currentPlayer}
+          onPlayBlightCard={handlePlayBlightCard}
+          onCancel={() => setShowBlightCardPlay(false)}
+        />
+      )}
+      
+      {/* Blight Card Target Selection Modal */}
+      {showBlightCardTarget && gameState && currentBlightEffect && (
+        <BlightCardTargetModal
+          open={showBlightCardTarget}
+          effect={currentBlightEffect}
+          playerView={playerView}
+          players={gameState.players}
+          onSelectTarget={handleBlightTargetSelection}
+          onCancel={() => {
+            setShowBlightCardTarget(false);
+            setCurrentBlightEffect(null);
+            setMessage("Blight card effect cancelled");
+          }}
+        />
+      )}
+      
+      {/* Blight Dice Roll Modal */}
+      {showBlightDiceRoll && gameState && currentBlightEffect && (
+        <BlightDiceModal
+          open={showBlightDiceRoll}
+          effect={currentBlightEffect}
+          blightCard={currentPlayer.blightCard || null}
+          onComplete={handleBlightDiceRoll}
+          onCancel={() => {
+            setShowBlightDiceRoll(false);
+            setCurrentBlightEffect(null);
+            setMessage("Blight card effect cancelled");
+          }}
+        />
+      )}
+      
+      {/* Devil Card Revival Modal */}
+      {showDevilRevival && gameState && (
+        <DevilRevivalModal
+          players={gameState.players}
+          playerView={playerView}
+          onSelectCard={handleDevilRevival}
+          onCancel={() => {
+            setShowDevilRevival(false);
+            setCurrentBlightEffect(null);
+            setMessage("Card revival cancelled");
           }}
         />
       )}

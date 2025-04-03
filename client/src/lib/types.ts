@@ -13,6 +13,26 @@ export interface Card {
   diceValue?: number;   // Value determined by dice roll for Rogue cards
 }
 
+export interface BlightCard {
+  id: string;
+  name: string;
+  description: string;
+  effect: BlightEffect;
+  used: boolean;
+  icon: string;
+}
+
+export enum BlightEffect {
+  FOOL = "fool",           // Converts opponent's Commander to your side
+  MAGICIAN = "magician",   // Roll 1D20 vs opponent's row, if roll exceeds value, destroy all cards in that row
+  LOVERS = "lovers",       // Doubles the value of target card (cannot target Commanders)
+  DEATH = "death",         // Discard your hand and draw equal number of new cards
+  WHEEL = "wheel",         // Roll 1D10 and add result to your total score
+  HANGED_MAN = "hangedMan", // Destroys a spy card on opponent's field
+  EMPEROR = "emperor",     // Returns one of your spy cards from opponent's field to your hand
+  DEVIL = "devil"          // Roll 3D6, continue rolling with dice that didn't show 6, if you get three 6's in 6 rolls, revive one card from either discard pile
+}
+
 export interface Field {
   clubs: Card[];
   spades: Card[];
@@ -27,6 +47,8 @@ export interface Player {
   roundsWon: number;
   pass: boolean;
   discardPile: Card[];
+  blightCard?: BlightCard;
+  hasUsedBlightCard: boolean;
 }
 
 export interface WeatherEffects {
@@ -41,6 +63,9 @@ export interface GameState {
   currentRound: number;
   deckCount: number;
   weatherEffects: WeatherEffects;
+  blightCardsSelected: boolean;
+  availableBlightCards: BlightCard[];
+  isBlightCardBeingPlayed: boolean;
 }
 
 export interface PlayResult {
@@ -54,4 +79,8 @@ export interface PlayResult {
   isRogueDiceRoll?: boolean;     // Needs to roll dice for Rogue card value
   isSniperDiceRoll?: boolean;    // Needs to roll dice for Sniper card effect
   sniperDoubles?: boolean;       // Indicates if Sniper rolled doubles (success)
+  isBlightCard?: boolean;        // Indicates if a Blight card was played
+  blightEffect?: BlightEffect;   // The specific Blight effect that was played
+  requiresBlightSelection?: boolean; // Indicates if user needs to select a target for the Blight card
+  requiresBlightDiceRoll?: boolean;  // Indicates if a dice roll is needed for the Blight effect
 }

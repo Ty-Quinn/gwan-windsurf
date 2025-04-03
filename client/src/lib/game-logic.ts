@@ -1,4 +1,4 @@
-import type { Card, Field, Player, GameState, WeatherEffects, PlayResult } from "./types";
+import { Card, Field, Player, GameState, WeatherEffects, PlayResult, BlightCard, BlightEffect } from "./types";
 
 export class GwanGameLogic {
   private players: Player[];
@@ -7,6 +7,8 @@ export class GwanGameLogic {
   private currentRound: number;
   private weatherEffects: WeatherEffects;
   private gameEnded: boolean;
+  private availableBlightCards: BlightCard[];
+  private isBlightCardBeingPlayed: boolean;
 
   constructor() {
     this.players = [];
@@ -19,6 +21,8 @@ export class GwanGameLogic {
       diamonds: false,
     };
     this.gameEnded = false;
+    this.availableBlightCards = [];
+    this.isBlightCardBeingPlayed = false;
   }
 
   // Initialize the game
@@ -33,6 +37,8 @@ export class GwanGameLogic {
         roundsWon: 0,
         pass: false,
         discardPile: [],
+        blightCard: undefined,
+        hasUsedBlightCard: false
       },
       {
         name: "Player 2",
@@ -42,6 +48,8 @@ export class GwanGameLogic {
         roundsWon: 0,
         pass: false,
         discardPile: [],
+        blightCard: undefined,
+        hasUsedBlightCard: false
       },
     ];
 
@@ -1149,6 +1157,425 @@ export class GwanGameLogic {
       currentRound: this.currentRound,
       deckCount: this.deck.length,
       weatherEffects: { ...this.weatherEffects },
+      blightCardsSelected: this.players.every(player => player.blightCard !== undefined),
+      availableBlightCards: this.availableBlightCards,
+      isBlightCardBeingPlayed: this.isBlightCardBeingPlayed
+    };
+  }
+  
+  // Blight Cards Logic
+
+  // Set a player's blight card
+  public setBlightCard(playerIndex: number, blightCard: BlightCard): PlayResult {
+    if (playerIndex < 0 || playerIndex >= this.players.length) {
+      return { success: false, message: "Invalid player index" };
+    }
+
+    if (this.players[playerIndex].blightCard) {
+      return { success: false, message: "Player already has a blight card" };
+    }
+
+    this.players[playerIndex].blightCard = { ...blightCard };
+    
+    return { 
+      success: true, 
+      message: `Selected ${blightCard.name} blight card for Player ${playerIndex + 1}`
+    };
+  }
+
+  // Play a blight card
+  public playBlightCard(playerIndex: number): PlayResult {
+    // Make sure it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+
+    // Check if the player has already passed
+    if (this.players[playerIndex].pass) {
+      return { success: false, message: "You have already passed" };
+    }
+
+    // Check if the player has a blight card
+    if (!this.players[playerIndex].blightCard) {
+      return { success: false, message: "You don't have a blight card" };
+    }
+
+    // Check if the player has already used their blight card
+    if (this.players[playerIndex].hasUsedBlightCard) {
+      return { success: false, message: "You've already used your blight card in this match" };
+    }
+
+    const blightCard = this.players[playerIndex].blightCard!;
+    this.isBlightCardBeingPlayed = true;
+
+    // Determine if the blight effect requires target selection or dice roll
+    let requiresSelection = false;
+    let requiresDiceRoll = false;
+
+    switch (blightCard.effect) {
+      case BlightEffect.FOOL:
+      case BlightEffect.EMPEROR:
+      case BlightEffect.HANGED_MAN:
+        // These effects require a valid target on the opponent's field
+        requiresSelection = true;
+        break;
+      
+      case BlightEffect.MAGICIAN:
+      case BlightEffect.LOVERS:
+        // These effects require user to select a target
+        requiresSelection = true;
+        break;
+      
+      case BlightEffect.WHEEL:
+      case BlightEffect.DEVIL:
+        // These effects require dice rolls
+        requiresDiceRoll = true;
+        break;
+      
+      case BlightEffect.DEATH:
+        // Death effect can be processed immediately (discard hand, draw new cards)
+        // Mark the blight card as used
+        this.players[playerIndex].hasUsedBlightCard = true;
+        this.isBlightCardBeingPlayed = false;
+        
+        // Save the current hand size
+        const handSize = this.players[playerIndex].hand.length;
+        
+        // Move all cards from hand to discard pile
+        this.players[playerIndex].discardPile.push(...this.players[playerIndex].hand);
+        
+        // Clear the hand
+        this.players[playerIndex].hand = [];
+        
+        // Draw an equal number of new cards
+        for (let i = 0; i < handSize; i++) {
+          if (this.deck.length > 0) {
+            this.players[playerIndex].hand.push(this.deck.pop()!);
+          }
+        }
+        
+        return {
+          success: true,
+          message: `Played ${blightCard.name} - Discarded your hand and drew ${this.players[playerIndex].hand.length} new cards`,
+          isBlightCard: true,
+          blightEffect: BlightEffect.DEATH
+        };
+        
+      default:
+        break;
+    }
+
+    return {
+      success: true,
+      message: "Playing blight card...",
+      isBlightCard: true,
+      blightEffect: blightCard.effect,
+      requiresBlightSelection: requiresSelection,
+      requiresBlightDiceRoll: requiresDiceRoll
+    };
+  }
+
+  // Handle blight card target selection
+  public completeBlightCardTarget(
+    playerIndex: number, 
+    effect: BlightEffect,
+    targetPlayerIndex: number,
+    targetRowName?: keyof Field,
+    targetCardIndex?: number
+  ): PlayResult {
+    // Make sure it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+
+    // Check if the player has already passed
+    if (this.players[playerIndex].pass) {
+      return { success: false, message: "You have already passed" };
+    }
+
+    // Check if the player has a blight card
+    if (!this.players[playerIndex].blightCard) {
+      return { success: false, message: "You don't have a blight card" };
+    }
+
+    // Check if the player has already used their blight card
+    if (this.players[playerIndex].hasUsedBlightCard) {
+      return { success: false, message: "You've already used your blight card" };
+    }
+
+    // Make sure we're in the process of playing a blight card
+    if (!this.isBlightCardBeingPlayed) {
+      return { success: false, message: "No blight card is being played" };
+    }
+
+    const blightCard = this.players[playerIndex].blightCard!;
+    const opponentIndex = 1 - playerIndex;
+    
+    // Mark the blight card as used
+    this.players[playerIndex].hasUsedBlightCard = true;
+    this.isBlightCardBeingPlayed = false;
+    
+    let message = "";
+
+    switch (effect) {
+      case BlightEffect.FOOL:
+        // Convert opponent's highest commander to player's side
+        if (!targetRowName || targetCardIndex === undefined) {
+          return { success: false, message: "Invalid target for The Fool effect" };
+        }
+        
+        const opponentRow = this.players[opponentIndex].field[targetRowName];
+        if (targetCardIndex < 0 || targetCardIndex >= opponentRow.length) {
+          return { success: false, message: "Invalid target card index" };
+        }
+        
+        const commanderCard = opponentRow[targetCardIndex];
+        if (!commanderCard.isCommander) {
+          return { success: false, message: "Target card is not a commander" };
+        }
+        
+        // Remove the card from opponent's field
+        opponentRow.splice(targetCardIndex, 1);
+        
+        // Add to player's field in the same row
+        this.players[playerIndex].field[targetRowName].push(commanderCard);
+        
+        message = `Used The Fool to convert opponent's ${commanderCard.value} of ${commanderCard.suit} to your side!`;
+        break;
+        
+      case BlightEffect.LOVERS:
+        // Double the value of target card (cannot target commanders)
+        if (!targetRowName || targetCardIndex === undefined) {
+          return { success: false, message: "Invalid target for The Lovers effect" };
+        }
+        
+        const targetRow = this.players[targetPlayerIndex].field[targetRowName];
+        if (targetCardIndex < 0 || targetCardIndex >= targetRow.length) {
+          return { success: false, message: "Invalid target card index" };
+        }
+        
+        const targetCard = targetRow[targetCardIndex];
+        if (targetCard.isCommander) {
+          return { success: false, message: "Cannot target commander cards with The Lovers" };
+        }
+        
+        // Double the baseValue of the card
+        targetCard.baseValue *= 2;
+        
+        message = `Used The Lovers to double the value of ${targetCard.value} of ${targetCard.suit}!`;
+        break;
+        
+      case BlightEffect.MAGICIAN:
+        // The actual effect will be completed after dice roll, just validate the target row
+        if (!targetRowName) {
+          return { success: false, message: "You must select a row for The Magician effect" };
+        }
+        
+        // Return to let the UI show the dice roll modal
+        return {
+          success: true,
+          message: "Select a row to target with The Magician",
+          isBlightCard: true,
+          blightEffect: BlightEffect.MAGICIAN,
+          requiresBlightDiceRoll: true
+        };
+                
+      case BlightEffect.HANGED_MAN:
+        // Destroy a spy card on opponent's field
+        if (!targetRowName || targetCardIndex === undefined) {
+          return { success: false, message: "Invalid target for The Hanged Man effect" };
+        }
+        
+        const opponentSpyRow = this.players[opponentIndex].field[targetRowName];
+        if (targetCardIndex < 0 || targetCardIndex >= opponentSpyRow.length) {
+          return { success: false, message: "Invalid target card index" };
+        }
+        
+        const spyCard = opponentSpyRow[targetCardIndex];
+        if (!spyCard.isSpy) {
+          return { success: false, message: "Target card is not a spy" };
+        }
+        
+        // Remove the spy card from opponent's field and add to discard pile
+        const removedSpy = opponentSpyRow.splice(targetCardIndex, 1)[0];
+        this.players[opponentIndex].discardPile.push(removedSpy);
+        
+        message = `Used The Hanged Man to destroy a spy card on opponent's ${targetRowName} row!`;
+        break;
+        
+      case BlightEffect.EMPEROR:
+        // Return one of your spy cards from opponent's field to your hand
+        if (!targetRowName || targetCardIndex === undefined) {
+          return { success: false, message: "Invalid target for The Emperor effect" };
+        }
+        
+        const opponentField = this.players[opponentIndex].field[targetRowName];
+        if (targetCardIndex < 0 || targetCardIndex >= opponentField.length) {
+          return { success: false, message: "Invalid target card index" };
+        }
+        
+        const potentialSpy = opponentField[targetCardIndex];
+        if (!potentialSpy.isSpy) {
+          return { success: false, message: "Target card is not a spy" };
+        }
+        
+        // Remove the spy card from opponent's field
+        const removedCard = opponentField.splice(targetCardIndex, 1)[0];
+        
+        // Add to player's hand
+        this.players[playerIndex].hand.push(removedCard);
+        
+        message = `Used The Emperor to return a spy card from opponent's ${targetRowName} row to your hand!`;
+        break;
+        
+      default:
+        return { success: false, message: "Unsupported blight effect for target selection" };
+    }
+
+    return {
+      success: true,
+      message,
+      isBlightCard: true,
+      blightEffect: effect
+    };
+  }
+
+  // Handle blight card dice roll completion
+  public completeBlightCardDiceRoll(
+    playerIndex: number,
+    effect: BlightEffect,
+    diceResults: number[],
+    success: boolean,
+    targetRowName?: keyof Field
+  ): PlayResult {
+    // Make sure it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+
+    // Check if the player has already passed
+    if (this.players[playerIndex].pass) {
+      return { success: false, message: "You have already passed" };
+    }
+
+    // Check if the player has a blight card
+    if (!this.players[playerIndex].blightCard) {
+      return { success: false, message: "You don't have a blight card" };
+    }
+
+    // We want to continue to process this even if the blight card has been marked as used
+    // by the target selection step before the dice roll
+    
+    const blightCard = this.players[playerIndex].blightCard!;
+    const opponentIndex = 1 - playerIndex;
+    
+    // Mark the blight card as used if not already
+    this.players[playerIndex].hasUsedBlightCard = true;
+    this.isBlightCardBeingPlayed = false;
+    
+    let message = "";
+    const diceTotal = diceResults.reduce((sum, val) => sum + val, 0);
+
+    switch (effect) {
+      case BlightEffect.MAGICIAN:
+        // Destroy all cards in a row if roll exceeds row value
+        if (!targetRowName) {
+          return { success: false, message: "No target row specified for The Magician effect" };
+        }
+        
+        const opponentRow = this.players[opponentIndex].field[targetRowName];
+        const rowValue = opponentRow.reduce((sum, card) => sum + card.baseValue, 0);
+        
+        if (diceTotal > rowValue) {
+          // Move all cards from the row to discard pile
+          this.players[opponentIndex].discardPile.push(...opponentRow);
+          
+          // Clear the row
+          this.players[opponentIndex].field[targetRowName] = [];
+          
+          message = `Used The Magician - Rolled ${diceTotal}, exceeding the ${targetRowName} row value of ${rowValue}. Destroyed all cards in that row!`;
+        } else {
+          message = `Used The Magician - Rolled ${diceTotal}, but failed to exceed the ${targetRowName} row value of ${rowValue}.`;
+        }
+        break;
+        
+      case BlightEffect.WHEEL:
+        // Add dice roll to player's score
+        this.players[playerIndex].score += diceTotal;
+        
+        message = `Used Wheel of Fortune - Rolled ${diceTotal} and added it to your score!`;
+        break;
+        
+      case BlightEffect.DEVIL:
+        // If successful (three 6's in 6 rolls), allow revival from discard pile
+        if (success) {
+          message = "Used The Devil - Successfully rolled three 6's! You can now revive a card from either discard pile.";
+          
+          // Return a result that indicates the player should select a card to revive
+          return {
+            success: true,
+            message,
+            isBlightCard: true,
+            blightEffect: effect,
+            // Signal to the UI that we need to show a special revival modal
+            requiresBlightSelection: true 
+          };
+        } else {
+          message = `Used The Devil - Failed to roll three 6's in six attempts.`;
+        }
+        break;
+        
+      default:
+        return { success: false, message: "Unsupported blight effect for dice roll" };
+    }
+
+    return {
+      success: true,
+      message,
+      isBlightCard: true,
+      blightEffect: effect
+    };
+  }
+
+  // Handle The Devil blight card revival
+  public reviveCardFromDiscard(
+    playerIndex: number,
+    sourcePlayerIndex: number,
+    discardCardIndex: number
+  ): PlayResult {
+    // Make sure it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+
+    // Check if the player has already passed
+    if (this.players[playerIndex].pass) {
+      return { success: false, message: "You have already passed" };
+    }
+
+    // Validate discard index
+    const sourcePlayer = this.players[sourcePlayerIndex];
+    if (discardCardIndex < 0 || discardCardIndex >= sourcePlayer.discardPile.length) {
+      return { success: false, message: "Invalid discard card index" };
+    }
+
+    // Get the card to revive
+    const cardToRevive = sourcePlayer.discardPile[discardCardIndex];
+    
+    // Determine which row to place the card in
+    const row = cardToRevive.suit === "hearts" ? "diamonds" : (cardToRevive.suit as keyof Field);
+    
+    // Remove from discard pile
+    sourcePlayer.discardPile.splice(discardCardIndex, 1);
+    
+    // Add to player's field
+    this.players[playerIndex].field[row].push(cardToRevive);
+    
+    return {
+      success: true,
+      message: `Revived ${cardToRevive.value} of ${cardToRevive.suit} from ${sourcePlayerIndex === playerIndex ? 'your' : 'opponent\'s'} discard pile!`,
+      isBlightCard: true,
+      blightEffect: BlightEffect.DEVIL
     };
   }
 }

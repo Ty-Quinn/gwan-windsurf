@@ -16,6 +16,7 @@ interface PlayerHandProps {
   switchPlayerView?: () => void
   handleUndo?: () => void
   canUndo?: boolean
+  showBlightCard?: () => void
 }
 
 export default function PlayerHand({
@@ -27,6 +28,7 @@ export default function PlayerHand({
   switchPlayerView,
   handleUndo,
   canUndo,
+  showBlightCard,
 }: PlayerHandProps) {
   const [justSwitched, setJustSwitched] = useState(false);
   const [showDiscardPile, setShowDiscardPile] = useState(false);
@@ -107,6 +109,43 @@ export default function PlayerHand({
               </Button>
             </motion.div>
             
+            {/* Blight Card Button */}
+            {showBlightCard && currentPlayer.blightCard && !currentPlayer.hasUsedBlightCard && isCurrentTurn && !currentPlayer.pass && (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative"
+              >
+                <Button 
+                  onClick={showBlightCard}
+                  variant="outline"
+                  className="relative bg-amber-800 text-amber-100 hover:bg-amber-700 hover:text-amber-50 border-amber-600"
+                >
+                  <span className="z-10 relative flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    Play Blight Card
+                  </span>
+                  
+                  {/* Pulse effect for Blight Card button */}
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ 
+                      scale: [1, 1.2, 1.2, 1], 
+                      opacity: [0.7, 0.5, 0.5, 0.7] 
+                    }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatType: "loop"
+                    }}
+                    className="absolute inset-0 bg-amber-600/30 rounded-md"
+                    style={{ zIndex: 0 }}
+                  />
+                </Button>
+              </motion.div>
+            )}
+            
             {switchPlayerView && (
               <AnimatePresence>
                 <motion.div
@@ -158,6 +197,15 @@ export default function PlayerHand({
               {currentPlayer.discardPile.length} cards in discard pile
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
             </div>
+            {/* Blight card info */}
+            {currentPlayer.blightCard && (
+              <div className={`mt-1 flex items-center ${currentPlayer.hasUsedBlightCard ? 'text-muted-foreground/50' : 'text-amber-500'}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                <span className="text-xs">
+                  {currentPlayer.hasUsedBlightCard ? 'Blight Card used' : currentPlayer.blightCard.name}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
