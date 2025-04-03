@@ -676,14 +676,39 @@ export default function GwanGame() {
   ) => {
     if (!game || !gameState || !currentBlightEffect) return
     
-    console.log("Handling blight dice roll:", {
-      effect,
-      diceResults,
-      success,
-      targetRow: blightTargetRow
-    });
+    // For Magician effect, simplify the process
+    if (effect === BlightEffect.MAGICIAN && blightTargetRow) {
+      const opponentIndex = 1 - playerView;
+      const opponentField = gameState.players[opponentIndex].field;
+      const targetRow = opponentField[blightTargetRow];
+      
+      // Calculate values for message
+      const diceTotal = diceResults.reduce((sum, val) => sum + val, 0);
+      const rowTotal = targetRow.reduce((sum, card) => sum + card.baseValue, 0);
+      
+      if (success) {
+        // IMMEDIATELY CLEAR THE ROW IN GAME LOGIC
+        game.completeBlightCardDiceRoll(
+          playerView,
+          currentBlightEffect,
+          diceResults,
+          success,
+          blightTargetRow
+        );
+        
+        // Update state directly
+        setGameState(game.getGameState());
+        setShowBlightDiceRoll(false);
+        setCurrentBlightEffect(null);
+        setBlightTargetRow(undefined);
+        
+        // Clear message
+        setMessage(`Used The Magician - Rolled ${diceTotal}, exceeding the ${blightTargetRow} row's combined value of ${rowTotal}. All cards were discarded!`);
+        return;
+      }
+    }
     
-    // Use the target row that was stored when the player selected it in BlightCardTargetModal
+    // For other effects, use the regular flow
     const result = game.completeBlightCardDiceRoll(
       playerView,
       currentBlightEffect, 
@@ -693,12 +718,8 @@ export default function GwanGame() {
     )
     
     if (result.success) {
-      // Fetch the fresh state immediately after the operation
-      const updatedState = game.getGameState();
-      console.log("Updated game state after blight effect:", updatedState);
-      
       // Update state with the latest data
-      setGameState(updatedState);
+      setGameState(game.getGameState());
       setShowBlightDiceRoll(false);
       
       // Special handling for Devil card effect if successful

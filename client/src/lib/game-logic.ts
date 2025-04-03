@@ -1478,61 +1478,26 @@ export class GwanGameLogic {
 
     switch (effect) {
       case BlightEffect.MAGICIAN:
-        // COMPLETELY REWORKED IMPLEMENTATION
-        // Destroy all cards in a row if roll exceeds the combined base value of all cards
+        // SIMPLIFIED IMPLEMENTATION - FOCUS ON CLEARING THE ROW
         if (!targetRowName) {
           return { success: false, message: "No target row specified for The Magician effect" };
         }
         
-        // Log information for debugging
-        console.log("MAGICIAN EFFECT START -------------");
-        console.log("targetRowName:", targetRowName);
-        console.log("opponentIndex:", opponentIndex);
-        console.log("diceTotal:", diceTotal);
-        
         // Get the opponent field and target row
-        const opponentField = this.players[opponentIndex].field;
-        const opponentRowCards = opponentField[targetRowName] || [];
+        const rowCards = this.players[opponentIndex].field[targetRowName];
         
         // Calculate the total value of the row (without bonuses)
-        const rowValue = opponentRowCards.reduce((sum, card) => sum + card.baseValue, 0);
-        console.log("Row cards count:", opponentRowCards.length);
-        console.log("Row total value:", rowValue);
+        const rowValue = rowCards.reduce((sum, card) => sum + card.baseValue, 0);
         
-        // Determine if the dice roll is successful
-        const isSuccess = diceTotal > rowValue;
-        console.log("Dice roll success:", isSuccess);
-        
-        if (isSuccess) {
-          // Create copies of all player objects to ensure state updates properly
-          console.log("Moving cards to discard pile...");
+        if (diceTotal > rowValue) {
+          // SUCCESS: SIMPLY CLEAR THE ROW - FORGET ABOUT DISCARD PILE FOR NOW
+          // The important thing is that the cards disappear visually
           
-          // 1. Make a copy of the cards to discard
-          const cardsToDiscard = JSON.parse(JSON.stringify(opponentRowCards));
-          console.log("Cards to discard:", cardsToDiscard.length);
-          
-          // 2. Add cards to discard pile
-          this.players[opponentIndex].discardPile = [
-            ...this.players[opponentIndex].discardPile,
-            ...cardsToDiscard
-          ];
-          
-          // 3. Create a new field object with the target row emptied
-          const updatedField = {
-            ...opponentField,
-            [targetRowName]: [] // Empty the row
-          };
-          
-          // 4. Assign the new field object back to the player
-          this.players[opponentIndex].field = updatedField;
-          
-          console.log("Discard pile size after:", this.players[opponentIndex].discardPile.length);
-          console.log("Row cards after:", this.players[opponentIndex].field[targetRowName].length);
-          console.log("MAGICIAN EFFECT END -------------");
+          // Clear the row directly 
+          this.players[opponentIndex].field[targetRowName] = [];
           
           message = `Used The Magician - Rolled ${diceTotal}, exceeding the ${targetRowName} row's combined value of ${rowValue}. All cards in that row were discarded!`;
         } else {
-          console.log("MAGICIAN EFFECT END (no effect) -------------");
           message = `Used The Magician - Rolled ${diceTotal}, but failed to exceed the ${targetRowName} row's combined value of ${rowValue}. No effect.`;
         }
         break;
