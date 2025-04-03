@@ -7,6 +7,7 @@ export interface Card {
   isSpy: boolean;
   isMedic: boolean;
   isJoker?: boolean;
+  isDecoy?: boolean;
 }
 
 export interface Field {
@@ -46,4 +47,5 @@ export interface PlayResult {
   roundTied?: boolean;
   gameEnded?: boolean;
   isMedicRevival?: boolean;
+  isDecoyRetrieval?: boolean;
 }

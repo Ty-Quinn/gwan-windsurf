@@ -120,12 +120,22 @@ export default function GameRulesModal({
               </ul>
             </div>
             
-            <div className="ml-4">
+            <div className="ml-4 mb-2">
               <h5 className="font-semibold text-green-400">Medic Cards (3s)</h5>
               <ul className="list-disc list-inside ml-4">
                 <li>Allow you to revive a card from your discard pile</li>
                 <li>Play to your side of the board like normal cards</li>
                 <li>After playing, choose any card from your discard pile to add to your hand</li>
+              </ul>
+            </div>
+            
+            <div className="ml-4">
+              <h5 className="font-semibold text-orange-400">Decoy Cards (4s)</h5>
+              <ul className="list-disc list-inside ml-4">
+                <li>Worth 0 points when played</li>
+                <li>Allow you to retrieve any card from your field back to your hand</li>
+                <li>Play to your side of the board like normal cards</li>
+                <li>After playing, choose any card from your field to return to your hand</li>
               </ul>
             </div>
           </div>
@@ -148,6 +158,7 @@ export default function GameRulesModal({
               <li>Row distribution: Try to spread your cards to benefit from multiple row bonuses</li>
               <li>Spy cards: Use these strategically - they help your opponent's score but let you draw more cards</li>
               <li>Joker cards: Great for late-game plays - minimal point boost to opponent but gives you card advantage</li>
+              <li>Decoy cards: Use to retrieve powerful cards back to your hand, especially when you need to reuse commanders or special cards</li>
               <li>Passing: Knowing when to pass is key - sometimes letting your opponent play more cards while you conserve yours for later rounds is beneficial</li>
             </ul>
           </div>

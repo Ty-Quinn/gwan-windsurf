@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { GameState, Card } from "@/lib/types"
+import type { GameState, Card, Field } from "@/lib/types"
 import { GwanGameLogic } from "@/lib/game-logic"
 import GameBoard from "./game-board"
 import PlayerHand from "./player-hand"
@@ -11,6 +11,7 @@ import RoundSummaryModal from "./round-summary-modal"
 import GameEndModal from "./game-end-modal"
 import GameRulesModal from "./game-rules-modal"
 import MedicRevivalModal from "./medic-revival-modal"
+import DecoyRetrievalModal from "./decoy-retrieval-modal"
 import { Button } from "@/components/ui/button"
 
 // Interface for tracking last played card action for undo functionality
@@ -40,8 +41,9 @@ export default function GwanGame() {
   const [gameWinner, setGameWinner] = useState<number | undefined>(undefined)
   const [nextRoundPending, setNextRoundPending] = useState<boolean>(false)
   
-  // Medic card functionality
+  // Special card functionality
   const [showMedicRevival, setShowMedicRevival] = useState<boolean>(false)
+  const [showDecoyRetrieval, setShowDecoyRetrieval] = useState<boolean>(false)
   
   // Undo functionality
   const [lastAction, setLastAction] = useState<LastAction | null>(null)
@@ -117,6 +119,11 @@ export default function GwanGame() {
       // If this is a medic card, show the revival modal
       if (result.isMedicRevival) {
         setShowMedicRevival(true)
+      }
+      
+      // If this is a decoy card, show the retrieval modal
+      if (result.isDecoyRetrieval) {
+        setShowDecoyRetrieval(true)
       }
       
       // Check for game end first (takes priority)
@@ -306,6 +313,36 @@ export default function GwanGame() {
       }
     } else {
       setMessage(result.message || "Failed to revive card")
+    }
+  }
+  
+  // Handle card retrieval from field for decoy card
+  const handleDecoyRetrieval = (row: keyof Field, cardIndex: number) => {
+    if (!game || !gameState) return
+    
+    const result = game.completeDecoyRetrieval(playerView, row, cardIndex)
+    
+    if (result.success) {
+      setGameState(game.getGameState())
+      setMessage(result.message || "Card retrieved from the field!")
+      setShowDecoyRetrieval(false)
+      
+      // Check for game end first (takes priority)
+      if (result.gameEnded) {
+        // If the game has ended, we need to set both the round winner and game winner
+        setRoundWinner(result.roundWinner)
+        setGameWinner(result.roundWinner)
+        setShowGameEnd(true)
+      }
+      // Otherwise check for round end
+      else if (result.roundWinner !== undefined || result.roundTied) {
+        setRoundWinner(result.roundWinner)
+        setRoundTied(result.roundTied || false)
+        setShowRoundSummary(true)
+        setNextRoundPending(true)
+      }
+    } else {
+      setMessage(result.message || "Failed to retrieve card")
     }
   }
 
@@ -526,6 +563,14 @@ export default function GwanGame() {
           player={currentPlayer}
           onSelectCard={handleMedicRevival}
           onCancel={() => setShowMedicRevival(false)}
+        />
+      )}
+      
+      {showDecoyRetrieval && (
+        <DecoyRetrievalModal
+          player={currentPlayer}
+          onSelectCard={handleDecoyRetrieval}
+          onCancel={() => setShowDecoyRetrieval(false)}
         />
       )}
     </div>

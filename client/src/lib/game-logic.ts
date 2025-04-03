@@ -114,11 +114,12 @@ export class GwanGameLogic {
         const card: Card = {
           suit,
           value,
-          baseValue,
+          baseValue: value === "4" ? 0 : baseValue, // Decoy cards worth 0 points
           isCommander: ["J", "Q", "K"].includes(value),
           isWeather: value === "A",
           isSpy: value === "5",
           isMedic: value === "3",
+          isDecoy: value === "4",
         };
         this.deck.push(card);
       }
@@ -134,7 +135,8 @@ export class GwanGameLogic {
         isWeather: false,
         isSpy: true,   // Jokers act as spy cards
         isMedic: false,
-        isJoker: true
+        isJoker: true,
+        isDecoy: false
       };
       this.deck.push(jokerCard);
     }
@@ -456,6 +458,44 @@ export class GwanGameLogic {
         isMedicRevival: true  // Signal to the UI that we need to show the revival modal
       };
     }
+    
+    // Handle decoy cards (4s)
+    if (card.isDecoy) {
+      // Check if the player has any cards on their field to retrieve
+      let hasCardsOnField = false;
+      const field = this.players[playerIndex].field;
+      
+      for (const row of Object.keys(field) as Array<keyof Field>) {
+        if (field[row].length > 0) {
+          hasCardsOnField = true;
+          break;
+        }
+      }
+      
+      if (!hasCardsOnField) {
+        return { success: false, message: "No cards on your field to retrieve" };
+      }
+      
+      // For decoy cards, we handle the retrieval process in the UI component
+      // We need to let the UI know this is a decoy card so it can prompt user to select a card to retrieve
+      
+      // Regular card placement logic for the decoy card itself
+      const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
+      
+      // Add the decoy card to the player's field
+      this.players[playerIndex].field[row].push(card);
+      
+      // Remove the decoy card from hand
+      this.players[playerIndex].hand.splice(cardIndex, 1);
+      
+      // Don't switch player yet, let the UI complete the retrieval process
+      
+      return { 
+        success: true, 
+        message: "Choose a card to retrieve from your field",
+        isDecoyRetrieval: true  // Signal to the UI that we need to show the retrieval modal
+      };
+    }
 
     // Handle regular cards
     const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
@@ -615,7 +655,8 @@ export class GwanGameLogic {
         isCommander: false,
         isWeather: false,
         isSpy: false,
-        isMedic: false
+        isMedic: false,
+        isDecoy: false
       });
     }
     
@@ -740,6 +781,84 @@ export class GwanGameLogic {
     };
   }
 
+  // Special function to complete decoy card retrieval (called from UI after user selects card)
+  public completeDecoyRetrieval(playerIndex: number, rowName: keyof Field, cardIndex: number): PlayResult {
+    // Make sure it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+    
+    // Check if the row and card index are valid
+    if (!this.players[playerIndex].field[rowName] || 
+        cardIndex < 0 || 
+        cardIndex >= this.players[playerIndex].field[rowName].length) {
+      return { success: false, message: "Invalid field card selection" };
+    }
+    
+    // Get the selected card from the field
+    const retrievedCard = this.players[playerIndex].field[rowName][cardIndex];
+    
+    // Remove the card from the field
+    this.players[playerIndex].field[rowName].splice(cardIndex, 1);
+    
+    // Add the card to player's hand
+    this.players[playerIndex].hand.push(retrievedCard);
+    
+    // Check if player has no cards left after playing the decoy
+    // Even though they just added a card, if they had 0 before, they might have 0 again after playing
+    if (this.players[playerIndex].hand.length === 0) {
+      // Calculate scores before deciding round winner
+      this.calculateScores();
+      
+      // Determine the winner of the round
+      let roundWinner: number | undefined;
+      let roundTied = false;
+      
+      if (this.players[0].score > this.players[1].score) {
+        roundWinner = 0;
+        this.players[0].roundsWon++;
+      } else if (this.players[1].score > this.players[0].score) {
+        roundWinner = 1;
+        this.players[1].roundsWon++;
+      } else {
+        roundTied = true;
+      }
+      
+      // Check if the game has ended
+      let gameEnded = false;
+      
+      if (this.players[0].roundsWon >= 2) {
+        gameEnded = true;
+      } else if (this.players[1].roundsWon >= 2) {
+        gameEnded = true;
+      } else {
+        this.currentRound++;
+      }
+      
+      // Construct result message
+      let message = `Decoy retrieved ${retrievedCard.value} of ${retrievedCard.suit} from the ${rowName} row. You're out of cards! `;
+      
+      return {
+        success: true,
+        message,
+        roundWinner,
+        roundTied,
+        gameEnded
+      };
+    }
+    
+    // If player still has cards, switch to the next player
+    // Only switch if the other player hasn't passed
+    if (!this.players[1 - playerIndex].pass) {
+      this.currentPlayer = 1 - this.currentPlayer;
+    }
+    
+    return { 
+      success: true, 
+      message: `Decoy retrieved ${retrievedCard.value} of ${retrievedCard.suit} from the ${rowName} row`
+    };
+  }
+  
   // Get the current game state
   public getGameState(): GameState {
     return {
