@@ -168,24 +168,27 @@ export class GwanGameLogic {
 
   // Deal cards to players
   private dealCards(): void {
-    const cardsPerPlayer = this.currentRound === 1 ? 10 : 1;
-
-    for (const player of this.players) {
-      // Keep existing cards in player's hand
-      const existingCards = [...player.hand];
-      
-      // Calculate how many additional cards are needed
-      const additionalCardsNeeded = Math.max(0, cardsPerPlayer - existingCards.length);
-      
-      // Deal additional cards to reach the target hand size
-      for (let i = 0; i < additionalCardsNeeded; i++) {
-        if (this.deck.length > 0) {
-          existingCards.push(this.deck.pop()!);
+    if (this.currentRound === 1) {
+      // First round - deal 10 cards to each player
+      for (const player of this.players) {
+        // Clear any existing cards
+        player.hand = [];
+        
+        // Deal 10 cards to each player
+        for (let i = 0; i < 10; i++) {
+          if (this.deck.length > 0) {
+            player.hand.push(this.deck.pop()!);
+          }
         }
       }
-      
-      // Update player's hand with retained cards plus new cards
-      player.hand = existingCards;
+    } else {
+      // Subsequent rounds - each player draws exactly 1 new card
+      for (const player of this.players) {
+        // Draw 1 new card if the deck isn't empty
+        if (this.deck.length > 0) {
+          player.hand.push(this.deck.pop()!);
+        }
+      }
     }
   }
 
