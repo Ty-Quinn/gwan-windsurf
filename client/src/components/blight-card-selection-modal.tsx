@@ -19,7 +19,7 @@ const BLIGHT_CARDS: BlightCard[] = [
   {
     id: 'the-magician',
     name: 'The Magician',
-    description: 'Roll 1D20 vs. opponent\'s row of choice. If roll exceeds row value without the row bonus added, destroy all cards in that row.',
+    description: 'Roll 1D20 vs. total value of opponent\'s row of choice. If roll exceeds the combined value of all cards in that row (without row bonus), all cards in that row are discarded.',
     effect: BlightEffect.MAGICIAN,
     used: false,
     icon: '🔮'
@@ -100,9 +100,15 @@ export default function BlightCardSelectionModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Choose Your Blight Card</DialogTitle>
+          <DialogTitle className="text-2xl">
+            {playerIndex === 0 ? "Player 1" : "Player 2"} - Choose Your Blight Card
+          </DialogTitle>
           <DialogDescription>
-            Each player secretly selects one Blight card for the entire match. Blight cards can be played once at the beginning of your turn before playing a regular card.
+            {playerIndex === 0 
+              ? "You're first to choose! Each player secretly selects one Blight card for the entire match. After you select, Player 2 will choose theirs." 
+              : "Player 1 has made their selection. Now it's your turn to choose your Blight card for the match."}
+            <br/><br/>
+            Blight cards can be used once at the beginning of your turn before playing a regular card. Choose wisely!
           </DialogDescription>
         </DialogHeader>
 

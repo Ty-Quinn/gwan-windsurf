@@ -1478,12 +1478,14 @@ export class GwanGameLogic {
 
     switch (effect) {
       case BlightEffect.MAGICIAN:
-        // Destroy all cards in a row if roll exceeds row value
+        // Destroy all cards in a row if roll exceeds the combined base value of all cards
         if (!targetRowName) {
           return { success: false, message: "No target row specified for The Magician effect" };
         }
         
         const opponentRow = this.players[opponentIndex].field[targetRowName];
+        
+        // Calculate the total base value of all cards in the row (without row bonuses)
         const rowValue = opponentRow.reduce((sum, card) => sum + card.baseValue, 0);
         
         if (diceTotal > rowValue) {
@@ -1493,9 +1495,9 @@ export class GwanGameLogic {
           // Clear the row
           this.players[opponentIndex].field[targetRowName] = [];
           
-          message = `Used The Magician - Rolled ${diceTotal}, exceeding the ${targetRowName} row value of ${rowValue}. Destroyed all cards in that row!`;
+          message = `Used The Magician - Rolled ${diceTotal}, exceeding the ${targetRowName} row's combined value of ${rowValue}. All cards in that row were discarded!`;
         } else {
-          message = `Used The Magician - Rolled ${diceTotal}, but failed to exceed the ${targetRowName} row value of ${rowValue}.`;
+          message = `Used The Magician - Rolled ${diceTotal}, but failed to exceed the ${targetRowName} row's combined value of ${rowValue}. No effect.`;
         }
         break;
         

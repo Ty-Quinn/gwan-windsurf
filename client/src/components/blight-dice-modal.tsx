@@ -101,7 +101,7 @@ export default function BlightDiceModal({
   switch (effect) {
     case BlightEffect.MAGICIAN:
       title = "The Magician - Roll d20"
-      description = "Roll a d20. If your roll exceeds the targeted row's value, all cards in that row will be destroyed."
+      description = "Roll a d20. If your roll exceeds the combined value of all cards in the targeted row (without row bonus), all cards in that row will be discarded."
       break
     case BlightEffect.WHEEL:
       title = "Wheel of Fortune - Roll d10"
@@ -166,8 +166,8 @@ export default function BlightDiceModal({
             <span className="text-xl text-muted-foreground">Target Row Value</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            If your roll exceeds the row's value, all cards in that row will be destroyed.
-            The outcome will be determined after you confirm.
+            If your roll exceeds the combined value of all cards in the row (without row bonus),
+            all cards in that row will be discarded. The outcome will be determined after you confirm.
           </p>
         </div>
       )
@@ -185,6 +185,9 @@ export default function BlightDiceModal({
             {blightCard?.icon && <span className="text-3xl">{blightCard.icon}</span>}
             {title}
           </DialogTitle>
+          {description && (
+            <p className="text-sm text-muted-foreground mt-2">{description}</p>
+          )}
         </DialogHeader>
 
         <div className="flex flex-col items-center space-y-4 py-4">

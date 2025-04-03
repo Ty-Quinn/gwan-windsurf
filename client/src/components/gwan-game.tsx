@@ -87,26 +87,52 @@ export default function GwanGame() {
     setGame(newGame)
     setGameState(newGame.getGameState())
     
-    // Show dice roll modal at the start of the game
-    setShowDiceRoll(true)
-    setMessage("Roll to determine who goes first!")
+    // Message about starting process - we'll show dice roll after Blight card selection
+    setMessage("Choose your Blight card for this match")
   }, [])
   
-  // Show Blight card selection for the current player at the start of their first turn in round 1
+  // Show dice roll only after both players have chosen their Blight cards
+  useEffect(() => {
+    if (gameState && 
+        !gameStarted && 
+        gameState.players[0].blightCard && 
+        gameState.players[1].blightCard) {
+      
+      // Both players have chosen Blight cards, now show dice roll
+      setShowDiceRoll(true)
+      setMessage("Roll to determine who goes first!")
+      
+      // Mark Blight cards as being selected for the game
+      if (game) {
+        const updatedState = {...gameState, blightCardsSelected: true}
+        game.initializeGameFromState(updatedState)
+        setGameState(updatedState)
+      }
+    }
+  }, [gameState?.players[0]?.blightCard, gameState?.players[1]?.blightCard, gameStarted])
+  
+  // Show initial Blight card selection for Player 1 when the game is first loaded
+  useEffect(() => {
+    if (gameState && gameState.currentRound === 1 && !gameStarted && !gameState.blightCardsSelected) {
+      // Player 1 selects first before any dice rolls
+      setPlayerView(0); // Ensure we're showing Player 1's view
+      setShowBlightCardSelection(true);
+    }
+  }, [gameState?.currentRound, gameStarted, gameState?.blightCardsSelected]);
+  
+  // Show Blight card selection for Player 2 after Player 1 has selected but before dice roll
   useEffect(() => {
     if (gameState && 
         gameState.currentRound === 1 && 
-        isCurrentTurn && 
-        !gameState.blightCardsSelected && 
-        !currentBlightEffect) {
-      // Check if this player has already picked a Blight card
-      const currentPlayer = gameState.players[playerView]
-      if (!currentPlayer.blightCard) {
-        // Only show selection if this player doesn't have a Blight card yet
-        setShowBlightCardSelection(true)
-      }
+        !gameStarted && 
+        !gameState.blightCardsSelected &&
+        gameState.players[0].blightCard && 
+        !gameState.players[1].blightCard) {
+      // Player 2's turn to select after Player 1 has selected
+      setPlayerView(1); // Switch to Player 2's view for selection
+      setShowBlightCardSelection(true);
     }
-  }, [gameState?.currentPlayer, gameState?.currentRound, gameState?.blightCardsSelected])
+  }, [gameState?.players[0]?.blightCard, gameState?.players[1]?.blightCard, gameStarted, gameState?.blightCardsSelected]);
   
   // Handle dice roll completion and set the first player
   const handleDiceRollComplete = (firstPlayerIndex: number) => {
