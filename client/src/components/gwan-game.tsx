@@ -13,6 +13,7 @@ import GameRulesModal from "./game-rules-modal"
 import MedicRevivalModal from "./medic-revival-modal"
 import DecoyRetrievalModal from "./decoy-retrieval-modal"
 import DiceRollModal from "./dice-roll-modal"
+import DiceRoller from "./dice-roller"
 import { Button } from "@/components/ui/button"
 
 // Interface for tracking last played card action for undo functionality
@@ -49,6 +50,13 @@ export default function GwanGame() {
   // Dice roll functionality
   const [showDiceRoll, setShowDiceRoll] = useState<boolean>(false)
   const [gameStarted, setGameStarted] = useState<boolean>(false)
+  
+  // Rogue and Sniper card states
+  const [pendingRogueCardIndex, setPendingRogueCardIndex] = useState<number | null>(null)
+  const [pendingSniperCardIndex, setPendingSniperCardIndex] = useState<number | null>(null)
+  const [pendingCardTargetRow, setPendingCardTargetRow] = useState<string | null>(null)
+  const [showRogueDiceRoll, setShowRogueDiceRoll] = useState<boolean>(false)
+  const [showSniperDiceRoll, setShowSniperDiceRoll] = useState<boolean>(false)
   
   // Undo functionality
   const [lastAction, setLastAction] = useState<LastAction | null>(null)
@@ -151,6 +159,26 @@ export default function GwanGame() {
       // If this is a decoy card, show the retrieval modal
       if (result.isDecoyRetrieval) {
         setShowDecoyRetrieval(true)
+      }
+      
+      // If this is a Rogue card, store the card details and show the dice roller
+      if (result.isRogueDiceRoll) {
+        setPendingRogueCardIndex(cardIndex)
+        setPendingCardTargetRow(targetRow)
+        setShowRogueDiceRoll(true)
+        // No need to add the card to lastAction since it hasn't been played to the field yet
+        setLastAction(null)
+        setPrevGameState(null)
+      }
+      
+      // If this is a Sniper card, store the card details and show the dice roller
+      if (result.isSniperDiceRoll) {
+        setPendingSniperCardIndex(cardIndex)
+        setPendingCardTargetRow(targetRow)
+        setShowSniperDiceRoll(true)
+        // No need to add the card to lastAction since it hasn't been played to the field yet
+        setLastAction(null)
+        setPrevGameState(null)
       }
       
       // Check for game end first (takes priority)
@@ -370,6 +398,73 @@ export default function GwanGame() {
       }
     } else {
       setMessage(result.message || "Failed to retrieve card")
+    }
+  }
+  
+  // Handle Rogue dice roll completion (use dice total as card value)
+  const handleRogueDiceRoll = (results: number[], total: number) => {
+    if (!game || !gameState || pendingRogueCardIndex === null) return
+    
+    const result = game.completeRoguePlay(playerView, pendingRogueCardIndex, total, pendingCardTargetRow)
+    
+    if (result.success) {
+      setGameState(game.getGameState())
+      setMessage(result.message || `Played Rogue card with value ${total}`)
+      setShowRogueDiceRoll(false)
+      setPendingRogueCardIndex(null)
+      setPendingCardTargetRow(null)
+      
+      // Check for game end first (takes priority)
+      if (result.gameEnded) {
+        // If the game has ended, we need to set both the round winner and game winner
+        setRoundWinner(result.roundWinner)
+        setGameWinner(result.roundWinner)
+        setShowGameEnd(true)
+      }
+      // Otherwise check for round end
+      else if (result.roundWinner !== undefined || result.roundTied) {
+        setRoundWinner(result.roundWinner)
+        setRoundTied(result.roundTied || false)
+        setShowRoundSummary(true)
+        setNextRoundPending(true)
+      }
+    } else {
+      setMessage(result.message || "Failed to play Rogue card")
+    }
+  }
+  
+  // Handle Sniper dice roll completion (check for doubles)
+  const handleSniperDiceRoll = (results: number[], total: number) => {
+    if (!game || !gameState || pendingSniperCardIndex === null) return
+    
+    // Check if the dice roll resulted in doubles
+    const isDoubles = results.length === 2 && results[0] === results[1]
+    
+    const result = game.completeSniperPlay(playerView, pendingSniperCardIndex, results, isDoubles, pendingCardTargetRow)
+    
+    if (result.success) {
+      setGameState(game.getGameState())
+      setMessage(result.message || `Played Sniper card${isDoubles ? " and eliminated opponent's highest card!" : ""}`)
+      setShowSniperDiceRoll(false)
+      setPendingSniperCardIndex(null)
+      setPendingCardTargetRow(null)
+      
+      // Check for game end first (takes priority)
+      if (result.gameEnded) {
+        // If the game has ended, we need to set both the round winner and game winner
+        setRoundWinner(result.roundWinner)
+        setGameWinner(result.roundWinner)
+        setShowGameEnd(true)
+      }
+      // Otherwise check for round end
+      else if (result.roundWinner !== undefined || result.roundTied) {
+        setRoundWinner(result.roundWinner)
+        setRoundTied(result.roundTied || false)
+        setShowRoundSummary(true)
+        setNextRoundPending(true)
+      }
+    } else {
+      setMessage(result.message || "Failed to play Sniper card")
     }
   }
 
@@ -611,6 +706,102 @@ export default function GwanGame() {
         open={showDiceRoll}
         onDiceRollComplete={handleDiceRollComplete}
       />
+      
+      {/* Dice roll for Rogue card value determination */}
+      {showRogueDiceRoll && (
+        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 bg-black z-50">
+          <div className="bg-card border rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4 text-center">Rogue Card Dice Roll</h2>
+            <p className="mb-4 text-center">Roll 2d6 to determine the card's value</p>
+            <div className="flex justify-center mb-4">
+              <div className="w-64">
+                <div className="card-illustration bg-gray-800 mb-4 rounded-md p-4 text-center">
+                  <span className="text-3xl">🎲</span>
+                </div>
+              </div>
+            </div>
+            <div className="text-center pb-4">
+              <div className="dice-container flex justify-center">
+                {/* Use DiceRoller component with 2d6 */}
+                <div className="mt-2">
+                  <div className="dice-roller-section">
+                    <div className="dice-roller-container">
+                      {/* Auto roll the dice for Rogue card */}
+                      <div className="dice-box">
+                        <div className="dice-roller">
+                          {pendingRogueCardIndex !== null && (
+                            <div>
+                              {/* Here we're using the DiceRoller component from your imports */}
+                              <DiceRoller
+                                count={2}
+                                sides={6}
+                                onRollComplete={handleRogueDiceRoll}
+                                autoRoll={false}
+                                label="Roll Dice"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p className="text-center text-sm text-gray-400 mt-2">
+              The total value of the dice will be your Rogue card's value
+            </p>
+          </div>
+        </div>
+      )}
+      
+      {/* Dice roll for Sniper card effect */}
+      {showSniperDiceRoll && (
+        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 bg-black z-50">
+          <div className="bg-card border rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4 text-center">Sniper Card Dice Roll</h2>
+            <p className="mb-4 text-center">Roll 2d6 - if you get doubles, you'll eliminate the opponent's highest card!</p>
+            <div className="flex justify-center mb-4">
+              <div className="w-64">
+                <div className="card-illustration bg-gray-800 mb-4 rounded-md p-4 text-center">
+                  <span className="text-3xl">🎯</span>
+                </div>
+              </div>
+            </div>
+            <div className="text-center pb-4">
+              <div className="dice-container flex justify-center">
+                {/* Use DiceRoller component with 2d6 */}
+                <div className="mt-2">
+                  <div className="dice-roller-section">
+                    <div className="dice-roller-container">
+                      {/* Auto roll the dice for Sniper card */}
+                      <div className="dice-box">
+                        <div className="dice-roller">
+                          {pendingSniperCardIndex !== null && (
+                            <div>
+                              {/* Here we're using the DiceRoller component from your imports */}
+                              <DiceRoller
+                                count={2}
+                                sides={6}
+                                onRollComplete={handleSniperDiceRoll}
+                                autoRoll={false}
+                                label="Roll Dice"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p className="text-center text-sm text-gray-400 mt-2">
+              If you roll doubles, your Sniper will eliminate the opponent's highest value card!
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

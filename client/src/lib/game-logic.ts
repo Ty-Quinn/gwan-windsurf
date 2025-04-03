@@ -111,15 +111,26 @@ export class GwanGameLogic {
     for (const suit of suits) {
       for (const value of values) {
         const baseValue = this.getCardBaseValue(value);
+        
+        // Determine special card properties
+        const isRogue = value === "2" && suit !== "spades"; // 2's of hearts, clubs, diamonds are Rogues
+        const isSniper = value === "2" && suit === "spades"; // 2 of spades is a Sniper
+        
         const card: Card = {
           suit,
           value,
-          baseValue: value === "4" ? 0 : baseValue, // Decoy cards worth 0 points
+          // Decoy cards and Rogue cards have 0 base value; Sniper has 2 base value
+          baseValue: value === "4" ? 0 : 
+                      isRogue ? 0 : 
+                      isSniper ? 2 : 
+                      baseValue,
           isCommander: ["J", "Q", "K"].includes(value),
           isWeather: value === "A",
           isSpy: value === "5",
           isMedic: value === "3",
           isDecoy: value === "4",
+          isRogue,
+          isSniper
         };
         this.deck.push(card);
       }
@@ -499,6 +510,32 @@ export class GwanGameLogic {
         isDecoyRetrieval: true  // Signal to the UI that we need to show the retrieval modal
       };
     }
+    
+    // Handle Rogue cards (2s of hearts, clubs, diamonds)
+    if (card.isRogue) {
+      // Need to roll dice to determine the card's value before playing
+      // We'll let the UI handle showing a dice roller and update the card value later
+      
+      // Don't remove card from hand yet, just indicate that we need a dice roll for this card
+      return {
+        success: true,
+        message: "Roll 2d6 to determine this card's value",
+        isRogueDiceRoll: true, // Signal to UI that we need to show dice roll for Rogue value
+      };
+    }
+    
+    // Handle Sniper card (2 of spades)
+    if (card.isSniper) {
+      // Need to roll dice to see if sniper effect activates
+      // We'll let the UI handle showing a dice roller for this
+      
+      // Don't remove card from hand yet, just indicate that we need a dice roll for this card
+      return {
+        success: true,
+        message: "Roll 2d6 for the Sniper. Doubles will eliminate opponent's highest card!",
+        isSniperDiceRoll: true, // Signal to UI that we need to show dice roll for Sniper
+      };
+    }
 
     // Handle regular cards
     const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
@@ -659,7 +696,9 @@ export class GwanGameLogic {
         isWeather: false,
         isSpy: false,
         isMedic: false,
-        isDecoy: false
+        isDecoy: false,
+        isRogue: false,
+        isSniper: false
       });
     }
     
@@ -678,12 +717,9 @@ export class GwanGameLogic {
 
         // Add up the values of all cards in the row
         for (const card of player.field[row]) {
-          // If there's a weather effect and the card is not a commander, its value is 1
-          if (this.weatherEffects[row] && !card.isCommander) {
-            rowScore += 1;
-          } else {
-            rowScore += card.baseValue;
-          }
+          // Use the helper method to get the correct value considering
+          // weather effects, commander status, and Rogue dice values
+          rowScore += this.calculateCardValue(card, row);
         }
 
         // Add row bonus if there are cards in the row and no weather effect
@@ -863,6 +899,258 @@ export class GwanGameLogic {
   }
   
   // Get the current game state
+  // Special function to complete Rogue card dice roll (called from UI after user rolls 2d6)
+  public completeRoguePlay(playerIndex: number, cardIndex: number, diceValue: number, targetRow: string | null = null): PlayResult {
+    // Make sure it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+    
+    // Check if the card index is valid
+    if (cardIndex < 0 || cardIndex >= this.players[playerIndex].hand.length) {
+      return { success: false, message: "Invalid card index" };
+    }
+    
+    const card = this.players[playerIndex].hand[cardIndex];
+    
+    // Make sure this is actually a Rogue card
+    if (!card.isRogue) {
+      return { success: false, message: "This is not a Rogue card" };
+    }
+    
+    // For hearts cards, we need a target row
+    if (card.suit === "hearts" && !targetRow) {
+      return { success: false, message: "You need to select a target row for hearts cards" };
+    }
+    
+    // Create a copy of the card with the dice value
+    const cardToPlay: Card = {
+      ...card,
+      diceValue: diceValue // Store the dice roll value
+    };
+    
+    // Determine which row to play to
+    const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
+    
+    // Add the card to the player's field
+    this.players[playerIndex].field[row].push(cardToPlay);
+    
+    // Remove the original card from hand
+    this.players[playerIndex].hand.splice(cardIndex, 1);
+    
+    // Check if player has run out of cards after playing this card
+    if (this.players[playerIndex].hand.length === 0) {
+      // Calculate scores before deciding round winner
+      this.calculateScores();
+      
+      // Determine the winner of the round
+      let roundWinner: number | undefined;
+      let roundTied = false;
+      
+      if (this.players[0].score > this.players[1].score) {
+        roundWinner = 0;
+        this.players[0].roundsWon++;
+      } else if (this.players[1].score > this.players[0].score) {
+        roundWinner = 1;
+        this.players[1].roundsWon++;
+      } else {
+        roundTied = true;
+      }
+      
+      // Check if the game has ended
+      let gameEnded = false;
+      
+      if (this.players[0].roundsWon >= 2) {
+        gameEnded = true;
+      } else if (this.players[1].roundsWon >= 2) {
+        gameEnded = true;
+      } else {
+        this.currentRound++;
+      }
+      
+      // Construct result message
+      let message = `Played Rogue (${card.value} of ${card.suit}) with value ${diceValue} to ${row} row. You're out of cards! `;
+      
+      return {
+        success: true,
+        message,
+        roundWinner,
+        roundTied,
+        gameEnded
+      };
+    }
+    
+    // If player still has cards, switch to the next player
+    // Only switch if the other player hasn't passed
+    if (!this.players[1 - playerIndex].pass) {
+      this.currentPlayer = 1 - this.currentPlayer;
+    }
+    
+    return { 
+      success: true, 
+      message: `Played Rogue (${card.value} of ${card.suit}) with value ${diceValue} to ${row} row` 
+    };
+  }
+  
+  // Special function to complete Sniper card dice roll (called from UI after user rolls 2d6)
+  public completeSniperPlay(playerIndex: number, cardIndex: number, diceValues: number[], isDoubles: boolean, targetRow: string | null = null): PlayResult {
+    // Make sure it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+    
+    // Check if the card index is valid
+    if (cardIndex < 0 || cardIndex >= this.players[playerIndex].hand.length) {
+      return { success: false, message: "Invalid card index" };
+    }
+    
+    const card = this.players[playerIndex].hand[cardIndex];
+    
+    // Make sure this is actually a Sniper card
+    if (!card.isSniper) {
+      return { success: false, message: "This is not a Sniper card" };
+    }
+    
+    // For hearts cards, we need a target row
+    if (card.suit === "hearts" && !targetRow) {
+      return { success: false, message: "You need to select a target row for hearts cards" };
+    }
+    
+    // Calculate the total dice value
+    const totalDiceValue = diceValues.reduce((sum, val) => sum + val, 0);
+    
+    // If doubles were rolled, remove the highest card from opponent's field
+    const opponentIndex = 1 - playerIndex;
+    let removedCard: Card | null = null;
+    
+    if (isDoubles) {
+      // Find the highest card on the opponent's field
+      let highestCard: Card | null = null;
+      let highestCardRow: keyof Field | null = null;
+      let highestCardIndex = -1;
+      let highestValue = -1;
+      
+      for (const row of ["clubs", "spades", "diamonds"] as const) {
+        for (let i = 0; i < this.players[opponentIndex].field[row].length; i++) {
+          const fieldCard = this.players[opponentIndex].field[row][i];
+          
+          // Calculate the effective value of the card with weather effects
+          let effectiveValue = this.weatherEffects[row] && !fieldCard.isCommander ? 1 : fieldCard.baseValue;
+          
+          // For Rogue cards, use their dice value
+          if (fieldCard.isRogue && fieldCard.diceValue) {
+            effectiveValue = fieldCard.diceValue;
+          }
+          
+          if (effectiveValue > highestValue) {
+            highestValue = effectiveValue;
+            highestCard = fieldCard;
+            highestCardRow = row;
+            highestCardIndex = i;
+          }
+        }
+      }
+      
+      // If a highest card was found, remove it and add to opponent's discard pile
+      if (highestCard && highestCardRow !== null && highestCardIndex !== -1) {
+        removedCard = this.players[opponentIndex].field[highestCardRow][highestCardIndex];
+        this.players[opponentIndex].field[highestCardRow].splice(highestCardIndex, 1);
+        this.players[opponentIndex].discardPile.push(removedCard);
+      }
+    }
+    
+    // Determine which row to play the Sniper card to
+    const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
+    
+    // Add the Sniper card to the player's field
+    this.players[playerIndex].field[row].push(card);
+    
+    // Remove the card from hand
+    this.players[playerIndex].hand.splice(cardIndex, 1);
+    
+    // Check if player has run out of cards after playing this card
+    if (this.players[playerIndex].hand.length === 0) {
+      // Calculate scores before deciding round winner
+      this.calculateScores();
+      
+      // Determine the winner of the round
+      let roundWinner: number | undefined;
+      let roundTied = false;
+      
+      if (this.players[0].score > this.players[1].score) {
+        roundWinner = 0;
+        this.players[0].roundsWon++;
+      } else if (this.players[1].score > this.players[0].score) {
+        roundWinner = 1;
+        this.players[1].roundsWon++;
+      } else {
+        roundTied = true;
+      }
+      
+      // Check if the game has ended
+      let gameEnded = false;
+      
+      if (this.players[0].roundsWon >= 2) {
+        gameEnded = true;
+      } else if (this.players[1].roundsWon >= 2) {
+        gameEnded = true;
+      } else {
+        this.currentRound++;
+      }
+      
+      // Construct result message
+      let message = `Played Sniper (${card.value} of ${card.suit}) to ${row} row. `;
+      if (removedCard) {
+        message += `Sniper eliminated opponent's ${removedCard.value} of ${removedCard.suit}! `;
+      }
+      message += `You're out of cards! `;
+      
+      return {
+        success: true,
+        message,
+        roundWinner,
+        roundTied,
+        gameEnded
+      };
+    }
+    
+    // If player still has cards, switch to the next player
+    // Only switch if the other player hasn't passed
+    if (!this.players[1 - playerIndex].pass) {
+      this.currentPlayer = 1 - this.currentPlayer;
+    }
+    
+    // Construct success message
+    let message = `Played Sniper (${card.value} of ${card.suit}) to ${row} row. `;
+    if (removedCard) {
+      message += `Rolled doubles (${diceValues.join(', ')})! Sniper eliminated opponent's ${removedCard.value} of ${removedCard.suit}!`;
+    } else {
+      message += `Rolled (${diceValues.join(', ')}). No doubles, no target eliminated.`;
+    }
+    
+    return { 
+      success: true, 
+      message,
+      sniperDoubles: isDoubles 
+    };
+  }
+  
+  // Calculate score with weather effects and Rogue card dice values taken into account
+  private calculateCardValue(card: Card, rowName: keyof Field): number {
+    // If it's a weather-affected row and not a commander card, return 1
+    if (this.weatherEffects[rowName] && !card.isCommander) {
+      return 1;
+    }
+    
+    // If it's a Rogue card with a dice value, return the dice value
+    if (card.isRogue && card.diceValue !== undefined) {
+      return card.diceValue;
+    }
+    
+    // Otherwise return the base value
+    return card.baseValue;
+  }
+  
   public getGameState(): GameState {
     return {
       players: this.players.map((player) => ({ ...player })),

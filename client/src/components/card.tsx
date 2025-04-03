@@ -71,6 +71,8 @@ export default function CardComponent({
     if (card.isSpy && !card.isJoker) return { border: "border-blue-500", text: "text-blue-400", label: "Spy", value: 0 }
     if (card.isDecoy) return { border: "border-orange-500", text: "text-orange-400", label: "Decoy", value: 0 }
     if (card.isMedic) return { border: "border-green-500", text: "text-green-400", label: "Medic", value: 3 }
+    if (card.isRogue) return { border: "border-amber-500", text: "text-amber-400", label: "Rogue", value: card.diceValue || "?" }
+    if (card.isSniper) return { border: "border-indigo-500", text: "text-indigo-400", label: "Sniper", value: 2 }
     if (card.suit === "hearts") return { border: "border-purple-500", text: "text-white", label: "", value: 0 } // Removed "Flexible" text
     return { border: "", text: "text-white", label: "", value: 0 }
   }
@@ -146,7 +148,7 @@ export default function CardComponent({
       {cardType.label && (
         <div className="absolute bottom-0 left-0 right-0 text-center text-xs py-1 bg-black/60">
           <span className={cardType.text}>{cardType.label}</span>
-          {cardType.value > 0 && <span> ({cardType.value})</span>}
+          {cardType.value !== 0 && cardType.value !== "?" && <span> ({cardType.value})</span>}
         </div>
       )}
     </div>

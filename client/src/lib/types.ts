@@ -8,6 +8,9 @@ export interface Card {
   isMedic: boolean;
   isJoker?: boolean;
   isDecoy?: boolean;
+  isRogue?: boolean;    // 2 of hearts, clubs, diamonds - dice roll determines value
+  isSniper?: boolean;   // 2 of spades - can remove opponent's highest card on doubles
+  diceValue?: number;   // Value determined by dice roll for Rogue cards
 }
 
 export interface Field {
@@ -48,4 +51,7 @@ export interface PlayResult {
   gameEnded?: boolean;
   isMedicRevival?: boolean;
   isDecoyRetrieval?: boolean;
+  isRogueDiceRoll?: boolean;     // Needs to roll dice for Rogue card value
+  isSniperDiceRoll?: boolean;    // Needs to roll dice for Sniper card effect
+  sniperDoubles?: boolean;       // Indicates if Sniper rolled doubles (success)
 }
