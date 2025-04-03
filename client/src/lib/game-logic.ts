@@ -922,7 +922,7 @@ export class GwanGameLogic {
       return { success: false, message: "You need to select a target row for hearts cards" };
     }
 
-    // Create a copy of the card with the dice value
+    // Create a copy of thecard with the dice value
     const cardToPlay: Card = {
       ...card,
       diceValue: diceValue // Store the dice roll value
@@ -1500,18 +1500,16 @@ export class GwanGameLogic {
           if (targetRow.length > 0) {
             // Create a deep copy of all cards in the row
             const cardsToDiscard = [...targetRow];
-            
-            // Add cards to discard pile
+
+            // Clear the row first
+            targetField[targetRowName].length = 0;
+
+            // Then add cards to discard pile
             this.players[opponentIndex].discardPile.push(...cardsToDiscard);
-            
-            // Important: Clear the row by using splice to remove all elements
-            // This is a more reliable way to ensure the array is emptied
-            this.players[opponentIndex].field[targetRowName].splice(0, this.players[opponentIndex].field[targetRowName].length);
-            
-            // Double-check that the row is now empty
+
             console.log("Target row AFTER effect:", targetRowName, 
-                        "cards:", this.players[opponentIndex].field[targetRowName],
-                        "discarded:", cardsToDiscard.length);
+                      "cards:", targetField[targetRowName],
+                      "discarded:", cardsToDiscard.length);
           }
 
           message = `Used The Magician - Rolled ${diceTotal}, exceeding the ${targetRowName} row's combined value of ${rowValue}. All cards in that row were discarded!`;

@@ -61,6 +61,9 @@ export default function MagicianEffectModal({
   
   // Handle dice roll completion
   const handleDiceRollComplete = (results: number[], total: number) => {
+    // Only process the first roll
+    if (diceRolled) return;
+    
     setDiceResults(results)
     setRollTotal(total)
     setDiceRolled(true)
@@ -77,6 +80,11 @@ export default function MagicianEffectModal({
       success: rollSucceeded,
       selectedRow
     });
+    
+    // Immediately complete the effect after the roll
+    if (selectedRow) {
+      onComplete(opponentIndex, selectedRow, results, rollSucceeded);
+    }
   }
   
   // Handle completion of the effect
