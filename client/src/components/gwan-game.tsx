@@ -110,6 +110,21 @@ export default function GwanGame() {
         setShowMedicRevival(true)
       }
       
+      // Check for game end first (takes priority)
+      if (result.gameEnded) {
+        // If the game has ended, we need to set both the round winner and game winner
+        setRoundWinner(result.roundWinner)
+        setGameWinner(result.roundWinner)
+        setShowGameEnd(true)
+      }
+      // Otherwise check for round end
+      else if (result.roundWinner !== undefined || result.roundTied) {
+        setRoundWinner(result.roundWinner)
+        setRoundTied(result.roundTied || false)
+        setShowRoundSummary(true)
+        setNextRoundPending(true)
+      }
+      
       // Log for debugging
       console.log("Card played, undo available:", !turnEnded && !!lastAction)
     } else {
@@ -225,17 +240,19 @@ export default function GwanGame() {
       setPrevGameState(null)
       setLastAction(null)
 
-      // Check for round end
-      if (result.roundWinner !== undefined || result.roundTied) {
+      // Check for game end first (takes priority)
+      if (result.gameEnded) {
+        // If the game has ended, we need to set both the round winner and game winner
+        setRoundWinner(result.roundWinner)
+        setGameWinner(result.roundWinner)
+        setShowGameEnd(true)
+      }
+      // Otherwise check for round end
+      else if (result.roundWinner !== undefined || result.roundTied) {
         setRoundWinner(result.roundWinner)
         setRoundTied(result.roundTied || false)
         setShowRoundSummary(true)
         setNextRoundPending(true)
-      }
-      // Check for game end
-      else if (result.gameEnded) {
-        setGameWinner(result.roundWinner)
-        setShowGameEnd(true)
       }
       // If round isn't over, automatically switch to the other player
       else {
@@ -263,6 +280,21 @@ export default function GwanGame() {
       setGameState(game.getGameState())
       setMessage(result.message || "Card revived from discard pile!")
       setShowMedicRevival(false)
+      
+      // Check for game end first (takes priority)
+      if (result.gameEnded) {
+        // If the game has ended, we need to set both the round winner and game winner
+        setRoundWinner(result.roundWinner)
+        setGameWinner(result.roundWinner)
+        setShowGameEnd(true)
+      }
+      // Otherwise check for round end
+      else if (result.roundWinner !== undefined || result.roundTied) {
+        setRoundWinner(result.roundWinner)
+        setRoundTied(result.roundTied || false)
+        setShowRoundSummary(true)
+        setNextRoundPending(true)
+      }
     } else {
       setMessage(result.message || "Failed to revive card")
     }
