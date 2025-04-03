@@ -79,11 +79,11 @@ export class GwanGameLogic {
         // Clear the field
         player.field[row] = [];
       }
-      
+
       // Reset score and pass status
       player.score = 0;
       player.pass = false;
-      
+
       // Note: We don't clear the hand - players keep their unplayed cards
     }
 
@@ -119,11 +119,11 @@ export class GwanGameLogic {
     for (const suit of suits) {
       for (const value of values) {
         const baseValue = this.getCardBaseValue(value);
-        
+
         // Determine special card properties
         const isRogue = value === "2" && suit !== "spades"; // 2's of hearts, clubs, diamonds are Rogues
         const isSniper = value === "2" && suit === "spades"; // 2 of spades is a Sniper
-        
+
         const card: Card = {
           suit,
           value,
@@ -143,7 +143,7 @@ export class GwanGameLogic {
         this.deck.push(card);
       }
     }
-    
+
     // Add Joker cards (2 of them)
     for (let i = 0; i < 2; i++) {
       const jokerCard: Card = {
@@ -192,7 +192,7 @@ export class GwanGameLogic {
       for (const player of this.players) {
         // Clear any existing cards
         player.hand = [];
-        
+
         // Deal 10 cards to each player
         for (let i = 0; i < 10; i++) {
           if (this.deck.length > 0) {
@@ -253,11 +253,11 @@ export class GwanGameLogic {
       if (this.players[playerIndex].hand.length === 0) {
         // Calculate scores before deciding round winner
         this.calculateScores();
-        
+
         // Determine the winner of the round
         let roundWinner: number | undefined;
         let roundTied = false;
-        
+
         if (this.players[0].score > this.players[1].score) {
           roundWinner = 0;
           this.players[0].roundsWon++;
@@ -267,10 +267,10 @@ export class GwanGameLogic {
         } else {
           roundTied = true;
         }
-        
+
         // Check if the game has ended
         let gameEnded = false;
-        
+
         if (this.players[0].roundsWon >= 2) {
           gameEnded = true;
         } else if (this.players[1].roundsWon >= 2) {
@@ -278,10 +278,10 @@ export class GwanGameLogic {
         } else {
           this.currentRound++;
         }
-        
+
         // Construct result message
         let message = `Cleared weather from ${targetRow} row. You're out of cards! `;
-        
+
         return {
           success: true,
           message,
@@ -314,11 +314,11 @@ export class GwanGameLogic {
       if (this.players[playerIndex].hand.length === 0) {
         // Calculate scores before deciding round winner
         this.calculateScores();
-        
+
         // Determine the winner of the round
         let roundWinner: number | undefined;
         let roundTied = false;
-        
+
         if (this.players[0].score > this.players[1].score) {
           roundWinner = 0;
           this.players[0].roundsWon++;
@@ -328,10 +328,10 @@ export class GwanGameLogic {
         } else {
           roundTied = true;
         }
-        
+
         // Check if the game has ended
         let gameEnded = false;
-        
+
         if (this.players[0].roundsWon >= 2) {
           gameEnded = true;
         } else if (this.players[1].roundsWon >= 2) {
@@ -339,10 +339,10 @@ export class GwanGameLogic {
         } else {
           this.currentRound++;
         }
-        
+
         // Construct result message
         let message = `Applied weather effect to ${card.suit} row. You're out of cards! `;
-        
+
         return {
           success: true,
           message,
@@ -364,12 +364,12 @@ export class GwanGameLogic {
     // Handle spy cards (5s) and Joker cards
     if (card.isSpy) {
       const opponentIndex = 1 - playerIndex;
-      
+
       // For Joker cards, the player needs to specify a target row
       if (card.isJoker && !targetRow) {
         return { success: false, message: "You need to select a target row for Joker cards" };
       }
-      
+
       // Determine which row to play the card to
       const row = card.suit === "hearts" || card.isJoker
         ? (targetRow as keyof Field)
@@ -401,11 +401,11 @@ export class GwanGameLogic {
       if (this.players[playerIndex].hand.length === 0) {
         // Calculate scores before deciding round winner
         this.calculateScores();
-        
+
         // Determine the winner of the round
         let roundWinner: number | undefined;
         let roundTied = false;
-        
+
         if (this.players[0].score > this.players[1].score) {
           roundWinner = 0;
           this.players[0].roundsWon++;
@@ -415,10 +415,10 @@ export class GwanGameLogic {
         } else {
           roundTied = true;
         }
-        
+
         // Check if the game has ended
         let gameEnded = false;
-        
+
         if (this.players[0].roundsWon >= 2) {
           gameEnded = true;
         } else if (this.players[1].roundsWon >= 2) {
@@ -426,11 +426,11 @@ export class GwanGameLogic {
         } else {
           this.currentRound++;
         }
-        
+
         // Construct result message
         let cardType = card.isJoker ? "Joker" : "spy card";
         let message = `Played ${cardType} to opponent's ${row} row. You're out of cards! `;
-        
+
         return {
           success: true,
           message,
@@ -450,80 +450,80 @@ export class GwanGameLogic {
       let cardType = card.isJoker ? "Joker" : "spy card";
       return { success: true, message: `Played ${cardType} to opponent's ${row} row and drew 2 cards` };
     }
-    
+
     // Handle medic cards (3s)
     if (card.isMedic) {
       // Check if player has any cards in their discard pile
       if (this.players[playerIndex].discardPile.length === 0) {
         return { success: false, message: "No cards in your discard pile to revive" };
       }
-      
+
       // For medic cards, we handle the revival process in the UI component
       // We need to let the UI know this is a medic card so it can prompt user to select a card to revive
       // The actual card placement will be handled separately
-      
+
       // Regular card placement logic for the medic card itself
       const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
-      
+
       // Add the medic card to the player's field
       this.players[playerIndex].field[row].push(card);
-      
+
       // Remove the medic card from hand
       this.players[playerIndex].hand.splice(cardIndex, 1);
-      
+
       // Don't switch player yet, let the UI complete the revival process
       // This is different from other cards - we'll switch player after revival is complete
-      
+
       return { 
         success: true, 
         message: "Choose a card to revive from your discard pile",
         isMedicRevival: true  // Signal to the UI that we need to show the revival modal
       };
     }
-    
+
     // Handle decoy cards (4s)
     if (card.isDecoy) {
       // Check if the player has any cards on their field to retrieve
       let hasCardsOnField = false;
       const field = this.players[playerIndex].field;
-      
+
       for (const row of Object.keys(field) as Array<keyof Field>) {
         if (field[row].length > 0) {
           hasCardsOnField = true;
           break;
         }
       }
-      
+
       if (!hasCardsOnField) {
         return { success: false, message: "No cards on your field to retrieve" };
       }
-      
+
       // For decoy cards, we handle the retrieval process in the UI component
       // We need to let the UI know this is a decoy card so it can prompt user to select a card to retrieve
-      
+
       // Regular card placement logic for the decoy card itself
       const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
-      
+
       // Add the decoy card to the player's field
       this.players[playerIndex].field[row].push(card);
-      
+
       // Remove the decoy card from hand
       this.players[playerIndex].hand.splice(cardIndex, 1);
-      
+
       // Don't switch player yet, let the UI complete the retrieval process
-      
+
       return { 
         success: true, 
         message: "Choose a card to retrieve from your field",
         isDecoyRetrieval: true  // Signal to the UI that we need to show the retrieval modal
       };
     }
-    
+
     // Handle Rogue cards (2s of hearts, clubs, diamonds)
     if (card.isRogue) {
       // Need to roll dice to determine the card's value before playing
       // We'll let the UI handle showing a dice roller and update the card value later
-      
+
       // Don't remove card from hand yet, just indicate that we need a dice roll for this card
       return {
         success: true,
@@ -531,12 +531,12 @@ export class GwanGameLogic {
         isRogueDiceRoll: true, // Signal to UI that we need to show dice roll for Rogue value
       };
     }
-    
+
     // Handle Sniper card (2 of spades)
     if (card.isSniper) {
       // Need to roll dice to see if sniper effect activates
       // We'll let the UI handle showing a dice roller for this
-      
+
       // Don't remove card from hand yet, just indicate that we need a dice roll for this card
       return {
         success: true,
@@ -558,11 +558,11 @@ export class GwanGameLogic {
     if (this.players[playerIndex].hand.length === 0) {
       // Calculate scores before deciding round winner
       this.calculateScores();
-      
+
       // Determine the winner of the round
       let roundWinner: number | undefined;
       let roundTied = false;
-      
+
       if (this.players[0].score > this.players[1].score) {
         roundWinner = 0;
         this.players[0].roundsWon++;
@@ -572,10 +572,10 @@ export class GwanGameLogic {
       } else {
         roundTied = true;
       }
-      
+
       // Check if the game has ended
       let gameEnded = false;
-      
+
       if (this.players[0].roundsWon >= 2) {
         gameEnded = true;
       } else if (this.players[1].roundsWon >= 2) {
@@ -583,10 +583,10 @@ export class GwanGameLogic {
       } else {
         this.currentRound++;
       }
-      
+
       // Construct result message
       let message = `Played ${card.value} of ${card.suit} to ${row} row. You're out of cards! `;
-      
+
       return {
         success: true,
         message,
@@ -691,16 +691,16 @@ export class GwanGameLogic {
     this.currentPlayer = state.currentPlayer;
     this.currentRound = state.currentRound;
     this.weatherEffects = JSON.parse(JSON.stringify(state.weatherEffects));
-    
+
     // Create a proper deck and shuffle it
     this.createDeck();
     this.shuffleDeck();
-    
+
     // Trim the deck to match the expected count
     if (this.deck.length > state.deckCount) {
       this.deck = this.deck.slice(0, state.deckCount);
     }
-    
+
     this.gameEnded = false;
   }
 
@@ -749,31 +749,31 @@ export class GwanGameLogic {
     if (playerIndex !== this.currentPlayer) {
       return { success: false, message: "It's not your turn" };
     }
-    
+
     // Check if the discard index is valid
     if (discardIndex < 0 || discardIndex >= this.players[playerIndex].discardPile.length) {
       return { success: false, message: "Invalid discard card index" };
     }
-    
+
     // Get the selected card from the discard pile
     const revivedCard = this.players[playerIndex].discardPile[discardIndex];
-    
+
     // Remove the card from the discard pile
     this.players[playerIndex].discardPile.splice(discardIndex, 1);
-    
+
     // Add the card to player's hand
     this.players[playerIndex].hand.push(revivedCard);
-    
+
     // Check if player has no cards left after playing the medic
     // Even though they just added a card, if they had 0 before, they might have 0 again after playing
     if (this.players[playerIndex].hand.length === 0) {
       // Calculate scores before deciding round winner
       this.calculateScores();
-      
+
       // Determine the winner of the round
       let roundWinner: number | undefined;
       let roundTied = false;
-      
+
       if (this.players[0].score > this.players[1].score) {
         roundWinner = 0;
         this.players[0].roundsWon++;
@@ -783,10 +783,10 @@ export class GwanGameLogic {
       } else {
         roundTied = true;
       }
-      
+
       // Check if the game has ended
       let gameEnded = false;
-      
+
       if (this.players[0].roundsWon >= 2) {
         gameEnded = true;
       } else if (this.players[1].roundsWon >= 2) {
@@ -794,10 +794,10 @@ export class GwanGameLogic {
       } else {
         this.currentRound++;
       }
-      
+
       // Construct result message
       let message = `Medic revived ${revivedCard.value} of ${revivedCard.suit} from your discard pile. You're out of cards! `;
-      
+
       return {
         success: true,
         message,
@@ -806,13 +806,13 @@ export class GwanGameLogic {
         gameEnded
       };
     }
-    
+
     // If player still has cards, switch to the next player
     // Only switch if the other player hasn't passed
     if (!this.players[1 - playerIndex].pass) {
       this.currentPlayer = 1 - this.currentPlayer;
     }
-    
+
     return { 
       success: true, 
       message: `Medic revived ${revivedCard.value} of ${revivedCard.suit} from your discard pile`
@@ -825,33 +825,33 @@ export class GwanGameLogic {
     if (playerIndex !== this.currentPlayer) {
       return { success: false, message: "It's not your turn" };
     }
-    
+
     // Check if the row and card index are valid
     if (!this.players[playerIndex].field[rowName] || 
         cardIndex < 0 || 
         cardIndex >= this.players[playerIndex].field[rowName].length) {
       return { success: false, message: "Invalid field card selection" };
     }
-    
+
     // Get the selected card from the field
     const retrievedCard = this.players[playerIndex].field[rowName][cardIndex];
-    
+
     // Remove the card from the field
     this.players[playerIndex].field[rowName].splice(cardIndex, 1);
-    
+
     // Add the card to player's hand
     this.players[playerIndex].hand.push(retrievedCard);
-    
+
     // Check if player has no cards left after playing the decoy
     // Even though they just added a card, if they had 0 before, they might have 0 again after playing
     if (this.players[playerIndex].hand.length === 0) {
       // Calculate scores before deciding round winner
       this.calculateScores();
-      
+
       // Determine the winner of the round
       let roundWinner: number | undefined;
       let roundTied = false;
-      
+
       if (this.players[0].score > this.players[1].score) {
         roundWinner = 0;
         this.players[0].roundsWon++;
@@ -861,10 +861,10 @@ export class GwanGameLogic {
       } else {
         roundTied = true;
       }
-      
+
       // Check if the game has ended
       let gameEnded = false;
-      
+
       if (this.players[0].roundsWon >= 2) {
         gameEnded = true;
       } else if (this.players[1].roundsWon >= 2) {
@@ -872,10 +872,10 @@ export class GwanGameLogic {
       } else {
         this.currentRound++;
       }
-      
+
       // Construct result message
       let message = `Decoy retrieved ${retrievedCard.value} of ${retrievedCard.suit} from the ${rowName} row. You're out of cards! `;
-      
+
       return {
         success: true,
         message,
@@ -884,19 +884,19 @@ export class GwanGameLogic {
         gameEnded
       };
     }
-    
+
     // If player still has cards, switch to the next player
     // Only switch if the other player hasn't passed
     if (!this.players[1 - playerIndex].pass) {
       this.currentPlayer = 1 - this.currentPlayer;
     }
-    
+
     return { 
       success: true, 
       message: `Decoy retrieved ${retrievedCard.value} of ${retrievedCard.suit} from the ${rowName} row`
     };
   }
-  
+
   // Get the current game state
   // Special function to complete Rogue card dice roll (called from UI after user rolls 2d6)
   public completeRoguePlay(playerIndex: number, cardIndex: number, diceValue: number, targetRow: string | null = null): PlayResult {
@@ -904,48 +904,48 @@ export class GwanGameLogic {
     if (playerIndex !== this.currentPlayer) {
       return { success: false, message: "It's not your turn" };
     }
-    
+
     // Check if the card index is valid
     if (cardIndex < 0 || cardIndex >= this.players[playerIndex].hand.length) {
       return { success: false, message: "Invalid card index" };
     }
-    
+
     const card = this.players[playerIndex].hand[cardIndex];
-    
+
     // Make sure this is actually a Rogue card
     if (!card.isRogue) {
       return { success: false, message: "This is not a Rogue card" };
     }
-    
+
     // For hearts cards, we need a target row
     if (card.suit === "hearts" && !targetRow) {
-      return { success: false, message: "You need to select a target row for hearts cards" };
+      return { success: falsemessage: "You need to select a target row for hearts cards" };
     }
-    
+
     // Create a copy of the card with the dice value
     const cardToPlay: Card = {
       ...card,
       diceValue: diceValue // Store the dice roll value
     };
-    
+
     // Determine which row to play to
     const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
-    
+
     // Add the card to the player's field
     this.players[playerIndex].field[row].push(cardToPlay);
-    
+
     // Remove the original card from hand
     this.players[playerIndex].hand.splice(cardIndex, 1);
-    
+
     // Check if player has run out of cards after playing this card
     if (this.players[playerIndex].hand.length === 0) {
       // Calculate scores before deciding round winner
       this.calculateScores();
-      
+
       // Determine the winner of the round
       let roundWinner: number | undefined;
       let roundTied = false;
-      
+
       if (this.players[0].score > this.players[1].score) {
         roundWinner = 0;
         this.players[0].roundsWon++;
@@ -955,10 +955,10 @@ export class GwanGameLogic {
       } else {
         roundTied = true;
       }
-      
+
       // Check if the game has ended
       let gameEnded = false;
-      
+
       if (this.players[0].roundsWon >= 2) {
         gameEnded = true;
       } else if (this.players[1].roundsWon >= 2) {
@@ -966,10 +966,10 @@ export class GwanGameLogic {
       } else {
         this.currentRound++;
       }
-      
+
       // Construct result message
       let message = `Played Rogue (${card.value} of ${card.suit}) with value ${diceValue} to ${row} row. You're out of cards! `;
-      
+
       return {
         success: true,
         message,
@@ -978,69 +978,69 @@ export class GwanGameLogic {
         gameEnded
       };
     }
-    
+
     // If player still has cards, switch to the next player
     // Only switch if the other player hasn't passed
     if (!this.players[1 - playerIndex].pass) {
       this.currentPlayer = 1 - this.currentPlayer;
     }
-    
+
     return { 
       success: true, 
       message: `Played Rogue (${card.value} of ${card.suit}) with value ${diceValue} to ${row} row` 
     };
   }
-  
+
   // Special function to complete Sniper card dice roll (called from UI after user rolls 2d6)
   public completeSniperPlay(playerIndex: number, cardIndex: number, diceValues: number[], isDoubles: boolean, targetRow: string | null = null): PlayResult {
     // Make sure it's the player's turn
     if (playerIndex !== this.currentPlayer) {
       return { success: false, message: "It's not your turn" };
     }
-    
+
     // Check if the card index is valid
     if (cardIndex < 0 || cardIndex >= this.players[playerIndex].hand.length) {
       return { success: false, message: "Invalid card index" };
     }
-    
+
     const card = this.players[playerIndex].hand[cardIndex];
-    
+
     // Make sure this is actually a Sniper card
     if (!card.isSniper) {
       return { success: false, message: "This is not a Sniper card" };
     }
-    
+
     // For hearts cards, we need a target row
     if (card.suit === "hearts" && !targetRow) {
       return { success: false, message: "You need to select a target row for hearts cards" };
     }
-    
+
     // Calculate the total dice value
     const totalDiceValue = diceValues.reduce((sum, val) => sum + val, 0);
-    
+
     // If doubles were rolled, remove the highest card from opponent's field
     const opponentIndex = 1 - playerIndex;
     let removedCard: Card | null = null;
-    
+
     if (isDoubles) {
       // Find the highest card on the opponent's field
       let highestCard: Card | null = null;
       let highestCardRow: keyof Field | null = null;
       let highestCardIndex = -1;
       let highestValue = -1;
-      
+
       for (const row of ["clubs", "spades", "diamonds"] as const) {
         for (let i = 0; i < this.players[opponentIndex].field[row].length; i++) {
           const fieldCard = this.players[opponentIndex].field[row][i];
-          
+
           // Calculate the effective value of the card with weather effects
           let effectiveValue = this.weatherEffects[row] && !fieldCard.isCommander ? 1 : fieldCard.baseValue;
-          
+
           // For Rogue cards, use their dice value
           if (fieldCard.isRogue && fieldCard.diceValue) {
             effectiveValue = fieldCard.diceValue;
           }
-          
+
           if (effectiveValue > highestValue) {
             highestValue = effectiveValue;
             highestCard = fieldCard;
@@ -1049,7 +1049,7 @@ export class GwanGameLogic {
           }
         }
       }
-      
+
       // If a highest card was found, remove it and add to opponent's discard pile
       if (highestCard && highestCardRow !== null && highestCardIndex !== -1) {
         removedCard = this.players[opponentIndex].field[highestCardRow][highestCardIndex];
@@ -1057,25 +1057,25 @@ export class GwanGameLogic {
         this.players[opponentIndex].discardPile.push(removedCard);
       }
     }
-    
+
     // Determine which row to play the Sniper card to
     const row = card.suit === "hearts" ? (targetRow as keyof Field) : (card.suit as keyof Field);
-    
+
     // Add the Sniper card to the player's field
     this.players[playerIndex].field[row].push(card);
-    
+
     // Remove the card from hand
     this.players[playerIndex].hand.splice(cardIndex, 1);
-    
+
     // Check if player has run out of cards after playing this card
     if (this.players[playerIndex].hand.length === 0) {
       // Calculate scores before deciding round winner
       this.calculateScores();
-      
+
       // Determine the winner of the round
       let roundWinner: number | undefined;
       let roundTied = false;
-      
+
       if (this.players[0].score > this.players[1].score) {
         roundWinner = 0;
         this.players[0].roundsWon++;
@@ -1085,10 +1085,10 @@ export class GwanGameLogic {
       } else {
         roundTied = true;
       }
-      
+
       // Check if the game has ended
       let gameEnded = false;
-      
+
       if (this.players[0].roundsWon >= 2) {
         gameEnded = true;
       } else if (this.players[1].roundsWon >= 2) {
@@ -1096,14 +1096,14 @@ export class GwanGameLogic {
       } else {
         this.currentRound++;
       }
-      
+
       // Construct result message
       let message = `Played Sniper (${card.value} of ${card.suit}) to ${row} row. `;
       if (removedCard) {
         message += `Sniper eliminated opponent's ${removedCard.value} of ${removedCard.suit}! `;
       }
       message += `You're out of cards! `;
-      
+
       return {
         success: true,
         message,
@@ -1112,13 +1112,13 @@ export class GwanGameLogic {
         gameEnded
       };
     }
-    
+
     // If player still has cards, switch to the next player
     // Only switch if the other player hasn't passed
     if (!this.players[1 - playerIndex].pass) {
       this.currentPlayer = 1 - this.currentPlayer;
     }
-    
+
     // Construct success message
     let message = `Played Sniper (${card.value} of ${card.suit}) to ${row} row. `;
     if (removedCard) {
@@ -1126,30 +1126,30 @@ export class GwanGameLogic {
     } else {
       message += `Rolled (${diceValues.join(', ')}). No doubles, no target eliminated.`;
     }
-    
+
     return { 
       success: true, 
       message,
       sniperDoubles: isDoubles 
     };
   }
-  
+
   // Calculate score with weather effects and Rogue card dice values taken into account
   private calculateCardValue(card: Card, rowName: keyof Field): number {
     // If it's a weather-affected row and not a commander card, return 1
     if (this.weatherEffects[rowName] && !card.isCommander) {
       return 1;
     }
-    
+
     // If it's a Rogue card with a dice value, return the dice value
     if (card.isRogue && card.diceValue !== undefined) {
       return card.diceValue;
     }
-    
+
     // Otherwise return the base value
     return card.baseValue;
   }
-  
+
   public getGameState(): GameState {
     return {
       players: this.players.map((player) => ({ ...player })),
@@ -1162,7 +1162,7 @@ export class GwanGameLogic {
       isBlightCardBeingPlayed: this.isBlightCardBeingPlayed
     };
   }
-  
+
   // Blight Cards Logic
 
   // Set a player's blight card
@@ -1176,7 +1176,7 @@ export class GwanGameLogic {
     }
 
     this.players[playerIndex].blightCard = { ...blightCard };
-    
+
     return { 
       success: true, 
       message: `Selected ${blightCard.name} blight card for Player ${playerIndex + 1}`
@@ -1219,48 +1219,48 @@ export class GwanGameLogic {
         // These effects require a valid target on the opponent's field
         requiresSelection = true;
         break;
-      
+
       case BlightEffect.MAGICIAN:
       case BlightEffect.LOVERS:
         // These effects require user to select a target
         requiresSelection = true;
         break;
-      
+
       case BlightEffect.WHEEL:
       case BlightEffect.DEVIL:
         // These effects require dice rolls
         requiresDiceRoll = true;
         break;
-      
+
       case BlightEffect.DEATH:
         // Death effect can be processed immediately (discard hand, draw new cards)
         // Mark the blight card as used
         this.players[playerIndex].hasUsedBlightCard = true;
         this.isBlightCardBeingPlayed = false;
-        
+
         // Save the current hand size
         const handSize = this.players[playerIndex].hand.length;
-        
+
         // Move all cards from hand to discard pile
         this.players[playerIndex].discardPile.push(...this.players[playerIndex].hand);
-        
+
         // Clear the hand
         this.players[playerIndex].hand = [];
-        
+
         // Draw an equal number of new cards
         for (let i = 0; i < handSize; i++) {
           if (this.deck.length > 0) {
             this.players[playerIndex].hand.push(this.deck.pop()!);
           }
         }
-        
+
         return {
           success: true,
           message: `Played ${blightCard.name} - Discarded your hand and drew ${this.players[playerIndex].hand.length} new cards`,
           isBlightCard: true,
           blightEffect: BlightEffect.DEATH
         };
-        
+
       default:
         break;
     }
@@ -1310,11 +1310,11 @@ export class GwanGameLogic {
 
     const blightCard = this.players[playerIndex].blightCard!;
     const opponentIndex = 1 - playerIndex;
-    
+
     // Mark the blight card as used
     this.players[playerIndex].hasUsedBlightCard = true;
     this.isBlightCardBeingPlayed = false;
-    
+
     let message = "";
 
     switch (effect) {
@@ -1323,54 +1323,54 @@ export class GwanGameLogic {
         if (!targetRowName || targetCardIndex === undefined) {
           return { success: false, message: "Invalid target for The Fool effect" };
         }
-        
+
         const opponentRow = this.players[opponentIndex].field[targetRowName];
         if (targetCardIndex < 0 || targetCardIndex >= opponentRow.length) {
           return { success: false, message: "Invalid target card index" };
         }
-        
+
         const commanderCard = opponentRow[targetCardIndex];
         if (!commanderCard.isCommander) {
           return { success: false, message: "Target card is not a commander" };
         }
-        
+
         // Remove the card from opponent's field
         opponentRow.splice(targetCardIndex, 1);
-        
+
         // Add to player's field in the same row
         this.players[playerIndex].field[targetRowName].push(commanderCard);
-        
+
         message = `Used The Fool to convert opponent's ${commanderCard.value} of ${commanderCard.suit} to your side!`;
         break;
-        
+
       case BlightEffect.LOVERS:
         // Double the value of target card (cannot target commanders)
         if (!targetRowName || targetCardIndex === undefined) {
           return { success: false, message: "Invalid target for The Lovers effect" };
         }
-        
+
         const targetRow = this.players[targetPlayerIndex].field[targetRowName];
         if (targetCardIndex < 0 || targetCardIndex >= targetRow.length) {
           return { success: false, message: "Invalid target card index" };
         }
-        
+
         const targetCard = targetRow[targetCardIndex];
         if (targetCard.isCommander) {
           return { success: false, message: "Cannot target commander cards with The Lovers" };
         }
-        
+
         // Double the baseValue of the card
         targetCard.baseValue *= 2;
-        
+
         message = `Used The Lovers to double the value of ${targetCard.value} of ${targetCard.suit}!`;
         break;
-        
+
       case BlightEffect.MAGICIAN:
         // The actual effect will be completed after dice roll, just validate the target row
         if (!targetRowName) {
           return { success: false, message: "You must select a row for The Magician effect" };
         }
-        
+
         // Return to let the UI show the dice roll modal
         return {
           success: true,
@@ -1379,55 +1379,55 @@ export class GwanGameLogic {
           blightEffect: BlightEffect.MAGICIAN,
           requiresBlightDiceRoll: true
         };
-                
+
       case BlightEffect.HANGED_MAN:
         // Destroy a spy card on opponent's field
         if (!targetRowName || targetCardIndex === undefined) {
           return { success: false, message: "Invalid target for The Hanged Man effect" };
         }
-        
+
         const opponentSpyRow = this.players[opponentIndex].field[targetRowName];
         if (targetCardIndex < 0 || targetCardIndex >= opponentSpyRow.length) {
           return { success: false, message: "Invalid target card index" };
         }
-        
+
         const spyCard = opponentSpyRow[targetCardIndex];
         if (!spyCard.isSpy) {
           return { success: false, message: "Target card is not a spy" };
         }
-        
+
         // Remove the spy card from opponent's field and add to discard pile
         const removedSpy = opponentSpyRow.splice(targetCardIndex, 1)[0];
         this.players[opponentIndex].discardPile.push(removedSpy);
-        
+
         message = `Used The Hanged Man to destroy a spy card on opponent's ${targetRowName} row!`;
         break;
-        
+
       case BlightEffect.EMPEROR:
         // Return one of your spy cards from opponent's field to your hand
         if (!targetRowName || targetCardIndex === undefined) {
           return { success: false, message: "Invalid target for The Emperor effect" };
         }
-        
+
         const opponentField = this.players[opponentIndex].field[targetRowName];
         if (targetCardIndex < 0 || targetCardIndex >= opponentField.length) {
           return { success: false, message: "Invalid target card index" };
         }
-        
+
         const potentialSpy = opponentField[targetCardIndex];
         if (!potentialSpy.isSpy) {
           return { success: false, message: "Target card is not a spy" };
         }
-        
+
         // Remove the spy card from opponent's field
         const removedCard = opponentField.splice(targetCardIndex, 1)[0];
-        
+
         // Add to player's hand
         this.players[playerIndex].hand.push(removedCard);
-        
+
         message = `Used The Emperor to return a spy card from opponent's ${targetRowName} row to your hand!`;
         break;
-        
+
       default:
         return { success: false, message: "Unsupported blight effect for target selection" };
     }
@@ -1465,11 +1465,11 @@ export class GwanGameLogic {
 
     const blightCard = this.players[playerIndex].blightCard!;
     const opponentIndex = 1 - playerIndex;
-    
+
     // Mark the blight card as used
     this.players[playerIndex].hasUsedBlightCard = true;
     this.isBlightCardBeingPlayed = false;
-    
+
     let message = "";
     const diceTotal = diceResults.reduce((sum, val) => sum + val, 0);
 
@@ -1480,52 +1480,56 @@ export class GwanGameLogic {
           diceTotal,
           success
         });
-        
+
         if (!targetRowName) {
           return { success: false, message: "No target row specified for The Magician effect" };
         }
-        
+
         // Get the target row
         const targetField = this.players[opponentIndex].field;
         const targetRow = targetField[targetRowName];
-        
+
         console.log("Target row before effect:", targetRowName, "cards:", [...targetRow]);
-        
+
         // Calculate total value of the row
         const rowValue = targetRow.reduce((sum, card) => sum + card.baseValue, 0);
-        
+
         // Check if the dice roll succeeded
         if (success) {
           // Success - move cards to discard pile and clear the row
           if (targetRow.length > 0) {
-            // Add all cards to the discard pile
-            this.players[opponentIndex].discardPile.push(...targetRow);
-            
-            // Clear the row
-            targetField[targetRowName] = [];
-            
+            // Create a copy of all cards in the row
+            const cardsToDiscard = [...targetRow];
+
+            // Add cards to discard pile
+            this.players[opponentIndex].discardPile.push(...cardsToDiscard);
+
+            // Clear the row using direct assignment
+            this.players[opponentIndex].field[targetRowName] = [];
+
             console.log("Target row AFTER effect:", targetRowName, 
-                      "cards:", targetField[targetRowName]);
+                        "cards:", this.players[opponentIndex].field[targetRowName],
+                        "discarded:", cardsToDiscard.length);
           }
-          
+
           message = `Used The Magician - Rolled ${diceTotal}, exceeding the ${targetRowName} row's combined value of ${rowValue}. All cards in that row were discarded!`;
         } else {
           message = `Used The Magician - Rolled ${diceTotal}, but failed to exceed the ${targetRowName} row's combined value of ${rowValue}. No effect.`;
         }
         break;
-        
+
       case BlightEffect.WHEEL:
         // Add dice roll to player's score
         this.players[playerIndex].score += diceTotal;
-        
+
         message = `Used Wheel of Fortune - Rolled ${diceTotal} and added it to your score!`;
         break;
-        
+
       case BlightEffect.DEVIL:
         // If successful (three 6's in 6 rolls), allow revival from discard pile
         if (success) {
           message = "Used The Devil - Successfully rolled three 6's! You can now revive a card from either discard pile.";
-          
+
           // Return a result that indicates the player should select a card to revive
           return {
             success: true,
@@ -1539,7 +1543,7 @@ export class GwanGameLogic {
           message = `Used The Devil - Failed to roll three 6's in six attempts.`;
         }
         break;
-        
+
       default:
         return { success: false, message: "Unsupported blight effect for dice roll" };
     }
@@ -1576,16 +1580,16 @@ export class GwanGameLogic {
 
     // Get the card to revive
     const cardToRevive = sourcePlayer.discardPile[discardCardIndex];
-    
+
     // Determine which row to place the card in
     const row = cardToRevive.suit === "hearts" ? "diamonds" : (cardToRevive.suit as keyof Field);
-    
+
     // Remove from discard pile
     sourcePlayer.discardPile.splice(discardCardIndex, 1);
-    
+
     // Add to player's field
     this.players[playerIndex].field[row].push(cardToRevive);
-    
+
     return {
       success: true,
       message: `Revived ${cardToRevive.value} of ${cardToRevive.suit} from ${sourcePlayerIndex === playerIndex ? 'your' : 'opponent\'s'} discard pile!`,
