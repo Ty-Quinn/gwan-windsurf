@@ -21,15 +21,6 @@ export default function SuicideKingModal({
   onSelectSecondBlight, 
   onCancel 
 }: SuicideKingModalProps) {
-  const handleClearWeatherClick = () => {
-    console.log("Clear Weather option clicked");
-    onClearWeather();
-  };
-
-  const handleSecondBlightClick = () => {
-    console.log("Second Blight option clicked");
-    onSelectSecondBlight();
-  };
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
@@ -49,7 +40,10 @@ export default function SuicideKingModal({
           <Button 
             variant="ghost"
             className="flex flex-col items-center p-4 border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full h-auto"
-            onClick={handleClearWeatherClick}
+            onClick={() => {
+              console.log("Clear Weather option clicked");
+              onClearWeather();
+            }}
           >
             <div className="flex flex-col items-center">
               <Shield className="h-8 w-8 text-sky-400 mb-2" />
@@ -63,7 +57,10 @@ export default function SuicideKingModal({
           <Button 
             variant="ghost"
             className="flex flex-col items-center p-4 border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full h-auto"
-            onClick={handleSecondBlightClick}
+            onClick={() => {
+              console.log("Second Blight option clicked");
+              onSelectSecondBlight();
+            }}
           >
             <div className="flex flex-col items-center">
               <Sparkles className="h-8 w-8 text-purple-400 mb-2" />
