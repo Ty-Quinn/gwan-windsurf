@@ -724,6 +724,45 @@ export class GwanGameLogic {
     this.gameEnded = false;
   }
 
+  // Undo the last card played - used when canceling modals
+  public undoLastCardPlayed(playerIndex: number, cardToReturn: Card, rowName: keyof Field): PlayResult {
+    // Make sure it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+    
+    // Find the card in the specified row
+    const rowCards = this.players[playerIndex].field[rowName];
+    const cardIndex = rowCards.findIndex(c => 
+      c.suit === cardToReturn.suit && c.value === cardToReturn.value
+    );
+    
+    if (cardIndex === -1) {
+      return { success: false, message: "Card not found" };
+    }
+    
+    // Remove the card from the field
+    const removedCard = rowCards.splice(cardIndex, 1)[0];
+    
+    // Return the card to the player's hand
+    this.players[playerIndex].hand.push(removedCard);
+    
+    // If it's a weather card, remove its effect
+    if (removedCard.isWeather) {
+      // For weather cards other than Ace of Hearts, clear the weather effect
+      if (removedCard.suit === "clubs" || removedCard.suit === "spades" || removedCard.suit === "diamonds") {
+        this.weatherEffects[removedCard.suit] = false;
+      }
+      // For Ace of Hearts, we can't restore the previous weather effect,
+      // but at least the card is back in hand
+    }
+    
+    return {
+      success: true,
+      message: "Card returned to your hand"
+    };
+  }
+  
   // Calculate scores for both players - made public for end-of-turn score updates
   public calculateScores(): void {
     for (let i = 0; i < this.players.length; i++) {

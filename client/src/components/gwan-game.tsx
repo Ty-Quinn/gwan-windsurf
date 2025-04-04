@@ -22,6 +22,7 @@ import BlightCardTargetModal from "./blight-card-target-modal"
 import BlightDiceModal from "./blight-dice-modal"
 import DevilRevivalModal from "./devil-revival-modal"
 import MagicianEffectModal from "./magician-effect-modal"
+import SuicideKingModal from "./suicide-king-modal"
 import { Button } from "@/components/ui/button"
 
 // Interface for tracking last played card action for undo functionality
@@ -414,6 +415,20 @@ export default function GwanGame() {
     }
   }
 
+  // General handler to undo a card play in case of modal cancellation
+  const handleUndoCardPlay = (cardToReturn: Card, rowName: keyof Field) => {
+    if (!game || !gameState) return
+
+    const result = game.undoLastCardPlayed(playerView, cardToReturn, rowName)
+    
+    if (result.success) {
+      setGameState(game.getGameState())
+      setMessage(result.message || "Card returned to your hand")
+    } else {
+      setMessage(result.message || "Failed to return card to hand")
+    }
+  }
+  
   // Handle card selection from discard pile for medic revival
   const handleMedicRevival = (card: Card, discardIndex: number) => {
     if (!game || !gameState) return
@@ -986,6 +1001,7 @@ export default function GwanGame() {
         <TargetRowModal
           handleRowSelect={handleRowSelect}
           onCancel={() => {
+            // No need to undo here because the card hasn't been played yet
             setSelectedCard(null)
             setTargetRowSelection(false)
           }}
@@ -1020,7 +1036,29 @@ export default function GwanGame() {
         <MedicRevivalModal
           player={currentPlayer}
           onSelectCard={handleMedicRevival}
-          onCancel={() => setShowMedicRevival(false)}
+          onCancel={() => {
+            // Find the medic card that's in play
+            // We know it's a 3 card and will be in one of the player's fields
+            let medicCard: Card | null = null;
+            let medicRow: keyof Field | null = null;
+            
+            for (const row of ["clubs", "spades", "diamonds"] as const) {
+              const cardIndex = currentPlayer.field[row].findIndex((c: Card) => c.isMedic);
+              if (cardIndex !== -1) {
+                medicCard = currentPlayer.field[row][cardIndex];
+                medicRow = row;
+                break;
+              }
+            }
+
+            if (medicCard && medicRow) {
+              // Undo the medic card play
+              handleUndoCardPlay(medicCard, medicRow);
+            }
+            
+            setShowMedicRevival(false);
+            setMessage("Medic card play cancelled and card returned to your hand");
+          }}
         />
       )}
       
@@ -1028,7 +1066,30 @@ export default function GwanGame() {
         <DecoyRetrievalModal
           player={currentPlayer}
           onSelectCard={handleDecoyRetrieval}
-          onCancel={() => setShowDecoyRetrieval(false)}
+          onCancel={() => {
+            // Find the decoy card that's in play
+            // We know it's a 4 card and will be in one of the player's fields
+            let decoyCard: Card | null = null;
+            let decoyRow: keyof Field | null = null;
+            
+            // Process only rows that exist in Field type
+            for (const row of ["clubs", "spades", "diamonds"] as const) {
+              const cardIndex = currentPlayer.field[row].findIndex((c: Card) => c.isDecoy);
+              if (cardIndex !== -1) {
+                decoyCard = currentPlayer.field[row][cardIndex];
+                decoyRow = row;
+                break;
+              }
+            }
+
+            if (decoyCard && decoyRow) {
+              // Undo the decoy card play
+              handleUndoCardPlay(decoyCard, decoyRow);
+            }
+            
+            setShowDecoyRetrieval(false);
+            setMessage("Decoy card play cancelled and card returned to your hand");
+          }}
         />
       )}
       
