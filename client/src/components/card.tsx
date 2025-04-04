@@ -108,8 +108,12 @@ export default function CardComponent({
         className={cn(
           "bg-secondary text-white font-semibold rounded-md flex flex-col items-center justify-center w-14 h-16 relative",
           cardType.border && `border-2 ${cardType.border}`,
-          cardType.text
+          cardType.text,
+          selected && "ring-2 ring-primary",
+          onClick && !disabled ? "cursor-pointer hover:opacity-80" : "",
+          disabled && "opacity-60 cursor-not-allowed"
         )}
+        onClick={!disabled ? onClick : undefined}
       >
         <div className={`absolute top-0.5 left-0.5 text-xs ${suitColor}`}>{suitSymbol}</div>
         <div className={`text-lg ${cardType.text}`}>{card.value}</div>

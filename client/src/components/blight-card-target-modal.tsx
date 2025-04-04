@@ -321,26 +321,38 @@ export default function BlightCardTargetModal({
                     <div className="flex gap-2 overflow-x-auto pb-2">
                       {row.map((card, cardIndex) => (
                         <div key={`${rowName}-${cardIndex}`} className="flex-shrink-0">
-                          <CardComponent
-                            card={card}
-                            selected={selectedPlayerIndex === playerView && 
-                                     selectedRowName === rowName && 
-                                     selectedCardIndex === cardIndex}
-                            disabled={card.isCommander} // Can't target commanders
-                            onClick={card.isCommander ? undefined : () => {
-                              setSelectedPlayerIndex(playerView)
-                              setSelectedRowName(rowName as keyof Field)
-                              setSelectedCardIndex(cardIndex)
-                            }}
-                            compact
-                          />
-                          {selectedPlayerIndex === playerView && 
-                           selectedRowName === rowName && 
-                           selectedCardIndex === cardIndex && (
-                            <div className="mt-1 text-center text-xs text-green-500 font-bold">
-                              Value: {card.baseValue} → {card.baseValue * 2}
-                            </div>
-                          )}
+                          <div className="relative">
+                            <CardComponent
+                              card={card}
+                              selected={selectedPlayerIndex === playerView && 
+                                       selectedRowName === rowName && 
+                                       selectedCardIndex === cardIndex}
+                              disabled={card.isCommander} // Can't target commanders
+                              onClick={card.isCommander ? undefined : () => {
+                                console.log("Card clicked:", rowName, cardIndex);
+                                setSelectedPlayerIndex(playerView);
+                                setSelectedRowName(rowName as keyof Field);
+                                setSelectedCardIndex(cardIndex);
+                              }}
+                              compact
+                            />
+                            {/* Overlay for selection */}
+                            {selectedPlayerIndex === playerView && 
+                             selectedRowName === rowName && 
+                             selectedCardIndex === cardIndex && (
+                              <div className="absolute -top-2 -left-2 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                                <span className="text-white text-xs">✓</span>
+                              </div>
+                            )}
+                            {/* Value preview */}
+                            {selectedPlayerIndex === playerView && 
+                             selectedRowName === rowName && 
+                             selectedCardIndex === cardIndex && (
+                              <div className="mt-1 text-center text-xs text-green-500 font-bold">
+                                Value: {card.baseValue} → {card.baseValue * 2}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
