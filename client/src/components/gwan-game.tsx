@@ -1081,12 +1081,34 @@ export default function GwanGame() {
               success
             });
             
-            // Set the target row first, before calling handleBlightDiceRoll
+            // This is critically important - store the target row name
             setBlightTargetRow(targetRowName);
             
-            // When Magician effect is complete, directly call the blight dice roll handler
-            // This bypasses the need for separate target/dice roll steps
-            handleBlightDiceRoll(BlightEffect.MAGICIAN, diceResults, success);
+            // Double-check we have the necessary data
+            if (!game || !currentBlightEffect) {
+              console.error("Missing game or currentBlightEffect in Magician effect");
+              return;
+            }
+            
+            // Directly apply the effect in game logic to avoid the row information being lost
+            const result = game.completeBlightCardDiceRoll(
+              playerView,
+              BlightEffect.MAGICIAN,
+              diceResults,
+              success,
+              targetRowName  // Use targetRowName directly here
+            );
+            
+            if (result.success) {
+              // Update game state
+              setGameState(game.getGameState());
+              setCurrentBlightEffect(null);
+              setMessage(result.message || "Magician effect completed");
+            } else {
+              setMessage(result.message || "Failed to apply Magician effect");
+            }
+            
+            // Close the modal
             setShowMagicianEffect(false);
           }}
           onCancel={() => {

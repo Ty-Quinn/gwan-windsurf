@@ -92,13 +92,20 @@ export default function MagicianEffectModal({
       cardsToDiscard: rollSucceeded ? currentCardCount : 0
     });
     
-    // Delay the effect completion slightly to ensure state is updated
-    setTimeout(() => {
-      if (selectedRow) {
-        console.log(`Completing Magician effect for row ${selectedRow} with ${currentCardCount} cards`);
-        onComplete(opponentIndex, selectedRow, results, rollSucceeded);
-      }
-    }, 300);
+    // No longer automatically completing the effect - we'll use a confirm button
+  }
+  
+  // Handle confirmation of effect after dice roll
+  const handleConfirmEffect = () => {
+    if (!selectedRow || !diceRolled) return;
+    
+    // Get the current card count in the row for logging
+    const currentCardCount = players[opponentIndex].field[selectedRow].length;
+    
+    console.log(`Confirming Magician effect for row ${selectedRow} with ${currentCardCount} cards`);
+    console.log(`Effect will ${success ? 'succeed' : 'fail'} with dice roll ${rollTotal}`);
+    
+    onComplete(opponentIndex, selectedRow, diceResults, success);
   }
   
   // Note: We've removed the handleComplete function as we're now
@@ -191,10 +198,22 @@ export default function MagicianEffectModal({
           )}
         </div>
         
-        <div className="flex justify-end">
+        <div className="flex justify-between">
           <Button variant="outline" onClick={onCancel}>
-            {diceRolled ? "Close" : "Cancel"}
+            Cancel
           </Button>
+          
+          {diceRolled && (
+            <Button 
+              onClick={handleConfirmEffect}
+              variant={success ? "default" : "secondary"}
+              disabled={!selectedRow || !diceRolled}
+            >
+              {success 
+                ? "Confirm Destroy Cards" 
+                : "Confirm No Effect"}
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
