@@ -140,7 +140,7 @@ export default function GameRulesModal({
             </div>
             
             <div className="ml-4 mb-2">
-              <h5 className="font-semibold text-cyan-400">Rogue Cards (6s)</h5>
+              <h5 className="font-semibold text-amber-400">Rogue Cards (2s of hearts, clubs, diamonds)</h5>
               <ul className="list-disc list-inside ml-4">
                 <li>When played, roll 1D6 to determine the card's value (1-6)</li>
                 <li>Play to your side of the board like normal cards</li>
@@ -149,21 +149,12 @@ export default function GameRulesModal({
             </div>
             
             <div className="ml-4 mb-2">
-              <h5 className="font-semibold text-indigo-400">Sniper Cards (7s)</h5>
+              <h5 className="font-semibold text-indigo-400">Sniper Cards (2 of spades)</h5>
               <ul className="list-disc list-inside ml-4">
                 <li>When played, roll 2D6</li>
                 <li>If doubles are rolled, you can target and destroy one enemy non-Commander card</li>
                 <li>Played to your side of the board like normal cards</li>
-              </ul>
-            </div>
-            
-            <div className="ml-4 mb-2">
-              <h5 className="font-semibold text-rose-400">Devil Cards (2s)</h5>
-              <ul className="list-disc list-inside ml-4">
-                <li>Allow you to steal one card from your opponent's discard pile</li>
-                <li>Must roll at least three 6s or three of the same number with 6 rolls of 3D6</li>
-                <li>Play to your side of the board like normal cards</li>
-                <li>High risk, high reward: difficult to trigger but powerful effect</li>
+                <li>Base value of 2 if no doubles are rolled</li>
               </ul>
             </div>
           </div>
