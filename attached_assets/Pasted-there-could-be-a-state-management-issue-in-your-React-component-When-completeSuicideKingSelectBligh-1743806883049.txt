@@ -1,0 +1,58 @@
+there could be a state management issue in your React component. When completeSuicideKingSelectBlight is called, it should remove the card, but the UI might not be reflecting this change because of how the state is being updated.
+Let's fix this by making sure the state is properly updated in your React component:
+jsxCopyconst handleSuicideKingSelectBlight = () => {
+  console.log("handleSuicideKingSelectBlight called");
+  
+  if (!game || !gameState || pendingSuicideKingCardIndex === null) {
+    console.log("Early return: missing dependencies");
+    return;
+  }
+  
+  // First, get the current player's blight cards
+  const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id);
+  
+  // Store the Suicide King card index for removal
+  const suicideKingIndex = pendingSuicideKingCardIndex;
+  
+  // Call the game logic to handle Suicide King selection FIRST
+  // This will actually remove the card from the player's hand
+  const result = game.completeSuicideKingSelectBlight(playerView, suicideKingIndex);
+  
+  if (result.success) {
+    // Update game state immediately after card is removed
+    const updatedGameState = game.getGameState();
+    setGameState(updatedGameState);
+    
+    // Now set up for the second Blight selection
+    setExcludedBlightCardIds(currentPlayerBlightCardIds);
+    setIsSecondBlightSelection(true);
+    
+    // Close the Suicide King modal
+    setShowSuicideKingModal(false);
+    setPendingSuicideKingCardIndex(null);
+    
+    // Short timeout to ensure UI updates before showing the next modal
+    setTimeout(() => {
+      setShowBlightCardSelection(true);
+      setMessage("Choose your second Blight card!");
+    }, 50);
+  } else {
+    // If there was an error, just close the modal and show the message
+    setShowSuicideKingModal(false);
+    setPendingSuicideKingCardIndex(null);
+    setMessage(result.message || "Failed to use Suicide King ability");
+  }
+}
+The key changes are:
+
+Call completeSuicideKingSelectBlight first, before any other state changes
+Get an updated game state right after the card is removed and apply it immediately
+Then handle the UI updates (closing the Suicide King modal and showing the Blight selection)
+
+This sequence ensures that:
+
+The Suicide King is removed from the player's hand in the game logic
+The UI is updated to reflect this change before showing the Blight selection modal
+The player can select their second Blight card without the Suicide King still showing in their hand
+
+By updating the game state immediately after the card is removed, you ensure that the UI accurately reflects the current state of the game with the Suicide King properly removed.
