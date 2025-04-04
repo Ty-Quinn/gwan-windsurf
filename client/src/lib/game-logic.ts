@@ -230,6 +230,11 @@ export class GwanGameLogic {
       return { success: false, message: "You have already passed" };
     }
 
+    // Check if the player has already played a card this turn
+    if (this.players[playerIndex].hasPlayedCard) {
+      return { success: false, message: "You've already played a card this turn. Click End Turn to continue." };
+    }
+
     // Check if the card index is valid
     if (cardIndex < 0 || cardIndex >= this.players[playerIndex].hand.length) {
       return { success: false, message: "Invalid card index" };
@@ -1677,14 +1682,12 @@ export class GwanGameLogic {
     // Reset the flag
     this.isSuicideKingBeingPlayed = false;
 
-    // Switch to the next player if they haven't passed
-    if (!this.players[1 - playerIndex].pass) {
-      this.currentPlayer = 1 - this.currentPlayer;
-    }
+    // Set hasPlayedCard flag to prevent further card plays this turn
+    this.players[playerIndex].hasPlayedCard = true;
 
     return { 
       success: true, 
-      message: "The Suicide King clears ALL weather effects from the field and disappears forever!"
+      message: "The Suicide King clears ALL weather effects from the field and disappears forever! Click End Turn to continue."
     };
   }
 

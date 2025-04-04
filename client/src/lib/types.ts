@@ -50,6 +50,7 @@ export interface Player {
   discardPile: Card[];
   blightCards: BlightCard[];
   hasUsedBlightCard: boolean;
+  hasPlayedCard: boolean;
 }
 
 export interface WeatherEffects {
