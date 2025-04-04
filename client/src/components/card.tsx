@@ -38,15 +38,15 @@ export default function CardComponent({
   const getSuitName = (suit: string) => {
     switch (suit) {
       case "clubs":
-        return "Infantry"
+        return "Knights"
       case "spades":
-        return "Archer"
+        return "Bowmen"
       case "diamonds":
-        return "Ballista"
+        return "Catapults"
       case "hearts":
         return "Mercenary"
       case "joker":
-        return "Joker"
+        return "Jester"
       default:
         return ""
     }
@@ -65,33 +65,33 @@ export default function CardComponent({
   }
 
   const getCardType = () => {
-    if (card.isCommander) return { border: "border-yellow-400", text: "text-yellow-400", label: "Commander", value: card.baseValue }
+    if (card.isCommander) return { border: "border-yellow-400", text: "text-yellow-400", label: "Noble", value: card.baseValue }
     if (card.isWeather) return { border: "border-red-500", text: "text-red-500", label: getWeatherLabel(), value: 15 }
-    if (card.isJoker) return { border: "border-purple-500", text: "text-purple-400", label: "Joker (spy)", value: 1 }
-    if (card.isSpy && !card.isJoker) return { border: "border-blue-500", text: "text-blue-400", label: "Spy", value: 0 }
-    if (card.isDecoy) return { border: "border-orange-500", text: "text-orange-400", label: "Decoy", value: 0 }
-    if (card.isMedic) return { border: "border-green-500", text: "text-green-400", label: "Medic", value: 3 }
-    if (card.isRogue) return { border: "border-amber-500", text: "text-amber-400", label: "Rogue", value: card.diceValue || "?" }
-    if (card.isSniper) return { border: "border-indigo-500", text: "text-indigo-400", label: "Sniper", value: 2 }
+    if (card.isJoker) return { border: "border-purple-500", text: "text-purple-400", label: "Jester (spy)", value: 1 }
+    if (card.isSpy && !card.isJoker) return { border: "border-blue-500", text: "text-blue-400", label: "Scout", value: 0 }
+    if (card.isDecoy) return { border: "border-orange-500", text: "text-orange-400", label: "Squire", value: 0 }
+    if (card.isMedic) return { border: "border-green-500", text: "text-green-400", label: "Healer", value: 3 }
+    if (card.isRogue) return { border: "border-amber-500", text: "text-amber-400", label: "Thief", value: card.diceValue || "?" }
+    if (card.isSniper) return { border: "border-indigo-500", text: "text-indigo-400", label: "Marksman", value: 2 }
     if (card.suit === "hearts") return { border: "border-purple-500", text: "text-white", label: "", value: 0 } // Removed "Flexible" text
     return { border: "", text: "text-white", label: "", value: 0 }
   }
 
   const getWeatherLabel = () => {
-    if (card.suit === "clubs") return "Tundra"
-    if (card.suit === "spades") return "Rain"
-    if (card.suit === "diamonds") return "Fog"
-    if (card.suit === "hearts") return "Clear"
+    if (card.suit === "clubs") return "Blizzard"
+    if (card.suit === "spades") return "Tempest"
+    if (card.suit === "diamonds") return "Mist"
+    if (card.suit === "hearts") return "Fair Sky"
     return ""
   }
   
   // Weather labels for compact card view
   const getWeatherTypeLabel = (suit: string): string => {
     switch (suit) {
-      case "clubs": return "Tundra"
-      case "spades": return "Rain"
-      case "diamonds": return "Fog"
-      case "hearts": return "Clear"
+      case "clubs": return "Blizzard"
+      case "spades": return "Tempest"
+      case "diamonds": return "Mist"
+      case "hearts": return "Fair Sky"
       default: return ""
     }
   }

@@ -81,15 +81,15 @@ export default function GameBoard({
     : ["clubs", "spades", "diamonds"] // Close -> Mid -> Long
   
   const rowLabels: Record<FieldKey, { name: string; bonus: string; unitName: string }> = {
-    clubs: { name: "Close Range", bonus: "+2", unitName: "Infantry" },
-    spades: { name: "Mid Range", bonus: "+3", unitName: "Archer" },
-    diamonds: { name: "Long Range", bonus: "+5", unitName: "Ballista" }
+    clubs: { name: "Vanguard", bonus: "+2", unitName: "Knights" },
+    spades: { name: "Battalion", bonus: "+3", unitName: "Bowmen" },
+    diamonds: { name: "Siege", bonus: "+5", unitName: "Catapults" }
   }
   
   const weatherLabels: Record<FieldKey, string> = {
-    clubs: "Tundra",
-    spades: "Rain",
-    diamonds: "Fog"
+    clubs: "Blizzard",
+    spades: "Tempest",
+    diamonds: "Mist"
   }
   
   // Debug the possible source of overlapping text labels
