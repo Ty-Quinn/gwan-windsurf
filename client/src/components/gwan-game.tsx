@@ -938,64 +938,64 @@ export default function GwanGame() {
     const suicideKingCard = gameState.players[playerView].hand[pendingSuicideKingCardIndex];
     console.log("Suicide King card before removal (second blight):", suicideKingCard);
     
-    // First, get the current player's blight cards
+    // First, get the current player's blight cards to exclude from next selection
     const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id);
     console.log("Current player blight cards:", currentPlayerBlightCardIds);
     
     // Store the card index for use in the game logic - IMPORTANT: we need this before we null it out
     const cardIndexToRemove = pendingSuicideKingCardIndex;
     
-    // Immediately set up for the second selection
+    // First close the Suicide King modal
+    setShowSuicideKingModal(false);
+    
+    // Set up the state for second blight selection
     setExcludedBlightCardIds(currentPlayerBlightCardIds);
     setIsSecondBlightSelection(true);
     
-    // First call the game logic to remove the Suicide King and set up for a new blight card
-    const result = game.completeSuicideKingSelectBlight(playerView, cardIndexToRemove);
-    console.log("Game logic result:", result);
-    
-    if (result.success) {
-      const updatedState = game.getGameState();
+    // Add a small delay to ensure state updates correctly
+    setTimeout(() => {
+      // Call the game logic to remove the Suicide King and set up for a new blight card
+      const result = game.completeSuicideKingSelectBlight(playerView, cardIndexToRemove);
+      console.log("Game logic result:", result);
       
-      // Verify the card is completely removed (not in hand or discard)
-      console.log("Suicide King removed from play (second blight option)");
-      console.log("Suicide King in discard pile:", 
-        updatedState.players[playerView].discardPile.some(
-          card => card.suit === "hearts" && card.value === "K" && card.isSuicideKing
-        )
-      );
-      
-      setGameState(updatedState);
-      
-      // Close suicide king modal
-      setShowSuicideKingModal(false);
-      setPendingSuicideKingCardIndex(null);
-      
-      // Check for game end conditions from removing the card
-      if (result.gameEnded) {
-        setRoundWinner(result.roundWinner);
-        setGameWinner(result.roundWinner);
-        setShowGameEnd(true);
-        return; // Don't open the blight card selection if the game has ended
-      } else if (result.roundWinner !== undefined || result.roundTied) {
-        setRoundWinner(result.roundWinner);
-        setRoundTied(result.roundTied || false);
-        setShowRoundSummary(true);
-        setNextRoundPending(true);
-        return; // Don't open the blight card selection if the round has ended
-      }
-      
-      // If the game hasn't ended, show the blight card selection modal
-      setTimeout(() => {
+      if (result.success) {
+        const updatedState = game.getGameState();
+        
+        // Verify the card is completely removed (not in hand or discard)
+        console.log("Suicide King removed from play (second blight option)");
+        console.log("Suicide King in discard pile:", 
+          updatedState.players[playerView].discardPile.some(
+            card => card.suit === "hearts" && card.value === "K" && card.isSuicideKing
+          )
+        );
+        
+        setGameState(updatedState);
+        setPendingSuicideKingCardIndex(null);
+        
+        // Check for game end conditions from removing the card
+        if (result.gameEnded) {
+          setRoundWinner(result.roundWinner);
+          setGameWinner(result.roundWinner);
+          setShowGameEnd(true);
+          return; // Don't open the blight card selection if the game has ended
+        } else if (result.roundWinner !== undefined || result.roundTied) {
+          setRoundWinner(result.roundWinner);
+          setRoundTied(result.roundTied || false);
+          setShowRoundSummary(true);
+          setNextRoundPending(true);
+          return; // Don't open the blight card selection if the round has ended
+        }
+        
+        // Show blight card selection modal
         console.log("Opening blight card selection modal");
         setShowBlightCardSelection(true);
         setMessage("Choose your second Blight card!");
-      }, 50);
-    } else {
-      // Only close the modal if there was an error
-      setShowSuicideKingModal(false);
-      setPendingSuicideKingCardIndex(null);
-      setMessage(result.message || "Failed to grant second Blight card");
-    }
+      } else {
+        // Only update message and clear pending state if there was an error
+        setPendingSuicideKingCardIndex(null);
+        setMessage(result.message || "Failed to grant second Blight card");
+      }
+    }, 50); // Small delay to ensure UI updates properly
   }
 
   return (
