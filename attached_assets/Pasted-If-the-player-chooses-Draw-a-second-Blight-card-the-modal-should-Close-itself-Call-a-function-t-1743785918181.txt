@@ -1,0 +1,94 @@
+If the player chooses "Draw a second Blight card", the modal should:
+
+Close itself
+Call a function to show the blight card selection modal
+Pass some state indicating this is a "second blight" selection
+
+
+
+Here's what I'd recommend adding to suicide-king-modal.tsx:
+tsxCopy// Inside your component
+const handleChooseSecondBlight = () => {
+  // Close this modal
+  onClose();
+  
+  // Tell the parent component to show blight selection
+  onSelectSecondBlight();
+  
+  console.log("Player chose to select second blight card");
+};
+
+// In your JSX return
+return (
+  <Modal isOpen={isOpen} onClose={onClose}>
+    <div className="suicide-king-modal">
+      <h2>Suicide King Ability</h2>
+      <p>Choose one effect:</p>
+      
+      <div className="options">
+        <button onClick={handleClearWeather}>
+          Clear all weather effects
+        </button>
+        
+        <button onClick={handleChooseSecondBlight}>
+          Draw a second Blight card
+        </button>
+      </div>
+    </div>
+  </Modal>
+);
+
+Then, in your main game component (gwan-game.tsx), make sure you're passing the right props:
+
+tsxCopy// In your main game component
+const [showBlightSelection, setShowBlightSelection] = useState(false);
+const [isSecondBlightSelection, setIsSecondBlightSelection] = useState(false);
+
+const handleSelectSecondBlight = () => {
+  setIsSecondBlightSelection(true);
+  setShowBlightSelection(true);
+  console.log("Showing blight selection for second blight");
+};
+
+// When rendering components
+{suicideKingModalOpen && (
+  <SuicideKingModal 
+    isOpen={suicideKingModalOpen}
+    onClose={() => setSuicideKingModalOpen(false)}
+    onClearWeather={handleClearWeather}
+    onSelectSecondBlight={handleSelectSecondBlight}
+  />
+)}
+
+{showBlightSelection && (
+  <BlightCardSelectionModal
+    isOpen={showBlightSelection}
+    onClose={() => setShowBlightSelection(false)}
+    isSecondSelection={isSecondBlightSelection}
+    availableBlightCards={availableBlightCards}
+    onSelectBlight={handleSelectBlight}
+  />
+)}
+
+Finally, ensure your blight-card-selection-modal.tsx component is checking for the isSecondSelection prop and showing appropriate UI:
+
+tsxCopy// In BlightCardSelectionModal
+const BlightCardSelectionModal = ({ 
+  isOpen, 
+  onClose, 
+  isSecondSelection, 
+  availableBlightCards,
+  onSelectBlight 
+}) => {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <h2>
+        {isSecondSelection 
+          ? "Select a Second Blight Card" 
+          : "Select Your Blight Card"}
+      </h2>
+      
+      {/* Rest of your component */}
+    </Modal>
+  );
+};
