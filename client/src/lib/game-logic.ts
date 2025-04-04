@@ -1348,6 +1348,11 @@ export class GwanGameLogic {
         if (!targetRowName || targetCardIndex === undefined) {
           return { success: false, message: "Invalid target for The Lovers effect" };
         }
+        
+        // Ensure we can only target the current player's cards
+        if (targetPlayerIndex !== playerIndex) {
+          return { success: false, message: "The Lovers can only target your own cards" };
+        }
 
         const targetRow = this.players[targetPlayerIndex].field[targetRowName];
         if (targetCardIndex < 0 || targetCardIndex >= targetRow.length) {
@@ -1361,6 +1366,7 @@ export class GwanGameLogic {
 
         // Double the baseValue of the card
         targetCard.baseValue *= 2;
+        console.log(`Lovers effect applied: ${targetCard.value} of ${targetCard.suit} doubled from ${targetCard.baseValue/2} to ${targetCard.baseValue}`);
 
         message = `Used The Lovers to double the value of ${targetCard.value} of ${targetCard.suit}!`;
         break;

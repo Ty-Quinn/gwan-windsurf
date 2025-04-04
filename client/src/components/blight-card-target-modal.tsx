@@ -43,7 +43,9 @@ export default function BlightCardTargetModal({
 
   // Reset selections when effect changes
   const resetSelections = () => {
-    setSelectedPlayerIndex(opponentIndex)
+    // For Lovers effect, default to current player
+    // For other effects, default to opponent
+    setSelectedPlayerIndex(effect === BlightEffect.LOVERS ? playerView : opponentIndex)
     setSelectedRowName(null)
     setSelectedCardIndex(null)
     setShowDiceRoll(false)
@@ -150,7 +152,7 @@ export default function BlightCardTargetModal({
       break
     case BlightEffect.LOVERS:
       title = "The Lovers - Double Value"
-      description = "Select a card (except Commanders) whose value will be doubled."
+      description = "Select one of your own cards (except Commanders) to double its value for this round."
       break
     case BlightEffect.DEATH:
       title = "Death - Refresh Hand"
@@ -296,50 +298,60 @@ export default function BlightCardTargetModal({
         )
       
       case BlightEffect.LOVERS:
+        // Force select current player for Lovers effect
+        setSelectedPlayerIndex(playerView);
+        
         return (
           <div className="space-y-4">
-            <Tabs defaultValue={String(1-playerView)} onValueChange={(val) => setSelectedPlayerIndex(Number(val))}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value={String(playerView)}>Your Field</TabsTrigger>
-                <TabsTrigger value={String(opponentIndex)}>Opponent's Field</TabsTrigger>
-              </TabsList>
-              
-              {[playerView, opponentIndex].map((pIndex) => (
-                <TabsContent key={pIndex} value={String(pIndex)}>
-                  <div className="grid grid-cols-1 gap-4">
-                    {Object.keys(players[pIndex].field).map((rowName) => {
-                      const row = players[pIndex].field[rowName as keyof Field]
-                      if (row.length === 0) return null
-                      
-                      return (
-                        <div key={rowName} className="space-y-2">
-                          <h4 className="text-md font-medium capitalize">{rowName} Row</h4>
-                          <div className="flex gap-2 overflow-x-auto pb-2">
-                            {row.map((card, cardIndex) => (
-                              <div key={`${rowName}-${cardIndex}`} className="flex-shrink-0">
-                                <CardComponent
-                                  card={card}
-                                  selected={selectedPlayerIndex === pIndex && 
-                                           selectedRowName === rowName && 
-                                           selectedCardIndex === cardIndex}
-                                  disabled={card.isCommander} // Can't target commanders
-                                  onClick={card.isCommander ? undefined : () => {
-                                    setSelectedPlayerIndex(pIndex)
-                                    setSelectedRowName(rowName as keyof Field)
-                                    setSelectedCardIndex(cardIndex)
-                                  }}
-                                  compact
-                                />
-                              </div>
-                            ))}
-                          </div>
+            <div className="p-4 border rounded-lg bg-card/50 mb-4">
+              <h3 className="text-lg font-semibold text-primary mb-2">The Lovers - Amplify Your Cards</h3>
+              <p className="text-muted-foreground">Select one of your own cards to double its value for this round.</p>
+              <p className="text-sm mt-2 text-amber-500">Note: You can only select cards on your side of the field. Commander cards cannot be targeted.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4">
+              {Object.keys(players[playerView].field).map((rowName) => {
+                const row = players[playerView].field[rowName as keyof Field]
+                if (row.length === 0) return null
+                
+                return (
+                  <div key={rowName} className="space-y-2">
+                    <h4 className="text-md font-medium capitalize">{rowName} Row</h4>
+                    <div className="flex gap-2 overflow-x-auto pb-2">
+                      {row.map((card, cardIndex) => (
+                        <div key={`${rowName}-${cardIndex}`} className="flex-shrink-0">
+                          <CardComponent
+                            card={card}
+                            selected={selectedPlayerIndex === playerView && 
+                                     selectedRowName === rowName && 
+                                     selectedCardIndex === cardIndex}
+                            disabled={card.isCommander} // Can't target commanders
+                            onClick={card.isCommander ? undefined : () => {
+                              setSelectedPlayerIndex(playerView)
+                              setSelectedRowName(rowName as keyof Field)
+                              setSelectedCardIndex(cardIndex)
+                            }}
+                            compact
+                          />
+                          {selectedPlayerIndex === playerView && 
+                           selectedRowName === rowName && 
+                           selectedCardIndex === cardIndex && (
+                            <div className="mt-1 text-center text-xs text-green-500 font-bold">
+                              Value: {card.baseValue} → {card.baseValue * 2}
+                            </div>
+                          )}
                         </div>
-                      )
-                    })}
+                      ))}
+                    </div>
                   </div>
-                </TabsContent>
-              ))}
-            </Tabs>
+                )
+              })}
+              {Object.values(players[playerView].field).every(row => row.length === 0) && (
+                <div className="text-center py-6 text-muted-foreground">
+                  You don't have any cards on your field yet. Play some cards first!
+                </div>
+              )}
+            </div>
           </div>
         )
       
