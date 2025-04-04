@@ -1498,18 +1498,26 @@ export class GwanGameLogic {
         if (success) {
           // Success - move cards to discard pile and clear the row
           if (targetRow.length > 0) {
-            // Create a deep copy of all cards in the row
-            const cardsToDiscard = [...targetRow];
-
-            // Clear the row first
-            targetField[targetRowName].length = 0;
-
-            // Then add cards to discard pile
+            console.log(`Before operation: ${targetRowName} row has ${targetRow.length} cards`);
+            
+            // Step 1: Create a deep copy of all cards in the row BEFORE modifying it
+            // Use JSON parse/stringify for a true deep copy to ensure no references remain
+            const cardsToDiscard = JSON.parse(JSON.stringify(targetRow));
+            
+            console.log(`Created a deep copy of ${cardsToDiscard.length} cards to discard`);
+            
+            // Step 2: Add copied cards to discard pile
             this.players[opponentIndex].discardPile.push(...cardsToDiscard);
-
-            console.log("Target row AFTER effect:", targetRowName, 
-                      "cards:", targetField[targetRowName],
-                      "discarded:", cardsToDiscard.length);
+            
+            console.log(`Added ${cardsToDiscard.length} cards to player ${opponentIndex}'s discard pile. New pile size: ${this.players[opponentIndex].discardPile.length}`);
+            
+            // Step 3: Clear the row AFTER copying and adding to discard pile
+            // Using splice instead of length = 0 for more reliable reactivity
+            const countBefore = targetField[targetRowName].length;
+            targetField[targetRowName].splice(0, countBefore);
+            
+            // Double-check that the row is now empty
+            console.log(`Row ${targetRowName} cleared: was ${countBefore}, now ${targetField[targetRowName].length}`);
           }
 
           message = `Used The Magician - Rolled ${diceTotal}, exceeding the ${targetRowName} row's combined value of ${rowValue}. All cards in that row were discarded!`;

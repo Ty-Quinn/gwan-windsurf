@@ -64,44 +64,45 @@ export default function MagicianEffectModal({
     // Only process the first roll
     if (diceRolled) return;
     
-    setDiceResults(results)
-    setRollTotal(total)
-    setDiceRolled(true)
+    if (!selectedRow) {
+      console.error("No row selected for Magician effect");
+      return;
+    }
+    
+    setDiceResults(results);
+    setRollTotal(total);
+    setDiceRolled(true);
     
     // Calculate success - if dice roll > total row value
-    const rowValue = calculateRowValue(selectedRow as keyof Field)
-    const rollSucceeded = total > rowValue
-    setSuccess(rollSucceeded)
+    const rowValue = calculateRowValue(selectedRow);
+    const rollSucceeded = total > rowValue;
+    setSuccess(rollSucceeded);
     
-    console.log("Dice roll completed:", {
+    // Get the current card count in the row for logging
+    const currentCardCount = players[opponentIndex].field[selectedRow].length;
+    
+    console.log("Magician dice roll completed:", {
       results,
       total,
       rowValue,
       success: rollSucceeded,
-      selectedRow
+      selectedRow,
+      targetPlayerIndex: opponentIndex,
+      cardsInRow: currentCardCount,
+      cardsToDiscard: rollSucceeded ? currentCardCount : 0
     });
     
-    // Immediately complete the effect after the roll
-    if (selectedRow) {
-      onComplete(opponentIndex, selectedRow, results, rollSucceeded);
-    }
+    // Delay the effect completion slightly to ensure state is updated
+    setTimeout(() => {
+      if (selectedRow) {
+        console.log(`Completing Magician effect for row ${selectedRow} with ${currentCardCount} cards`);
+        onComplete(opponentIndex, selectedRow, results, rollSucceeded);
+      }
+    }, 300);
   }
   
-  // Handle completion of the effect
-  const handleComplete = () => {
-    if (!selectedRow || !diceRolled) return
-    
-    // Log for debugging
-    console.log("MagicianEffectModal completing with row:", selectedRow, 
-                "cards:", players[opponentIndex].field[selectedRow].length);
-    
-    onComplete(
-      opponentIndex,
-      selectedRow,
-      diceResults,
-      success
-    )
-  }
+  // Note: We've removed the handleComplete function as we're now
+  // automatically completing the effect after the dice roll
   
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onCancel()}>
@@ -190,15 +191,9 @@ export default function MagicianEffectModal({
           )}
         </div>
         
-        <div className="flex justify-between">
+        <div className="flex justify-end">
           <Button variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleComplete}
-            disabled={!selectedRow || !diceRolled}
-          >
-            Complete Effect
+            {diceRolled ? "Close" : "Cancel"}
           </Button>
         </div>
       </DialogContent>
