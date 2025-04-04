@@ -117,6 +117,9 @@ export class GwanGameLogic {
 
     this.deck = [];
 
+    // Debug log to verify card creation
+    console.log("Starting deck creation...");
+
     // Add standard cards
     for (const suit of suits) {
       for (const value of values) {
@@ -126,6 +129,11 @@ export class GwanGameLogic {
         const isRogue = value === "2" && suit !== "spades"; // 2's of hearts, clubs, diamonds are Rogues
         const isSniper = value === "2" && suit === "spades"; // 2 of spades is a Sniper
         const isSuicideKing = value === "K" && suit === "hearts"; // King of Hearts is the Suicide King
+
+        // Debug: Log the King of Hearts creation specifically
+        if (value === "K" && suit === "hearts") {
+          console.log("Creating Suicide King (King of Hearts)");
+        }
 
         const card: Card = {
           suit,
@@ -165,6 +173,24 @@ export class GwanGameLogic {
         isSuicideKing: false
       };
       this.deck.push(jokerCard);
+    }
+    
+    // Final verification of key cards
+    const suicideKingCount = this.deck.filter(card => 
+      card.suit === "hearts" && card.value === "K" && card.isSuicideKing
+    ).length;
+    const jokerCount = this.deck.filter(card => card.isJoker).length;
+    
+    console.log("Deck creation complete. Verification:")
+    console.log("- Suicide King (King of Hearts) count:", suicideKingCount);
+    console.log("- Joker count:", jokerCount);
+    console.log("- Total deck size:", this.deck.length);
+    
+    // Sanity check - there should be exactly 1 Suicide King and 2 Jokers
+    if (suicideKingCount !== 1 || jokerCount !== 2) {
+      console.error("DECK ERROR: Incorrect card counts!");
+      console.error("Suicide King count should be 1, actual:", suicideKingCount);
+      console.error("Joker count should be 2, actual:", jokerCount);
     }
   }
 
