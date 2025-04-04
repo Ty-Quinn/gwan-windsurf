@@ -899,48 +899,45 @@ export default function GwanGame() {
   const handleSuicideKingSelectBlight = () => {
     if (!game || !gameState || pendingSuicideKingCardIndex === null) return
     
+    console.log("Suicide King selection function called")
     const result = game.completeSuicideKingSelectBlight(playerView, pendingSuicideKingCardIndex)
+    console.log("Game logic result:", result)
     
     if (result.success) {
-      setGameState(game.getGameState())
-      
-      // Close the Suicide King modal
-      setShowSuicideKingModal(false)
-      setPendingSuicideKingCardIndex(null)
-      
-      // Get current player's blight card IDs to exclude from selection
-      const currentBlightCards = gameState.players[playerView].blightCards.map(card => card.id)
-      setExcludedBlightCardIds(currentBlightCards)
-      
-      // Show blight card selection modal with second selection flag
-      setIsSecondBlightSelection(true)
-      setShowBlightCardSelection(true)
-      setShowSuicideKingModal(false)
-      setPendingSuicideKingCardIndex(null)
-      
-      // Get currently selected blight card IDs to exclude them from selection
+      // Important: Get current Blight card IDs BEFORE updating game state
       const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id)
-      setExcludedBlightCardIds(currentPlayerBlightCardIds)
       
-      // Show blight card selection modal with second selection flag
-      setIsSecondBlightSelection(true)
-      setShowBlightCardSelection(true)
-      setMessage(result.message || "The Suicide King grants you a new Blight card selection!")
+      // First close the Suicide King modal completely
+      setShowSuicideKingModal(false)
+      setPendingSuicideKingCardIndex(null)
       
-      // Check for game end first (takes priority)
-      if (result.gameEnded) {
-        // If the game has ended, we need to set both the round winner and game winner
-        setRoundWinner(result.roundWinner)
-        setGameWinner(result.roundWinner)
-        setShowGameEnd(true)
-      }
-      // Otherwise check for round end
-      else if (result.roundWinner !== undefined || result.roundTied) {
-        setRoundWinner(result.roundWinner)
-        setRoundTied(result.roundTied || false)
-        setShowRoundSummary(true)
-        setNextRoundPending(true)
-      }
+      // Wait for React to process those state changes
+      setTimeout(() => {
+        setGameState(game.getGameState())
+        setExcludedBlightCardIds(currentPlayerBlightCardIds)
+        setIsSecondBlightSelection(true)
+        setShowBlightCardSelection(true)
+        setMessage(result.message || "The Suicide King grants you a new Blight card selection!")
+        
+        console.log("Showing Blight selection modal", {
+          excludedCards: currentPlayerBlightCardIds,
+          isSecondSelection: true
+        })
+      }, 50)
+      
+      // Move the game end checks inside the timeout to happen after selection modal appears
+      setTimeout(() => {
+        if (result.gameEnded) {
+          setRoundWinner(result.roundWinner)
+          setGameWinner(result.roundWinner)
+          setShowGameEnd(true)
+        } else if (result.roundWinner !== undefined || result.roundTied) {
+          setRoundWinner(result.roundWinner)
+          setRoundTied(result.roundTied || false)
+          setShowRoundSummary(true)
+          setNextRoundPending(true)
+        }
+      }, 100)
     } else {
       setMessage(result.message || "Failed to grant second Blight card")
     }
