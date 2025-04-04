@@ -148,6 +148,42 @@ export default function GameBoard({
     }
   }
   
+  // Function to render opponent's hand as face-down cards
+  const renderOpponentHand = () => {
+    if (!isOpponent || currentPlayer.hand.length === 0) return null;
+    
+    return (
+      <div className="mb-4 py-2 flex justify-center">
+        <div className="flex items-center bg-stone-800/50 rounded-lg p-2 border border-amber-900/40">
+          <span className="text-amber-200 mr-3 font-medieval text-sm">Opponent's Arsenal:</span>
+          <div className="flex -space-x-3">
+            {Array.from({ length: Math.min(currentPlayer.hand.length, 8) }).map((_, index) => (
+              <div 
+                key={`opponent-card-${index}`} 
+                className={`w-10 h-14 rounded-md transform card-back relative ${index % 5 === 0 ? 'rotate--2' : index % 5 === 1 ? 'rotate--1' : index % 5 === 2 ? 'rotate-0' : index % 5 === 3 ? 'rotate-1' : 'rotate-2'}`}
+              >
+                {/* Card back design */}
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-900/90 to-amber-950/90 rounded-md border-2 border-amber-800/70 shadow-md flex items-center justify-center">
+                  <div className="w-6 h-8 border-2 border-amber-700/50 rounded-sm flex items-center justify-center">
+                    <div className="text-amber-600/80 text-xs font-medieval">G</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {currentPlayer.hand.length > 8 && (
+              <div className="ml-1 flex items-center justify-center">
+                <span className="text-amber-300/80 text-xs">+{currentPlayer.hand.length - 8} more</span>
+              </div>
+            )}
+          </div>
+          <div className="ml-3 text-xs text-amber-400/80 font-serif">
+            Total: {currentPlayer.hand.length}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="mb-8 relative overflow-visible gwan-board-container p-4">
       <div className="flex justify-between items-center mb-4">
@@ -187,6 +223,9 @@ export default function GameBoard({
           {currentPlayer.pass && <span className="text-red-400 mr-4 font-medieval">Passed</span>}
         </div>
       </div>
+      
+      {/* Opponent's hand display */}
+      {renderOpponentHand()}
       
       {/* Game Rows */}
       <div className="space-y-4">

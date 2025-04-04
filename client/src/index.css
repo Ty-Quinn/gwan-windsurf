@@ -130,3 +130,20 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(160, 100, 40, 0.7);
 }
+
+/* Card rotation utility classes */
+.rotate--2 {
+  transform: rotate(-2deg);
+}
+.rotate--1 {
+  transform: rotate(-1deg);
+}
+.rotate-0 {
+  transform: rotate(0deg);
+}
+.rotate-1 {
+  transform: rotate(1deg);
+}
+.rotate-2 {
+  transform: rotate(2deg);
+}
