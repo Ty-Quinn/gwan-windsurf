@@ -714,22 +714,19 @@ export class GwanGameLogic {
     this.currentPlayer = state.currentPlayer;
     this.currentRound = state.currentRound;
     this.weatherEffects = JSON.parse(JSON.stringify(state.weatherEffects));
-
-    // Instead of creating a new deck, use the deck count from the state
-    // This prevents duplicate jokers being added  
-    this.deck = []; // Initialize empty deck
+    this.availableBlightCards = state.availableBlightCards ? [...state.availableBlightCards] : [];
+    this.isBlightCardBeingPlayed = state.isBlightCardBeingPlayed || false;
+    this.isSuicideKingBeingPlayed = state.isSuicideKingBeingPlayed || false;
     
-    // Only create a new deck if no deck exists or if we need to reconstruct it
-    if (state.deckCount > 0) {
-      this.createDeck();
-      this.shuffleDeck();
-
-      // Trim the deck to match the expected count
-      if (this.deck.length > state.deckCount) {
-        this.deck = this.deck.slice(0, state.deckCount);
+    // Check if we need to initialize the deck
+    if (state.deckCount === undefined || state.deckCount === 0 || this.deck.length === 0) {
+      // Only create a new deck at the beginning of the game
+      if (this.currentRound === 1 && !this.players.some(p => p.discardPile.length > 0 || p.field.clubs.length > 0 || p.field.diamonds.length > 0 || p.field.spades.length > 0)) {
+        this.createDeck();
+        this.shuffleDeck();
       }
     }
-
+    
     this.gameEnded = false;
   }
 
