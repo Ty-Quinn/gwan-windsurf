@@ -51,29 +51,29 @@ export default function GwanGame() {
   const [roundTied, setRoundTied] = useState<boolean>(false)
   const [gameWinner, setGameWinner] = useState<number | undefined>(undefined)
   const [nextRoundPending, setNextRoundPending] = useState<boolean>(false)
-  
+
   // Special card functionality
   const [showMedicRevival, setShowMedicRevival] = useState<boolean>(false)
   const [showDecoyRetrieval, setShowDecoyRetrieval] = useState<boolean>(false)
   const [showSuicideKingModal, setShowSuicideKingModal] = useState<boolean>(false)
   const [pendingSuicideKingCardIndex, setPendingSuicideKingCardIndex] = useState<number | null>(null)
-  
+
   // Dice roll functionality
   const [showDiceRoll, setShowDiceRoll] = useState<boolean>(false)
   const [gameStarted, setGameStarted] = useState<boolean>(false)
-  
+
   // Rogue and Sniper card states
   const [pendingRogueCardIndex, setPendingRogueCardIndex] = useState<number | null>(null)
   const [pendingSniperCardIndex, setPendingSniperCardIndex] = useState<number | null>(null)
   const [pendingCardTargetRow, setPendingCardTargetRow] = useState<string | null>(null)
   const [showRogueDiceRoll, setShowRogueDiceRoll] = useState<boolean>(false)
   const [showSniperDiceRoll, setShowSniperDiceRoll] = useState<boolean>(false)
-  
+
   // Undo functionality
   const [lastAction, setLastAction] = useState<LastAction | null>(null)
   const [turnEnded, setTurnEnded] = useState<boolean>(false)
   const [prevGameState, setPrevGameState] = useState<GameState | null>(null)
-  
+
   // Blight cards functionality
   const [showBlightCardSelection, setShowBlightCardSelection] = useState<boolean>(false)
   const [showBlightCardPlay, setShowBlightCardPlay] = useState<boolean>(false)
@@ -82,10 +82,10 @@ export default function GwanGame() {
   const [showDevilRevival, setShowDevilRevival] = useState<boolean>(false)
   const [currentBlightEffect, setCurrentBlightEffect] = useState<BlightEffect | null>(null)
   const [blightTargetRow, setBlightTargetRow] = useState<keyof Field | undefined>(undefined)
-  
+
   // Dedicated modal for Magician effect
   const [showMagicianEffect, setShowMagicianEffect] = useState<boolean>(false)
-  
+
   // For second blight card selection
   const [isSecondBlightSelection, setIsSecondBlightSelection] = useState<boolean>(false)
   const [excludedBlightCardIds, setExcludedBlightCardIds] = useState<string[]>([])
@@ -98,22 +98,22 @@ export default function GwanGame() {
 
     setGame(newGame)
     setGameState(newGame.getGameState())
-    
+
     // Message about starting process - we'll show dice roll after Blight card selection
     setMessage("Choose your Blight card for this match")
   }, [])
-  
+
   // Show dice roll only after both players have chosen their Blight cards
   useEffect(() => {
     if (gameState && 
         !gameStarted && 
         gameState.players[0].blightCards.length > 0 && 
         gameState.players[1].blightCards.length > 0) {
-      
+
       // Both players have chosen Blight cards, now show dice roll
       setShowDiceRoll(true)
       setMessage("Roll to determine who goes first!")
-      
+
       // Mark Blight cards as being selected for the game
       if (game) {
         const updatedState = {...gameState, blightCardsSelected: true}
@@ -122,7 +122,7 @@ export default function GwanGame() {
       }
     }
   }, [gameState?.players[0]?.blightCards?.length, gameState?.players[1]?.blightCards?.length, gameStarted])
-  
+
   // Show initial Blight card selection for Player 1 when the game is first loaded
   useEffect(() => {
     if (gameState && gameState.currentRound === 1 && !gameStarted && !gameState.blightCardsSelected) {
@@ -131,7 +131,7 @@ export default function GwanGame() {
       setShowBlightCardSelection(true);
     }
   }, [gameState?.currentRound, gameStarted, gameState?.blightCardsSelected]);
-  
+
   // Show Blight card selection for Player 2 after Player 1 has selected but before dice roll
   useEffect(() => {
     if (gameState && 
@@ -147,18 +147,18 @@ export default function GwanGame() {
   }, [gameStarted, gameState?.blightCardsSelected, 
       gameState?.players[0]?.blightCards?.length, 
       gameState?.players[1]?.blightCards?.length]);
-  
+
   // Handle dice roll completion and set the first player
   const handleDiceRollComplete = (firstPlayerIndex: number) => {
     if (!game || !gameState) return
-    
+
     // Update the game state with the first player determined by dice roll
     const updatedGameState = {...gameState, currentPlayer: firstPlayerIndex}
-    
+
     // Get a new instance of the game and set the state
     const updatedGame = new GwanGameLogic()
     updatedGame.initializeGameFromState(updatedGameState)
-    
+
     setGame(updatedGame)
     setGameState(updatedGameState)
     setPlayerView(firstPlayerIndex) // Set the view to the player who goes first
@@ -166,7 +166,7 @@ export default function GwanGame() {
     setGameStarted(true)
     setMessage(`Player ${firstPlayerIndex + 1} won the roll and goes first! Play a card or pass.`)
   }
-  
+
   // Show rules only on first load of the game if they haven't been shown before
   useEffect(() => {
     // Only show rules when the game is first initialized and not shown before in this session
@@ -214,24 +214,24 @@ export default function GwanGame() {
         card: JSON.parse(JSON.stringify(card)), // Deep copy the card
         targetRow
       })
-      
+
       // Always keep turnEnded false when a card is played so undo is available
       setTurnEnded(false)
       setGameState(game.getGameState())
       setMessage(result.message)
       setSelectedCard(null)
       setTargetRowSelection(false)
-      
+
       // If this is a medic card, show the revival modal
       if (result.isMedicRevival) {
         setShowMedicRevival(true)
       }
-      
+
       // If this is a decoy card, show the retrieval modal
       if (result.isDecoyRetrieval) {
         setShowDecoyRetrieval(true)
       }
-      
+
       // If this is a Rogue card, store the card details and show the dice roller
       if (result.isRogueDiceRoll) {
         setPendingRogueCardIndex(cardIndex)
@@ -241,7 +241,7 @@ export default function GwanGame() {
         setLastAction(null)
         setPrevGameState(null)
       }
-      
+
       // If this is a Sniper card, store the card details and show the dice roller
       if (result.isSniperDiceRoll) {
         setPendingSniperCardIndex(cardIndex)
@@ -251,7 +251,7 @@ export default function GwanGame() {
         setLastAction(null)
         setPrevGameState(null)
       }
-      
+
       // If this is a Suicide King, store the card index and show the modal
       if (result.isSuicideKing) {
         setPendingSuicideKingCardIndex(cardIndex)
@@ -260,7 +260,7 @@ export default function GwanGame() {
         setLastAction(null)
         setPrevGameState(null)
       }
-      
+
       // Check for game end first (takes priority)
       if (result.gameEnded) {
         // If the game has ended, we need to set both the round winner and game winner
@@ -275,7 +275,7 @@ export default function GwanGame() {
         setShowRoundSummary(true)
         setNextRoundPending(true)
       }
-      
+
       // Log for debugging
       console.log("Card played, undo available:", !turnEnded && !!lastAction)
     } else {
@@ -286,17 +286,17 @@ export default function GwanGame() {
   // Handle undo last card placement - returning the exact card to hand
   const handleUndo = () => {
     if (!game || !lastAction || turnEnded || !prevGameState) return
-    
+
     // Get the current game state
     const currentState = game.getGameState();
-    
+
     // Find where the card was played (player field or opponent field for spy cards)
     const playerIndex = lastAction.playerIndex;
     const opponentIndex = 1 - playerIndex;
-    
+
     // We need to figure out which row the card was played in
     let rowKey: "clubs" | "spades" | "diamonds";
-    
+
     if (lastAction.card.suit === "hearts" || lastAction.card.isJoker) {
       // For hearts cards and Joker cards, we use the target row that was selected
       if (lastAction.targetRow === "clubs" || lastAction.targetRow === "spades" || lastAction.targetRow === "diamonds") {
@@ -312,20 +312,20 @@ export default function GwanGame() {
       // Default fallback, should never happen
       rowKey = "clubs";
     }
-    
+
     // Create a modified game state
     const modifiedState = JSON.parse(JSON.stringify(currentState)) as GameState;
-    
+
     // For spy cards that get played on opponent's field
     if (lastAction.card.isSpy) {
       // Find and remove the spy card from opponent's field
       const cardIndex = modifiedState.players[opponentIndex].field[rowKey]
         .findIndex((c: Card) => c.suit === lastAction.card.suit && c.value === lastAction.card.value);
-      
+
       if (cardIndex !== -1) {
         // Remove the card from opponent's field
         modifiedState.players[opponentIndex].field[rowKey].splice(cardIndex, 1);
-        
+
         // Remove the 2 cards that were drawn (if any), by truncating hand back to original size
         if (modifiedState.players[playerIndex].hand.length > prevGameState.players[playerIndex].hand.length) {
           const originalHandSize = prevGameState.players[playerIndex].hand.length;
@@ -336,16 +336,16 @@ export default function GwanGame() {
       // For regular cards on player's own field
       const cardIndex = modifiedState.players[playerIndex].field[rowKey]
         .findIndex((c: Card) => c.suit === lastAction.card.suit && c.value === lastAction.card.value);
-      
+
       if (cardIndex !== -1) {
         // Remove the card from field
         modifiedState.players[playerIndex].field[rowKey].splice(cardIndex, 1);
       }
     }
-    
+
     // Return the card to player's hand
     modifiedState.players[playerIndex].hand.push(lastAction.card);
-    
+
     // For weather cards, handle the weather effect
     if (lastAction.card.isWeather) {
       if (lastAction.card.suit === "hearts" && lastAction.targetRow) {
@@ -358,14 +358,14 @@ export default function GwanGame() {
         modifiedState.weatherEffects[lastAction.card.suit] = false;
       }
     }
-    
+
     // Restore turn to the current player
     modifiedState.currentPlayer = playerIndex;
-    
+
     // Apply the modified state
     const newGame = new GwanGameLogic();
     newGame.initializeGameFromState(modifiedState);
-    
+
     setGame(newGame);
     setGameState(modifiedState);
     setLastAction(null);
@@ -384,7 +384,7 @@ export default function GwanGame() {
       if (game) {
         game.calculateScores()
       }
-      
+
       setGameState(game.getGameState())
       setMessage(result.message)
       setTurnEnded(true) // Can't undo after passing
@@ -426,7 +426,7 @@ export default function GwanGame() {
     if (!game || !gameState) return
 
     const result = game.undoLastCardPlayed(playerView, cardToReturn, rowName)
-    
+
     if (result.success) {
       setGameState(game.getGameState())
       setMessage(result.message || "Card returned to your hand")
@@ -434,18 +434,18 @@ export default function GwanGame() {
       setMessage(result.message || "Failed to return card to hand")
     }
   }
-  
+
   // Handle card selection from discard pile for medic revival
   const handleMedicRevival = (card: Card, discardIndex: number) => {
     if (!game || !gameState) return
 
     const result = game.completeMedicRevival(playerView, discardIndex)
-    
+
     if (result.success) {
       setGameState(game.getGameState())
       setMessage(result.message || "Card revived from discard pile!")
       setShowMedicRevival(false)
-      
+
       // Check for game end first (takes priority)
       if (result.gameEnded) {
         // If the game has ended, we need to set both the round winner and game winner
@@ -464,18 +464,18 @@ export default function GwanGame() {
       setMessage(result.message || "Failed to revive card")
     }
   }
-  
+
   // Handle card retrieval from field for decoy card
   const handleDecoyRetrieval = (row: keyof Field, cardIndex: number) => {
     if (!game || !gameState) return
-    
+
     const result = game.completeDecoyRetrieval(playerView, row, cardIndex)
-    
+
     if (result.success) {
       setGameState(game.getGameState())
       setMessage(result.message || "Card retrieved from the field!")
       setShowDecoyRetrieval(false)
-      
+
       // Check for game end first (takes priority)
       if (result.gameEnded) {
         // If the game has ended, we need to set both the round winner and game winner
@@ -494,20 +494,20 @@ export default function GwanGame() {
       setMessage(result.message || "Failed to retrieve card")
     }
   }
-  
+
   // Handle Rogue dice roll completion (use dice total as card value)
   const handleRogueDiceRoll = (results: number[], total: number) => {
     if (!game || !gameState || pendingRogueCardIndex === null) return
-    
+
     const result = game.completeRoguePlay(playerView, pendingRogueCardIndex, total, pendingCardTargetRow)
-    
+
     if (result.success) {
       setGameState(game.getGameState())
       setMessage(result.message || `Played Rogue card with value ${total}`)
       setShowRogueDiceRoll(false)
       setPendingRogueCardIndex(null)
       setPendingCardTargetRow(null)
-      
+
       // Check for game end first (takes priority)
       if (result.gameEnded) {
         // If the game has ended, we need to set both the round winner and game winner
@@ -526,23 +526,23 @@ export default function GwanGame() {
       setMessage(result.message || "Failed to play Rogue card")
     }
   }
-  
+
   // Handle Sniper dice roll completion (check for doubles)
   const handleSniperDiceRoll = (results: number[], total: number, isDoubles?: boolean) => {
     if (!game || !gameState || pendingSniperCardIndex === null) return
-    
+
     // Use the provided isDoubles if available, otherwise calculate it
     const hasDoubles = isDoubles !== undefined ? isDoubles : (results.length === 2 && results[0] === results[1])
-    
+
     const result = game.completeSniperPlay(playerView, pendingSniperCardIndex, results, hasDoubles, pendingCardTargetRow)
-    
+
     if (result.success) {
       setGameState(game.getGameState())
       setMessage(result.message || `Played Sniper card${isDoubles ? " and eliminated opponent's highest card!" : ""}`)
       setShowSniperDiceRoll(false)
       setPendingSniperCardIndex(null)
       setPendingCardTargetRow(null)
-      
+
       // Check for game end first (takes priority)
       if (result.gameEnded) {
         // If the game has ended, we need to set both the round winner and game winner
@@ -568,48 +568,48 @@ export default function GwanGame() {
     setTurnEnded(true) // Can't undo after ending turn
     setPrevGameState(null)
     setLastAction(null)
-    
+
     // Calculate and update scores at end of turn
     if (game) {
       game.calculateScores()
       setGameState(game.getGameState())
     }
-    
+
     setPlayerView(1 - playerView)
   }
-  
+
   // Start a new round
   const startNextRound = () => {
     if (!game) return
-    
+
     setShowRoundSummary(false)
     setNextRoundPending(false)
     setTurnEnded(false)
     setLastAction(null)
     setPrevGameState(null)
-    
+
     game.initializeRound()
     const newState = game.getGameState()
     setGameState(newState)
-    
+
     // Set player view to match the starting player (loser of previous round goes first)
     setPlayerView(newState.currentPlayer)
-    
+
     setMessage(`Round ${newState.currentRound} starting!`)
   }
-  
+
   // Blight Card Handling Functions
-  
+
   // Handle selecting a blight card at the start of a match
   const handleBlightCardSelection = (playerIndex: number, blightCard: BlightCard) => {
     if (!game || !gameState) return
-    
+
     const result = game.setBlightCard(playerIndex, blightCard)
-    
+
     if (result.success) {
       setGameState(game.getGameState())
       setShowBlightCardSelection(false)
-      
+
       // Reset the second selection state if this was a second selection
       if (isSecondBlightSelection) {
         setIsSecondBlightSelection(false)
@@ -622,19 +622,19 @@ export default function GwanGame() {
       setMessage(result.message || "Failed to select Blight card")
     }
   }
-  
+
   // Handle playing a blight card
   const handlePlayBlightCard = (blightCardIndex: number = 0) => {
     if (!game || !gameState) return
-    
+
     // Get the selected blight card and check if it's the Magician
     if (gameState.players[playerView].blightCards.length === 0) {
       setMessage("You don't have any blight cards to play");
       return;
     }
-    
+
     const blightCard = gameState.players[playerView].blightCards[blightCardIndex];
-    
+
     // If it's the Magician, use our dedicated modal
     if (blightCard && blightCard.effect === BlightEffect.MAGICIAN) {
       setShowBlightCardPlay(false);
@@ -643,14 +643,14 @@ export default function GwanGame() {
       setMessage("Select a row to target with the Magician's effect");
       return;
     }
-    
+
     // For all other blight cards, use the regular flow
     const result = game.playBlightCard(playerView, blightCardIndex)
-    
+
     if (result.success) {
       setGameState(game.getGameState())
       setShowBlightCardPlay(false)
-      
+
       // Handle specific blight card effects that need further user input
       if (result.requiresBlightSelection) {
         setCurrentBlightEffect(result.blightEffect || null)
@@ -667,7 +667,7 @@ export default function GwanGame() {
       setMessage(result.message || "Failed to play Blight card")
     }
   }
-  
+
   // Handle selecting a target for blight card effect
   const handleBlightTargetSelection = (
     effect: BlightEffect, 
@@ -678,7 +678,7 @@ export default function GwanGame() {
     success?: boolean
   ) => {
     if (!game || !gameState || !currentBlightEffect) return
-    
+
     console.log("BlightTargetSelection called with:", {
       effect,
       targetPlayerIndex,
@@ -687,12 +687,12 @@ export default function GwanGame() {
       diceResults: diceResults ? diceResults.join(",") : "none", 
       success
     });
-    
+
     // Store the target row for later use in dice rolls (especially for Magician effect)
     if (targetRowName) {
       setBlightTargetRow(targetRowName);
     }
-    
+
     // Special handling for Magician effect when dice roll happened in the target modal
     if (effect === BlightEffect.MAGICIAN && diceResults && success !== undefined && targetRowName) {
       console.log("Calling handleBlightDiceRoll directly for Magician effect");
@@ -700,7 +700,7 @@ export default function GwanGame() {
       handleBlightDiceRoll(effect, diceResults, success);
       return;
     }
-    
+
     // When passing to game-logic, we send the current effect from state
     const result = game.completeBlightCardTarget(
       playerView,
@@ -709,27 +709,27 @@ export default function GwanGame() {
       targetRowName, 
       targetCardIndex
     )
-    
+
     if (result.success) {
       // Get updated state immediately
       const freshState = game.getGameState();
       console.log("Target selection succeeded, updating game state");
-      
+
       setGameState(freshState);
       setShowBlightCardTarget(false);
-      
+
       // Don't clear currentBlightEffect if we're going to show a dice roll next
       if (!result.requiresBlightDiceRoll) {
         setCurrentBlightEffect(null);
         setBlightTargetRow(undefined);
       }
-      
+
       setMessage(result.message || "Blight card effect applied successfully")
     } else {
       setMessage(result.message || "Failed to apply Blight card effect")
     }
   }
-  
+
   // Handle dice roll for blight card effect
   const handleBlightDiceRoll = (
     effect: BlightEffect, 
@@ -741,17 +741,17 @@ export default function GwanGame() {
         { game: !!game, gameState: !!gameState, currentBlightEffect });
       return;
     }
-    
+
     // Get target row for the Magician effect from state
     const targetRow = blightTargetRow;
-    
+
     // Extra validation for Magician effect
     if (effect === BlightEffect.MAGICIAN && !targetRow) {
       console.error("Missing target row for Magician effect");
       setMessage("Error: No target row selected for Magician effect");
       return;
     }
-    
+
     console.log("Processing blight dice roll:", { 
       effect, 
       diceResults, 
@@ -759,7 +759,7 @@ export default function GwanGame() {
       targetRow,
       opponentCards: targetRow ? gameState.players[1-playerView].field[targetRow] : 'none'
     });
-    
+
     // Apply the effect in the game logic
     const result = game.completeBlightCardDiceRoll(
       playerView,
@@ -768,12 +768,12 @@ export default function GwanGame() {
       success,
       targetRow
     )
-    
+
     if (result.success) {
       // Update state with the latest data
       setGameState(game.getGameState());
       setShowBlightDiceRoll(false);
-      
+
       // Special handling for Devil card effect if successful
       if (effect === BlightEffect.DEVIL && success) {
         setShowDevilRevival(true);
@@ -787,13 +787,13 @@ export default function GwanGame() {
       setMessage(result.message || "Failed to complete Blight card effect");
     }
   }
-  
+
   // Handle reviving a card from any discard pile (Devil effect)
   const handleDevilRevival = (playerIndex: number, cardIndex: number) => {
     if (!game || !gameState) return
-    
+
     const result = game.reviveCardFromDiscard(playerView, playerIndex, cardIndex)
-    
+
     if (result.success) {
       setGameState(game.getGameState())
       setShowDevilRevival(false)
@@ -803,7 +803,7 @@ export default function GwanGame() {
       setMessage(result.message || "Failed to revive card")
     }
   }
-  
+
   // Start a new game
   const startNewGame = () => {
     const newGame = new GwanGameLogic()
@@ -820,15 +820,15 @@ export default function GwanGame() {
     setLastAction(null)
     setPrevGameState(null)
     setGameStarted(false)
-    
+
     // Show dice roll to determine who goes first
     setShowDiceRoll(true)
     setMessage("Roll to determine who goes first!")
-    
+
     // Log for debugging
     console.log("New game started, players:", newGame.getGameState().players)
   }
-  
+
   // Start a completely new match
   const startNewMatch = () => {
     // Reset everything, similar to startNewGame
@@ -846,11 +846,11 @@ export default function GwanGame() {
     setLastAction(null)
     setPrevGameState(null)
     setGameStarted(false)
-    
+
     // Show dice roll to determine who goes first
     setShowDiceRoll(true)
     setMessage("Roll to determine who goes first!")
-    
+
     // Log for debugging
     console.log("New match started, players:", newGame.getGameState().players)
   }
@@ -866,15 +866,15 @@ export default function GwanGame() {
   // Handle Suicide King effects
   const handleSuicideKingClearWeather = () => {
     if (!game || !gameState || pendingSuicideKingCardIndex === null) return
-    
+
     const result = game.completeSuicideKingClearWeather(playerView, pendingSuicideKingCardIndex)
-    
+
     if (result.success) {
       setGameState(game.getGameState())
       setShowSuicideKingModal(false)
       setPendingSuicideKingCardIndex(null)
       setMessage(result.message || "The Suicide King cleared all weather effects!")
-      
+
       // Check for game end first (takes priority)
       if (result.gameEnded) {
         // If the game has ended, we need to set both the round winner and game winner
@@ -893,63 +893,57 @@ export default function GwanGame() {
       setMessage(result.message || "Failed to clear weather effects")
     }
   }
-  
+
   // Using the state variables declared at the top of the component
-  
+
   const handleSuicideKingSelectBlight = () => {
     console.log("handleSuicideKingSelectBlight called");
-    
+
     if (!game || !gameState || pendingSuicideKingCardIndex === null) {
-      console.log("Early return: missing dependencies", { 
-        game: !!game, 
-        gameState: !!gameState, 
-        pendingSuicideKingCardIndex 
-      });
+      console.log("Early return: missing dependencies");
       return;
     }
-    
-    // First, get the current player's blight cards
+
+    // First, get the current player's blight cards for exclusion in the next modal
     const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id);
-    console.log("Current player blight cards:", currentPlayerBlightCardIds);
-    
-    // Immediately set up for the second selection
-    setExcludedBlightCardIds(currentPlayerBlightCardIds);
-    setIsSecondBlightSelection(true);
-    
-    // Close suicide king modal
-    setShowSuicideKingModal(false);
-    setPendingSuicideKingCardIndex(null);
-    
-    // Wait a tick to update the UI (close the current modal)
-    setTimeout(() => {
-      console.log("Opening blight card selection modal");
+
+    // Call the game logic FIRST to handle Suicide King and remove it from hand
+    const result = game.completeSuicideKingSelectBlight(playerView, pendingSuicideKingCardIndex);
+    console.log("Game logic result:", result);
+
+    if (result.success) {
+      // Immediately update game state to reflect the removed card
+      setGameState(game.getGameState());
+
+      // Then close the Suicide King modal
+      setShowSuicideKingModal(false);
+      setPendingSuicideKingCardIndex(null);
+
+      // Set up for blight selection
+      setExcludedBlightCardIds(currentPlayerBlightCardIds);
+      setIsSecondBlightSelection(true);
+
+      // Show the blight selection modal
       setShowBlightCardSelection(true);
-      
-      // Now call the game logic
-      const result = game.completeSuicideKingSelectBlight(playerView, pendingSuicideKingCardIndex);
-      console.log("Game logic result:", result);
-      
-      if (result.success) {
-        setGameState(game.getGameState());
-        setMessage(result.message || "Choose your second Blight card!");
-        
-        // Check for game end conditions
-        setTimeout(() => {
-          if (result.gameEnded) {
-            setRoundWinner(result.roundWinner);
-            setGameWinner(result.roundWinner);
-            setShowGameEnd(true);
-          } else if (result.roundWinner !== undefined || result.roundTied) {
-            setRoundWinner(result.roundWinner);
-            setRoundTied(result.roundTied || false);
-            setShowRoundSummary(true);
-            setNextRoundPending(true);
-          }
-        }, 50);
-      } else {
-        setMessage(result.message || "Failed to grant second Blight card");
+      setMessage(result.message || "Choose your second Blight card!");
+
+      // Check for game end conditions after all state updates
+      if (result.gameEnded) {
+        setRoundWinner(result.roundWinner);
+        setGameWinner(result.roundWinner);
+        setShowGameEnd(true);
+      } else if (result.roundWinner !== undefined || result.roundTied) {
+        setRoundWinner(result.roundWinner);
+        setRoundTied(result.roundTied || false);
+        setShowRoundSummary(true);
+        setNextRoundPending(true);
       }
-    }, 50);
+    } else {
+      // If there was an error, close the modal and show message
+      setShowSuicideKingModal(false);
+      setPendingSuicideKingCardIndex(null);
+      setMessage(result.message || "Failed to grant second Blight card");
+    }
   }
 
   return (
@@ -965,20 +959,20 @@ export default function GwanGame() {
           localStorage.setItem('gwanRulesShown', 'true')
         }}
       />
-      
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-card p-3 rounded-lg text-center flex flex-col">
           <span className="text-sm text-muted-foreground">Player 1</span>
           <span className="text-2xl font-bold text-primary">{gameState.players[0].score}</span>
           <span className="text-xs text-muted-foreground mt-1">Total Score</span>
         </div>
-        
+
         <div className="bg-card p-3 rounded-lg text-center flex flex-col">
           <span className="text-sm text-muted-foreground">Player 2</span>
           <span className="text-2xl font-bold text-primary">{gameState.players[1].score}</span>
           <span className="text-xs text-muted-foreground mt-1">Total Score</span>
         </div>
-        
+
         <div className="bg-card p-3 rounded-lg text-center flex flex-col">
           <span className="text-sm text-muted-foreground">Rounds Won</span>
           <div className="flex justify-center mt-1 space-x-4">
@@ -992,7 +986,7 @@ export default function GwanGame() {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-card p-3 rounded-lg text-center flex items-center justify-center">
           {isCurrentTurn ? (
             <>
@@ -1051,7 +1045,7 @@ export default function GwanGame() {
           }}
         />
       )}
-      
+
       {showRoundSummary && (
         <RoundSummaryModal
           players={gameState.players}
@@ -1060,7 +1054,7 @@ export default function GwanGame() {
           onContinue={startNextRound}
         />
       )}
-      
+
       {showGameEnd && (
         <GameEndModal
           players={gameState.players}
@@ -1069,13 +1063,13 @@ export default function GwanGame() {
           onNewMatch={startNewMatch}
         />
       )}
-      
+
       {showRules && (
         <GameRulesModal
           onClose={() => setShowRules(false)}
         />
       )}
-      
+
       {showMedicRevival && (
         <MedicRevivalModal
           player={currentPlayer}
@@ -1085,7 +1079,7 @@ export default function GwanGame() {
             // We know it's a 3 card and will be in one of the player's fields
             let medicCard: Card | null = null;
             let medicRow: keyof Field | null = null;
-            
+
             for (const row of ["clubs", "spades", "diamonds"] as const) {
               const cardIndex = currentPlayer.field[row].findIndex((c: Card) => c.isMedic);
               if (cardIndex !== -1) {
@@ -1099,13 +1093,13 @@ export default function GwanGame() {
               // Undo the medic card play
               handleUndoCardPlay(medicCard, medicRow);
             }
-            
+
             setShowMedicRevival(false);
             setMessage("Medic card play cancelled and card returned to your hand");
           }}
         />
       )}
-      
+
       {showDecoyRetrieval && (
         <DecoyRetrievalModal
           player={currentPlayer}
@@ -1115,7 +1109,7 @@ export default function GwanGame() {
             // We know it's a 4 card and will be in one of the player's fields
             let decoyCard: Card | null = null;
             let decoyRow: keyof Field | null = null;
-            
+
             // Process only rows that exist in Field type
             for (const row of ["clubs", "spades", "diamonds"] as const) {
               const cardIndex = currentPlayer.field[row].findIndex((c: Card) => c.isDecoy);
@@ -1130,19 +1124,19 @@ export default function GwanGame() {
               // Undo the decoy card play
               handleUndoCardPlay(decoyCard, decoyRow);
             }
-            
+
             setShowDecoyRetrieval(false);
             setMessage("Decoy card play cancelled and card returned to your hand");
           }}
         />
       )}
-      
+
       {/* Dice roll modal to determine first player */}
       <DiceRollModal 
         open={showDiceRoll}
         onDiceRollComplete={handleDiceRollComplete}
       />
-      
+
       {/* Dice roll for Rogue card value determination */}
       {showRogueDiceRoll && pendingRogueCardIndex !== null && gameState && (
         <RogueDiceModal
@@ -1162,7 +1156,7 @@ export default function GwanGame() {
           }}
         />
       )}
-      
+
       {/* Dice roll for Sniper card effect */}
       {showSniperDiceRoll && pendingSniperCardIndex !== null && gameState && (
         <SniperDiceModal
@@ -1180,7 +1174,7 @@ export default function GwanGame() {
           }}
         />
       )}
-      
+
       {/* Blight Card Selection Modal */}
       {showBlightCardSelection && gameState && (
         <BlightCardSelectionModal
@@ -1196,7 +1190,7 @@ export default function GwanGame() {
           isSecondSelection={isSecondBlightSelection}
         />
       )}
-      
+
       {/* Blight Card Play Modal */}
       {showBlightCardPlay && gameState && currentPlayer.blightCards.length > 0 && !currentPlayer.hasUsedBlightCard && (
         <BlightCardPlayModal
@@ -1206,7 +1200,7 @@ export default function GwanGame() {
           onCancel={() => setShowBlightCardPlay(false)}
         />
       )}
-      
+
       {/* Blight Card Target Selection Modal */}
       {showBlightCardTarget && gameState && currentBlightEffect && (
         <BlightCardTargetModal
@@ -1222,7 +1216,7 @@ export default function GwanGame() {
           }}
         />
       )}
-      
+
       {/* Blight Dice Roll Modal */}
       {showBlightDiceRoll && gameState && currentBlightEffect && (
         <BlightDiceModal
@@ -1238,7 +1232,7 @@ export default function GwanGame() {
           }}
         />
       )}
-      
+
       {/* Devil Card Revival Modal */}
       {showDevilRevival && gameState && (
         <DevilRevivalModal
@@ -1252,7 +1246,7 @@ export default function GwanGame() {
           }}
         />
       )}
-      
+
       {/* Magician Effect Modal - Special handling for Magician blight card */}
       {showMagicianEffect && gameState && (
         <MagicianEffectModal
@@ -1266,16 +1260,16 @@ export default function GwanGame() {
               diceResults,
               success
             });
-            
+
             // This is critically important - store the target row name
             setBlightTargetRow(targetRowName);
-            
+
             // Double-check we have the necessary data
             if (!game || !currentBlightEffect) {
               console.error("Missing game or currentBlightEffect in Magician effect");
               return;
             }
-            
+
             // Directly apply the effect in game logic to avoid the row information being lost
             const result = game.completeBlightCardDiceRoll(
               playerView,
@@ -1284,7 +1278,7 @@ export default function GwanGame() {
               success,
               targetRowName  // Use targetRowName directly here
             );
-            
+
             if (result.success) {
               // Update game state
               setGameState(game.getGameState());
@@ -1293,7 +1287,7 @@ export default function GwanGame() {
             } else {
               setMessage(result.message || "Failed to apply Magician effect");
             }
-            
+
             // Close the modal
             setShowMagicianEffect(false);
           }}
@@ -1304,7 +1298,7 @@ export default function GwanGame() {
           }}
         />
       )}
-      
+
       {/* Suicide King Modal */}
       {showSuicideKingModal && gameState && pendingSuicideKingCardIndex !== null && (
         <SuicideKingModal
