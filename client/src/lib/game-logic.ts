@@ -159,7 +159,10 @@ export class GwanGameLogic {
         isSpy: true,   // Jokers act as spy cards
         isMedic: false,
         isJoker: true,
-        isDecoy: false
+        isDecoy: false,
+        isRogue: false,
+        isSniper: false,
+        isSuicideKing: false
       };
       this.deck.push(jokerCard);
     }
@@ -712,13 +715,19 @@ export class GwanGameLogic {
     this.currentRound = state.currentRound;
     this.weatherEffects = JSON.parse(JSON.stringify(state.weatherEffects));
 
-    // Create a proper deck and shuffle it
-    this.createDeck();
-    this.shuffleDeck();
+    // Instead of creating a new deck, use the deck count from the state
+    // This prevents duplicate jokers being added  
+    this.deck = []; // Initialize empty deck
+    
+    // Only create a new deck if no deck exists or if we need to reconstruct it
+    if (state.deckCount > 0) {
+      this.createDeck();
+      this.shuffleDeck();
 
-    // Trim the deck to match the expected count
-    if (this.deck.length > state.deckCount) {
-      this.deck = this.deck.slice(0, state.deckCount);
+      // Trim the deck to match the expected count
+      if (this.deck.length > state.deckCount) {
+        this.deck = this.deck.slice(0, state.deckCount);
+      }
     }
 
     this.gameEnded = false;
