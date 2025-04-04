@@ -8,7 +8,7 @@ import type { BlightCard, Player } from '@/lib/types'
 interface BlightCardPlayModalProps {
   open: boolean
   player: Player
-  onPlayBlightCard: () => void
+  onPlayBlightCard: (cardIndex: number) => void
   onCancel: () => void
 }
 
@@ -18,7 +18,7 @@ export default function BlightCardPlayModal({
   onPlayBlightCard,
   onCancel
 }: BlightCardPlayModalProps) {
-  if (!player.blightCard) {
+  if (player.blightCards.length === 0) {
     return null
   }
 
@@ -28,36 +28,43 @@ export default function BlightCardPlayModal({
         <DialogHeader>
           <DialogTitle className="text-2xl">Play Blight Card</DialogTitle>
           <DialogDescription>
-            You can play your Blight card once per match at the beginning of your turn.
+            You can play a Blight card once per match at the beginning of your turn.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
-          <Card className="bg-card/50 shadow-md">
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-xl">{player.blightCard.name}</CardTitle>
-                <span className="text-3xl">{player.blightCard.icon}</span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-sm">
-                {player.blightCard.description}
-              </CardDescription>
-            </CardContent>
-          </Card>
+        <div className="py-4 space-y-4">
+          {player.blightCards.map((blightCard, index) => (
+            <Card key={blightCard.id} className="bg-card/50 shadow-md hover:shadow-lg cursor-pointer transform transition-transform hover:scale-[1.01]" onClick={() => onPlayBlightCard(index)}>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-xl">{blightCard.name}</CardTitle>
+                  <span className="text-3xl">{blightCard.icon}</span>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-sm">
+                  {blightCard.description}
+                </CardDescription>
+              </CardContent>
+              <CardFooter className="pt-0">
+                <Button variant="ghost" size="sm" className="w-full" onClick={(e) => {
+                  e.stopPropagation();
+                  onPlayBlightCard(index);
+                }}>
+                  Select
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
 
         <p className="text-sm text-muted-foreground italic">
-          Note: Once played, your Blight card cannot be used again in this match.
+          Note: Once played, you cannot use another Blight card in this match.
         </p>
 
         <DialogFooter className="flex justify-between mt-4">
           <Button variant="outline" onClick={onCancel}>
             Not now
-          </Button>
-          <Button onClick={onPlayBlightCard}>
-            Play Blight Card
           </Button>
         </DialogFooter>
       </DialogContent>

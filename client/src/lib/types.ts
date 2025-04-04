@@ -48,7 +48,7 @@ export interface Player {
   roundsWon: number;
   pass: boolean;
   discardPile: Card[];
-  blightCard?: BlightCard;
+  blightCards: BlightCard[];
   hasUsedBlightCard: boolean;
 }
 

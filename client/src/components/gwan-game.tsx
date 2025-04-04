@@ -103,8 +103,8 @@ export default function GwanGame() {
   useEffect(() => {
     if (gameState && 
         !gameStarted && 
-        gameState.players[0].blightCard && 
-        gameState.players[1].blightCard) {
+        gameState.players[0].blightCards.length > 0 && 
+        gameState.players[1].blightCards.length > 0) {
       
       // Both players have chosen Blight cards, now show dice roll
       setShowDiceRoll(true)
@@ -117,7 +117,7 @@ export default function GwanGame() {
         setGameState(updatedState)
       }
     }
-  }, [gameState?.players[0]?.blightCard, gameState?.players[1]?.blightCard, gameStarted])
+  }, [gameState?.players[0]?.blightCards?.length, gameState?.players[1]?.blightCards?.length, gameStarted])
   
   // Show initial Blight card selection for Player 1 when the game is first loaded
   useEffect(() => {
@@ -134,13 +134,15 @@ export default function GwanGame() {
         gameState.currentRound === 1 && 
         !gameStarted && 
         !gameState.blightCardsSelected &&
-        gameState.players[0].blightCard && 
-        !gameState.players[1].blightCard) {
+        gameState.players[0].blightCards.length > 0 && 
+        gameState.players[1].blightCards.length === 0) {
       // Player 2's turn to select after Player 1 has selected
       setPlayerView(1); // Switch to Player 2's view for selection
       setShowBlightCardSelection(true);
     }
-  }, [gameState?.players[0]?.blightCard, gameState?.players[1]?.blightCard, gameStarted, gameState?.blightCardsSelected]);
+  }, [gameStarted, gameState?.blightCardsSelected, 
+      gameState?.players[0]?.blightCards?.length, 
+      gameState?.players[1]?.blightCards?.length]);
   
   // Handle dice roll completion and set the first player
   const handleDiceRollComplete = (firstPlayerIndex: number) => {
@@ -610,11 +612,16 @@ export default function GwanGame() {
   }
   
   // Handle playing a blight card
-  const handlePlayBlightCard = () => {
+  const handlePlayBlightCard = (blightCardIndex: number = 0) => {
     if (!game || !gameState) return
     
-    // Get the current blight card and check if it's the Magician
-    const blightCard = gameState.players[playerView].blightCard;
+    // Get the selected blight card and check if it's the Magician
+    if (gameState.players[playerView].blightCards.length === 0) {
+      setMessage("You don't have any blight cards to play");
+      return;
+    }
+    
+    const blightCard = gameState.players[playerView].blightCards[blightCardIndex];
     
     // If it's the Magician, use our dedicated modal
     if (blightCard && blightCard.effect === BlightEffect.MAGICIAN) {
@@ -626,7 +633,7 @@ export default function GwanGame() {
     }
     
     // For all other blight cards, use the regular flow
-    const result = game.playBlightCard(playerView)
+    const result = game.playBlightCard(playerView, blightCardIndex)
     
     if (result.success) {
       setGameState(game.getGameState())
@@ -1148,11 +1155,11 @@ export default function GwanGame() {
       )}
       
       {/* Blight Card Play Modal */}
-      {showBlightCardPlay && gameState && currentPlayer.blightCard && !currentPlayer.hasUsedBlightCard && (
+      {showBlightCardPlay && gameState && currentPlayer.blightCards.length > 0 && !currentPlayer.hasUsedBlightCard && (
         <BlightCardPlayModal
           open={showBlightCardPlay}
           player={currentPlayer}
-          onPlayBlightCard={handlePlayBlightCard}
+          onPlayBlightCard={(index) => handlePlayBlightCard(index)}
           onCancel={() => setShowBlightCardPlay(false)}
         />
       )}
@@ -1178,7 +1185,7 @@ export default function GwanGame() {
         <BlightDiceModal
           open={showBlightDiceRoll}
           effect={currentBlightEffect}
-          blightCard={currentPlayer.blightCard || null}
+          blightCard={currentPlayer.blightCards.length > 0 ? currentPlayer.blightCards.find(card => card.effect === currentBlightEffect) || null : null}
           onComplete={handleBlightDiceRoll}
           onCancel={() => {
             setShowBlightDiceRoll(false);

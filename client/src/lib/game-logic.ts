@@ -39,7 +39,7 @@ export class GwanGameLogic {
         roundsWon: 0,
         pass: false,
         discardPile: [],
-        blightCard: undefined,
+        blightCards: [],
         hasUsedBlightCard: false
       },
       {
@@ -50,7 +50,7 @@ export class GwanGameLogic {
         roundsWon: 0,
         pass: false,
         discardPile: [],
-        blightCard: undefined,
+        blightCards: [],
         hasUsedBlightCard: false
       },
     ];
@@ -1216,7 +1216,7 @@ export class GwanGameLogic {
       currentRound: this.currentRound,
       deckCount: this.deck.length,
       weatherEffects: { ...this.weatherEffects },
-      blightCardsSelected: this.players.every(player => player.blightCard !== undefined),
+      blightCardsSelected: this.players.every(player => player.blightCards.length > 0),
       availableBlightCards: this.availableBlightCards,
       isBlightCardBeingPlayed: this.isBlightCardBeingPlayed,
       isSuicideKingBeingPlayed: this.isSuicideKingBeingPlayed
@@ -1231,11 +1231,9 @@ export class GwanGameLogic {
       return { success: false, message: "Invalid player index" };
     }
 
-    if (this.players[playerIndex].blightCard) {
-      return { success: false, message: "Player already has a blight card" };
-    }
-
-    this.players[playerIndex].blightCard = { ...blightCard };
+    // In case of Suicide King selecting a second blight card, we don't need to check
+    // Add the blight card to the player's blight cards array
+    this.players[playerIndex].blightCards.push({ ...blightCard });
 
     return { 
       success: true, 
@@ -1244,7 +1242,7 @@ export class GwanGameLogic {
   }
 
   // Play a blight card
-  public playBlightCard(playerIndex: number): PlayResult {
+  public playBlightCard(playerIndex: number, blightCardIndex: number = 0): PlayResult {
     // Make sure it's the player's turn
     if (playerIndex !== this.currentPlayer) {
       return { success: false, message: "It's not your turn" };
@@ -1255,9 +1253,14 @@ export class GwanGameLogic {
       return { success: false, message: "You have already passed" };
     }
 
-    // Check if the player has a blight card
-    if (!this.players[playerIndex].blightCard) {
-      return { success: false, message: "You don't have a blight card" };
+    // Check if the player has any blight cards
+    if (this.players[playerIndex].blightCards.length === 0) {
+      return { success: false, message: "You don't have any blight cards" };
+    }
+
+    // Check if the blight card index is valid
+    if (blightCardIndex < 0 || blightCardIndex >= this.players[playerIndex].blightCards.length) {
+      return { success: false, message: "Invalid blight card index" };
     }
 
     // Check if the player has already used their blight card
@@ -1265,7 +1268,7 @@ export class GwanGameLogic {
       return { success: false, message: "You've already used your blight card in this match" };
     }
 
-    const blightCard = this.players[playerIndex].blightCard!;
+    const blightCard = this.players[playerIndex].blightCards[blightCardIndex];
     this.isBlightCardBeingPlayed = true;
 
     // Determine if the blight effect requires target selection or dice roll
@@ -1353,9 +1356,9 @@ export class GwanGameLogic {
       return { success: false, message: "You have already passed" };
     }
 
-    // Check if the player has a blight card
-    if (!this.players[playerIndex].blightCard) {
-      return { success: false, message: "You don't have a blight card" };
+    // Check if the player has any blight cards
+    if (this.players[playerIndex].blightCards.length === 0) {
+      return { success: false, message: "You don't have any blight cards" };
     }
 
     // Check if the player has already used their blight card
@@ -1368,7 +1371,8 @@ export class GwanGameLogic {
       return { success: false, message: "No blight card is being played" };
     }
 
-    const blightCard = this.players[playerIndex].blightCard!;
+    // Get the currently playing blight card by effect
+    // Note: We don't need the actual card object for this function, just the effect
     const opponentIndex = 1 - playerIndex;
 
     // Mark the blight card as used
@@ -1524,12 +1528,12 @@ export class GwanGameLogic {
       return { success: false, message: "You have already passed" };
     }
 
-    // Check if the player has a blight card
-    if (!this.players[playerIndex].blightCard) {
-      return { success: false, message: "You don't have a blight card" };
+    // Check if the player has any blight cards
+    if (this.players[playerIndex].blightCards.length === 0) {
+      return { success: false, message: "You don't have any blight cards" };
     }
 
-    const blightCard = this.players[playerIndex].blightCard!;
+    // Get the currently playing blight card by effect (not needed for this function)
     const opponentIndex = 1 - playerIndex;
 
     // Mark the blight card as used
@@ -1707,21 +1711,14 @@ export class GwanGameLogic {
       return { success: false, message: "No Blight cards are available" };
     }
 
-    // Check if the player already has a Blight card
-    // If they do, we'll reset it so they can select a new one
-    // If they had already used their first Blight card, we'll allow them to select a new one
-    if (this.players[playerIndex].blightCard && !this.players[playerIndex].hasUsedBlightCard) {
-      return { success: false, message: "You already have an unused Blight card" };
-    }
-
     // Remove the Suicide King card from hand (it's removed entirely, not added to discard)
     this.players[playerIndex].hand.splice(cardIndex, 1);
 
     // Reset the flag
     this.isSuicideKingBeingPlayed = false;
     
-    // Reset player's Blight card status (they'll select a new one)
-    this.players[playerIndex].blightCard = undefined;
+    // Reset player's Blight card status so they can select a new one
+    // We don't need to clear existing blight cards, just mark the player as able to use another one
     this.players[playerIndex].hasUsedBlightCard = false;
 
     // If player has no cards left after the Suicide King removal, end the round
