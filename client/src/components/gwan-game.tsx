@@ -85,6 +85,10 @@ export default function GwanGame() {
   
   // Dedicated modal for Magician effect
   const [showMagicianEffect, setShowMagicianEffect] = useState<boolean>(false)
+  
+  // For second blight card selection
+  const [isSecondBlightSelection, setIsSecondBlightSelection] = useState<boolean>(false)
+  const [excludedBlightCardIds, setExcludedBlightCardIds] = useState<string[]>([])
 
   // Initialize the game
   useEffect(() => {
@@ -605,7 +609,15 @@ export default function GwanGame() {
     if (result.success) {
       setGameState(game.getGameState())
       setShowBlightCardSelection(false)
-      setMessage(result.message || `Player ${playerIndex + 1} selected a Blight card`)
+      
+      // Reset the second selection state if this was a second selection
+      if (isSecondBlightSelection) {
+        setIsSecondBlightSelection(false)
+        setExcludedBlightCardIds([])
+        setMessage(`You've selected a second Blight card: ${blightCard.name}`)
+      } else {
+        setMessage(result.message || `Player ${playerIndex + 1} selected a Blight card`)
+      }
     } else {
       setMessage(result.message || "Failed to select Blight card")
     }
@@ -882,6 +894,8 @@ export default function GwanGame() {
     }
   }
   
+  // Using the state variables declared at the top of the component
+  
   const handleSuicideKingSelectBlight = () => {
     if (!game || !gameState || pendingSuicideKingCardIndex === null) return
     
@@ -892,7 +906,12 @@ export default function GwanGame() {
       setShowSuicideKingModal(false)
       setPendingSuicideKingCardIndex(null)
       
-      // Show blight card selection modal
+      // Get currently selected blight card IDs to exclude them from selection
+      const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id)
+      setExcludedBlightCardIds(currentPlayerBlightCardIds)
+      
+      // Show blight card selection modal with second selection flag
+      setIsSecondBlightSelection(true)
       setShowBlightCardSelection(true)
       setMessage(result.message || "The Suicide King grants you a new Blight card selection!")
       
@@ -1150,7 +1169,13 @@ export default function GwanGame() {
           open={showBlightCardSelection}
           playerIndex={playerView}
           onSelectCard={handleBlightCardSelection}
-          onClose={() => setShowBlightCardSelection(false)}
+          onClose={() => {
+            setShowBlightCardSelection(false)
+            setIsSecondBlightSelection(false)
+            setExcludedBlightCardIds([])
+          }}
+          excludedCardIds={excludedBlightCardIds}
+          isSecondSelection={isSecondBlightSelection}
         />
       )}
       

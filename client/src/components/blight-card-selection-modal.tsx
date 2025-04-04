@@ -79,13 +79,17 @@ interface BlightCardSelectionModalProps {
   playerIndex: number
   onSelectCard: (playerIndex: number, card: BlightCard) => void
   onClose: () => void
+  excludedCardIds?: string[]
+  isSecondSelection?: boolean
 }
 
 export default function BlightCardSelectionModal({ 
   open,
   playerIndex,
   onSelectCard,
-  onClose 
+  onClose,
+  excludedCardIds = [],
+  isSecondSelection = false
 }: BlightCardSelectionModalProps) {
   const [selectedCard, setSelectedCard] = useState<BlightCard | null>(null)
 
@@ -101,20 +105,26 @@ export default function BlightCardSelectionModal({
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle className="text-2xl">
-            {playerIndex === 0 ? "Player 1" : "Player 2"} - Choose Your Blight Card
+            {isSecondSelection 
+              ? `${playerIndex === 0 ? "Player 1" : "Player 2"} - Choose Your Second Blight Card`
+              : `${playerIndex === 0 ? "Player 1" : "Player 2"} - Choose Your Blight Card`}
           </DialogTitle>
           <DialogDescription>
-            {playerIndex === 0 
-              ? "You're first to choose! Each player secretly selects one Blight card for the entire match. After you select, Player 2 will choose theirs." 
-              : "Player 1 has made their selection. Now it's your turn to choose your Blight card for the match."}
+            {isSecondSelection 
+              ? "Thanks to the Suicide King's powerful magic, you may select a second Blight card. This is in addition to any Blight card you already have."
+              : playerIndex === 0 
+                ? "You're first to choose! Each player secretly selects one Blight card for the entire match. After you select, Player 2 will choose theirs." 
+                : "Player 1 has made their selection. Now it's your turn to choose your Blight card for the match."}
             <br/><br/>
-            Blight cards can be used once at the beginning of your turn before playing a regular card. Choose wisely!
+            {isSecondSelection 
+              ? "This second Blight card follows the same rules - it can be used once at the beginning of your turn before playing a regular card." 
+              : "Blight cards can be used once at the beginning of your turn before playing a regular card. Choose wisely!"}
           </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="h-[500px] pr-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-1">
-            {BLIGHT_CARDS.map((card) => (
+            {BLIGHT_CARDS.filter(card => !excludedCardIds.includes(card.id)).map((card) => (
               <Card 
                 key={card.id}
                 className={`cursor-pointer transition-all ${
