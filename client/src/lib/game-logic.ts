@@ -1671,8 +1671,11 @@ export class GwanGameLogic {
       diamonds: false
     };
 
-    // Remove the Suicide King card from hand (it's removed entirely, not added to discard)
+    // Remove the Suicide King card from hand ENTIRELY - not adding it to discard
+    // This makes the Suicide King vanish from the game completely when used
     this.players[playerIndex].hand.splice(cardIndex, 1);
+    
+    // Note: We do NOT add it to the discard pile - it's completely removed from the game
 
     // Reset the flag
     this.isSuicideKingBeingPlayed = false;
@@ -1717,8 +1720,11 @@ export class GwanGameLogic {
       return { success: false, message: "No Blight cards are available" };
     }
 
-    // Remove the Suicide King card from hand (it's removed entirely, not added to discard)
+    // Remove the Suicide King card from hand ENTIRELY - not adding it to discard
+    // This makes the Suicide King vanish from the game completely when used
     this.players[playerIndex].hand.splice(cardIndex, 1);
+    
+    // Note: We do NOT add it to the discard pile - it's completely removed from the game
 
     // Reset the flag
     this.isSuicideKingBeingPlayed = false;

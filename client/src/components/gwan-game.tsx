@@ -867,10 +867,24 @@ export default function GwanGame() {
   const handleSuicideKingClearWeather = () => {
     if (!game || !gameState || pendingSuicideKingCardIndex === null) return
     
+    // Save a reference to the Suicide King card before it's removed
+    const suicideKingCard = gameState.players[playerView].hand[pendingSuicideKingCardIndex];
+    console.log("Suicide King card before removal (clear weather):", suicideKingCard);
+    
     const result = game.completeSuicideKingClearWeather(playerView, pendingSuicideKingCardIndex)
     
     if (result.success) {
-      setGameState(game.getGameState())
+      const updatedState = game.getGameState();
+      
+      // Verify the card is completely removed (not in hand or discard)
+      console.log("Suicide King removed from play (clear weather option)");
+      console.log("Suicide King in discard pile:", 
+        updatedState.players[playerView].discardPile.some(
+          card => card.suit === "hearts" && card.value === "K" && card.isSuicideKing
+        )
+      );
+      
+      setGameState(updatedState)
       setShowSuicideKingModal(false)
       setPendingSuicideKingCardIndex(null)
       setMessage(result.message || "The Suicide King cleared all weather effects!")
@@ -908,6 +922,10 @@ export default function GwanGame() {
       return;
     }
     
+    // Save a reference to the Suicide King card before it's removed
+    const suicideKingCard = gameState.players[playerView].hand[pendingSuicideKingCardIndex];
+    console.log("Suicide King card before removal (second blight):", suicideKingCard);
+    
     // First, get the current player's blight cards
     const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id);
     console.log("Current player blight cards:", currentPlayerBlightCardIds);
@@ -930,7 +948,17 @@ export default function GwanGame() {
       console.log("Game logic result:", result);
       
       if (result.success) {
-        setGameState(game.getGameState());
+        const updatedState = game.getGameState();
+        
+        // Verify the card is completely removed (not in hand or discard)
+        console.log("Suicide King removed from play (second blight option)");
+        console.log("Suicide King in discard pile:", 
+          updatedState.players[playerView].discardPile.some(
+            card => card.suit === "hearts" && card.value === "K" && card.isSuicideKing
+          )
+        );
+        
+        setGameState(updatedState);
         setMessage(result.message || "Choose your second Blight card!");
         
         // Check for game end conditions
