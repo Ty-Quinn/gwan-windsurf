@@ -95,6 +95,59 @@ export default function GameBoard({
   // Debug the possible source of overlapping text labels
   console.log("Rendering game board", isOpponent ? "opponent" : "player")
   
+  // Helper function to calculate card value with all effects applied
+  function calculateCardValue(card: Card, rowName: FieldKey, weatherEffects: WeatherEffects): number {
+    try {
+      // If it's a weather-affected row and not a commander card, return 1
+      if (weatherEffects[rowName] && !card.isCommander) {
+        return 1;
+      }
+
+      // If it's a Rogue card with a dice value, return the dice value
+      if (card.isRogue && card.diceValue !== undefined) {
+        return card.diceValue;
+      }
+
+      // Return the base value (which includes any doubling from Lovers effect)
+      return card.baseValue || parseInt(card.value) || 0;
+    } catch (err) {
+      console.error("Error calculating card value:", err);
+      // Fallback to a safe value
+      return card.baseValue || 0;
+    }
+  }
+  
+  // Helper function to get appropriate color for value indicator based on effect
+  function getValueColor(card: Card, rowName: FieldKey, weatherEffects: WeatherEffects): string {
+    try {
+      const currentValue = calculateCardValue(card, rowName, weatherEffects);
+      
+      // Get original value before any special effects
+      let originalValue = card.isRogue ? 2 : parseInt(card.value, 10);
+      
+      // Handle face cards
+      if (isNaN(originalValue)) {
+        if (card.value === 'J') originalValue = 11;
+        else if (card.value === 'Q') originalValue = 12;
+        else if (card.value === 'K') originalValue = 13;
+        else if (card.value === 'A') originalValue = 14;
+        else originalValue = 0; // Default for unknown values
+      }
+      
+      // Compare current value to original value
+      if (currentValue > originalValue) {
+        return 'border-green-400'; // Boosted value
+      } else if (currentValue < originalValue) {
+        return 'border-red-400';   // Reduced value (e.g., weather effect)
+      } else {
+        return 'border-yellow-400'; // Unchanged value
+      }
+    } catch (err) {
+      console.error("Error getting value color:", err);
+      return 'border-white'; // Neutral fallback
+    }
+  }
+  
   return (
     <div className="mb-8 relative overflow-visible">
       <div className="flex justify-between items-center mb-2">
@@ -180,23 +233,56 @@ export default function GameBoard({
                         exit={{ scale: 0.8, opacity: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <CardComponent 
-                          card={card}
-                          compact={true}
-                          disabled={true}
-                        />
+                        <div className="relative">
+                          <CardComponent 
+                            card={card}
+                            compact={true}
+                            disabled={true}
+                          />
+                          {/* Value badge overlay */}
+                          <div 
+                            className={`absolute -top-2 -right-2 bg-black/80 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border ${getValueColor(card, rowKey, gameState.weatherEffects)}`}
+                            title={`Card Value: ${calculateCardValue(card, rowKey, gameState.weatherEffects)}`}
+                          >
+                            {calculateCardValue(card, rowKey, gameState.weatherEffects)}
+                          </div>
+                        </div>
                         {/* Tooltip displaying card details on hover */}
                         <div className="absolute left-1/2 bottom-full -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none">
                           <div className="bg-black/90 text-white p-2 rounded text-sm whitespace-nowrap">
                             <div className="font-bold">{card.value} of {card.suit}</div>
+                            
+                            {/* Current value after effects */}
+                            <div className="text-green-400 font-semibold">
+                              Current value: {calculateCardValue(card, rowKey, gameState.weatherEffects)}
+                            </div>
+                            
+                            {/* Base value display */}
+                            <div className="text-muted-foreground text-xs">
+                              Base value: {card.baseValue}
+                            </div>
+                            
+                            {/* Specific card type info */}
                             {card.isRogue && card.diceValue && (
-                              <div className="text-amber-400">Rogue value: {card.diceValue}</div>
+                              <div className="text-amber-400">Rogue dice value: {card.diceValue}</div>
                             )}
                             {card.isSniper && (
-                              <div className="text-indigo-400">Sniper value: 2</div>
+                              <div className="text-indigo-400">Sniper card</div>
                             )}
                             {card.isCommander && (
-                              <div className="text-yellow-400">Commander value: {card.baseValue}</div>
+                              <div className="text-yellow-400">Commander card</div>
+                            )}
+                            {card.isSpy && (
+                              <div className="text-blue-400">Spy card</div>
+                            )}
+                            {card.isWeather && (
+                              <div className="text-red-400">Weather card</div>
+                            )}
+                            {card.isMedic && (
+                              <div className="text-pink-400">Medic card</div>
+                            )}
+                            {card.isDecoy && (
+                              <div className="text-orange-400">Decoy card</div>
                             )}
                           </div>
                           <div className="w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-black/90 absolute left-1/2 top-full -translate-x-1/2"></div>
