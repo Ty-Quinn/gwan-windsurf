@@ -9,6 +9,7 @@ export class GwanGameLogic {
   private gameEnded: boolean;
   private availableBlightCards: BlightCard[];
   private isBlightCardBeingPlayed: boolean;
+  private isSuicideKingBeingPlayed: boolean;
 
   constructor() {
     this.players = [];
@@ -23,6 +24,7 @@ export class GwanGameLogic {
     this.gameEnded = false;
     this.availableBlightCards = [];
     this.isBlightCardBeingPlayed = false;
+    this.isSuicideKingBeingPlayed = false;
   }
 
   // Initialize the game
@@ -123,6 +125,7 @@ export class GwanGameLogic {
         // Determine special card properties
         const isRogue = value === "2" && suit !== "spades"; // 2's of hearts, clubs, diamonds are Rogues
         const isSniper = value === "2" && suit === "spades"; // 2 of spades is a Sniper
+        const isSuicideKing = value === "K" && suit === "hearts"; // King of Hearts is the Suicide King
 
         const card: Card = {
           suit,
@@ -138,7 +141,8 @@ export class GwanGameLogic {
           isMedic: value === "3",
           isDecoy: value === "4",
           isRogue,
-          isSniper
+          isSniper,
+          isSuicideKing
         };
         this.deck.push(card);
       }
@@ -542,6 +546,22 @@ export class GwanGameLogic {
         success: true,
         message: "Roll 2d6 for the Sniper. Doubles will eliminate opponent's highest card!",
         isSniperDiceRoll: true, // Signal to UI that we need to show dice roll for Sniper
+      };
+    }
+    
+    // Handle Suicide King (King of Hearts)
+    if (card.isSuicideKing) {
+      // Suicide King offers a choice between clearing all weather effects
+      // or selecting a second Blight card. Card is removed entirely after use.
+      // Set flag so UI can show choice dialog
+      this.isSuicideKingBeingPlayed = true;
+      
+      // Store card index so we can remove it after choice is made
+      // For now, just signal that we need to show the Suicide King choice dialog
+      return {
+        success: true,
+        message: "The Suicide King grants you a powerful choice!",
+        isSuicideKing: true, // Signal to UI that we need to show Suicide King choice dialog
       };
     }
 
@@ -1159,7 +1179,8 @@ export class GwanGameLogic {
       weatherEffects: { ...this.weatherEffects },
       blightCardsSelected: this.players.every(player => player.blightCard !== undefined),
       availableBlightCards: this.availableBlightCards,
-      isBlightCardBeingPlayed: this.isBlightCardBeingPlayed
+      isBlightCardBeingPlayed: this.isBlightCardBeingPlayed,
+      isSuicideKingBeingPlayed: this.isSuicideKingBeingPlayed
     };
   }
 
@@ -1567,6 +1588,150 @@ export class GwanGameLogic {
       message,
       isBlightCard: true,
       blightEffect: effect
+    };
+  }
+
+  // Handle Suicide King effect to clear all weather
+  public completeSuicideKingClearWeather(playerIndex: number, cardIndex: number): PlayResult {
+    // Make sure it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+
+    // Check if the card index is valid
+    if (cardIndex < 0 || cardIndex >= this.players[playerIndex].hand.length) {
+      return { success: false, message: "Invalid card index" };
+    }
+
+    const card = this.players[playerIndex].hand[cardIndex];
+
+    // Make sure this is actually a Suicide King card
+    if (!card.isSuicideKing) {
+      return { success: false, message: "This is not a Suicide King card" };
+    }
+
+    // Make sure we're in the process of playing a Suicide King
+    if (!this.isSuicideKingBeingPlayed) {
+      return { success: false, message: "No Suicide King is being played" };
+    }
+
+    // Clear ALL weather effects
+    this.weatherEffects = {
+      clubs: false,
+      spades: false,
+      diamonds: false
+    };
+
+    // Remove the Suicide King card from hand (it's removed entirely, not added to discard)
+    this.players[playerIndex].hand.splice(cardIndex, 1);
+
+    // Reset the flag
+    this.isSuicideKingBeingPlayed = false;
+
+    // Switch to the next player if they haven't passed
+    if (!this.players[1 - playerIndex].pass) {
+      this.currentPlayer = 1 - this.currentPlayer;
+    }
+
+    return { 
+      success: true, 
+      message: "The Suicide King clears ALL weather effects from the field and disappears forever!"
+    };
+  }
+
+  // Handle Suicide King effect to select a second Blight card
+  public completeSuicideKingSelectBlight(playerIndex: number, cardIndex: number): PlayResult {
+    // Make sure it's the player's turn
+    if (playerIndex !== this.currentPlayer) {
+      return { success: false, message: "It's not your turn" };
+    }
+
+    // Check if the card index is valid
+    if (cardIndex < 0 || cardIndex >= this.players[playerIndex].hand.length) {
+      return { success: false, message: "Invalid card index" };
+    }
+
+    const card = this.players[playerIndex].hand[cardIndex];
+
+    // Make sure this is actually a Suicide King card
+    if (!card.isSuicideKing) {
+      return { success: false, message: "This is not a Suicide King card" };
+    }
+
+    // Make sure we're in the process of playing a Suicide King
+    if (!this.isSuicideKingBeingPlayed) {
+      return { success: false, message: "No Suicide King is being played" };
+    }
+
+    // Check if there are any available Blight cards left
+    if (this.availableBlightCards.length === 0) {
+      return { success: false, message: "No Blight cards are available" };
+    }
+
+    // Check if the player already has a Blight card
+    // If they do, we'll reset it so they can select a new one
+    // If they had already used their first Blight card, we'll allow them to select a new one
+    if (this.players[playerIndex].blightCard && !this.players[playerIndex].hasUsedBlightCard) {
+      return { success: false, message: "You already have an unused Blight card" };
+    }
+
+    // Remove the Suicide King card from hand (it's removed entirely, not added to discard)
+    this.players[playerIndex].hand.splice(cardIndex, 1);
+
+    // Reset the flag
+    this.isSuicideKingBeingPlayed = false;
+    
+    // Reset player's Blight card status (they'll select a new one)
+    this.players[playerIndex].blightCard = undefined;
+    this.players[playerIndex].hasUsedBlightCard = false;
+
+    // If player has no cards left after the Suicide King removal, end the round
+    if (this.players[playerIndex].hand.length === 0) {
+      // Calculate scores before deciding round winner
+      this.calculateScores();
+
+      // Determine the winner of the round
+      let roundWinner: number | undefined;
+      let roundTied = false;
+
+      if (this.players[0].score > this.players[1].score) {
+        roundWinner = 0;
+        this.players[0].roundsWon++;
+      } else if (this.players[1].score > this.players[0].score) {
+        roundWinner = 1;
+        this.players[1].roundsWon++;
+      } else {
+        roundTied = true;
+      }
+
+      // Check if the game has ended
+      let gameEnded = false;
+
+      if (this.players[0].roundsWon >= 2) {
+        gameEnded = true;
+      } else if (this.players[1].roundsWon >= 2) {
+        gameEnded = true;
+      } else {
+        this.currentRound++;
+      }
+
+      return {
+        success: true,
+        message: "The Suicide King grants you a new Blight card selection. You're out of cards!",
+        roundWinner,
+        roundTied,
+        gameEnded
+      };
+    }
+
+    // Switch to the next player if they haven't passed
+    if (!this.players[1 - playerIndex].pass) {
+      this.currentPlayer = 1 - this.currentPlayer;
+    }
+
+    return { 
+      success: true, 
+      message: "The Suicide King vanishes, granting you a new Blight card selection!"
     };
   }
 

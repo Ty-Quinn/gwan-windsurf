@@ -54,6 +54,8 @@ export default function GwanGame() {
   // Special card functionality
   const [showMedicRevival, setShowMedicRevival] = useState<boolean>(false)
   const [showDecoyRetrieval, setShowDecoyRetrieval] = useState<boolean>(false)
+  const [showSuicideKingModal, setShowSuicideKingModal] = useState<boolean>(false)
+  const [pendingSuicideKingCardIndex, setPendingSuicideKingCardIndex] = useState<number | null>(null)
   
   // Dice roll functionality
   const [showDiceRoll, setShowDiceRoll] = useState<boolean>(false)
@@ -238,6 +240,15 @@ export default function GwanGame() {
         setPendingSniperCardIndex(cardIndex)
         setPendingCardTargetRow(targetRow)
         setShowSniperDiceRoll(true)
+        // No need to add the card to lastAction since it hasn't been played to the field yet
+        setLastAction(null)
+        setPrevGameState(null)
+      }
+      
+      // If this is a Suicide King, store the card index and show the modal
+      if (result.isSuicideKing) {
+        setPendingSuicideKingCardIndex(cardIndex)
+        setShowSuicideKingModal(true)
         // No need to add the card to lastAction since it hasn't been played to the field yet
         setLastAction(null)
         setPrevGameState(null)
@@ -818,6 +829,70 @@ export default function GwanGame() {
   const opponent = gameState.players[1 - playerView]
   const isCurrentTurn = gameState.currentPlayer === playerView
 
+  // Handle Suicide King effects
+  const handleSuicideKingClearWeather = () => {
+    if (!game || !gameState || pendingSuicideKingCardIndex === null) return
+    
+    const result = game.completeSuicideKingClearWeather(playerView, pendingSuicideKingCardIndex)
+    
+    if (result.success) {
+      setGameState(game.getGameState())
+      setShowSuicideKingModal(false)
+      setPendingSuicideKingCardIndex(null)
+      setMessage(result.message || "The Suicide King cleared all weather effects!")
+      
+      // Check for game end first (takes priority)
+      if (result.gameEnded) {
+        // If the game has ended, we need to set both the round winner and game winner
+        setRoundWinner(result.roundWinner)
+        setGameWinner(result.roundWinner)
+        setShowGameEnd(true)
+      }
+      // Otherwise check for round end
+      else if (result.roundWinner !== undefined || result.roundTied) {
+        setRoundWinner(result.roundWinner)
+        setRoundTied(result.roundTied || false)
+        setShowRoundSummary(true)
+        setNextRoundPending(true)
+      }
+    } else {
+      setMessage(result.message || "Failed to clear weather effects")
+    }
+  }
+  
+  const handleSuicideKingSelectBlight = () => {
+    if (!game || !gameState || pendingSuicideKingCardIndex === null) return
+    
+    const result = game.completeSuicideKingSelectBlight(playerView, pendingSuicideKingCardIndex)
+    
+    if (result.success) {
+      setGameState(game.getGameState())
+      setShowSuicideKingModal(false)
+      setPendingSuicideKingCardIndex(null)
+      
+      // Show blight card selection modal
+      setShowBlightCardSelection(true)
+      setMessage(result.message || "The Suicide King grants you a new Blight card selection!")
+      
+      // Check for game end first (takes priority)
+      if (result.gameEnded) {
+        // If the game has ended, we need to set both the round winner and game winner
+        setRoundWinner(result.roundWinner)
+        setGameWinner(result.roundWinner)
+        setShowGameEnd(true)
+      }
+      // Otherwise check for round end
+      else if (result.roundWinner !== undefined || result.roundTied) {
+        setRoundWinner(result.roundWinner)
+        setRoundTied(result.roundTied || false)
+        setShowRoundSummary(true)
+        setNextRoundPending(true)
+      }
+    } else {
+      setMessage(result.message || "Failed to grant second Blight card")
+    }
+  }
+
   return (
     <div className="container mx-auto max-w-6xl p-4">
       <GameHeader 
@@ -1115,6 +1190,21 @@ export default function GwanGame() {
             setShowMagicianEffect(false);
             setCurrentBlightEffect(null);
             setMessage("Magician effect cancelled");
+          }}
+        />
+      )}
+      
+      {/* Suicide King Modal */}
+      {showSuicideKingModal && gameState && pendingSuicideKingCardIndex !== null && (
+        <SuicideKingModal
+          open={showSuicideKingModal}
+          card={currentPlayer.hand[pendingSuicideKingCardIndex] || null}
+          onClearWeather={handleSuicideKingClearWeather}
+          onSelectSecondBlight={handleSuicideKingSelectBlight}
+          onCancel={() => {
+            setShowSuicideKingModal(false);
+            setPendingSuicideKingCardIndex(null);
+            setMessage("Suicide King ability cancelled");
           }}
         />
       )}

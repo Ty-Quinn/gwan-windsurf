@@ -8,9 +8,10 @@ export interface Card {
   isMedic: boolean;
   isJoker?: boolean;
   isDecoy?: boolean;
-  isRogue?: boolean;    // 2 of hearts, clubs, diamonds - dice roll determines value
-  isSniper?: boolean;   // 2 of spades - can remove opponent's highest card on doubles
-  diceValue?: number;   // Value determined by dice roll for Rogue cards
+  isRogue?: boolean;      // 2 of hearts, clubs, diamonds - dice roll determines value
+  isSniper?: boolean;     // 2 of spades - can remove opponent's highest card on doubles
+  isSuicideKing?: boolean; // King of Hearts - removes weather or grants a second Blight card
+  diceValue?: number;     // Value determined by dice roll for Rogue cards
 }
 
 export interface BlightCard {
@@ -66,6 +67,7 @@ export interface GameState {
   blightCardsSelected: boolean;
   availableBlightCards: BlightCard[];
   isBlightCardBeingPlayed: boolean;
+  isSuicideKingBeingPlayed: boolean;
 }
 
 export interface PlayResult {
@@ -83,4 +85,5 @@ export interface PlayResult {
   blightEffect?: BlightEffect;   // The specific Blight effect that was played
   requiresBlightSelection?: boolean; // Indicates if user needs to select a target for the Blight card
   requiresBlightDiceRoll?: boolean;  // Indicates if a dice roll is needed for the Blight effect
+  isSuicideKing?: boolean;       // Indicates if a Suicide King (King of Hearts) was played
 }
