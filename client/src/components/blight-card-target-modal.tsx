@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BlightEffect, Card, Field, Player } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -33,7 +33,10 @@ export default function BlightCardTargetModal({
   onSelectTarget,
   onCancel
 }: BlightCardTargetModalProps) {
-  const [selectedPlayerIndex, setSelectedPlayerIndex] = useState<number>(1 - playerView) // Default to opponent
+  // For Lovers effect, initialize with playerView, otherwise opponent
+  const initialPlayerIndex = effect === BlightEffect.LOVERS ? playerView : (1 - playerView);
+  
+  const [selectedPlayerIndex, setSelectedPlayerIndex] = useState<number>(initialPlayerIndex)
   const [selectedRowName, setSelectedRowName] = useState<keyof Field | null>(null)
   const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null)
   const [showDiceRoll, setShowDiceRoll] = useState<boolean>(false)
@@ -298,9 +301,7 @@ export default function BlightCardTargetModal({
         )
       
       case BlightEffect.LOVERS:
-        // Force select current player for Lovers effect
-        setSelectedPlayerIndex(playerView);
-        
+        // No state update in render function to avoid infinite re-renders
         return (
           <div className="space-y-4">
             <div className="p-4 border rounded-lg bg-card/50 mb-4">
