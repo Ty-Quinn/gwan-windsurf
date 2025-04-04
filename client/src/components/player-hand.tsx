@@ -6,6 +6,8 @@ import CardComponent from "./card"
 import DiscardPileModal from "./discard-pile-modal"
 import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from 'framer-motion'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface PlayerHandProps {
   currentPlayer: Player
@@ -33,6 +35,7 @@ export default function PlayerHand({
   const [justSwitched, setJustSwitched] = useState(false);
   const [showDiscardPile, setShowDiscardPile] = useState(false);
   const [hasPlayedCardThisTurn, setHasPlayedCardThisTurn] = useState(false);
+  const [showBlightDetails, setShowBlightDetails] = useState(false);
 
   // Wrapper for handling card plays to track when a card is played
   const handleCardPlay = (cardIndex: number) => {
@@ -142,23 +145,6 @@ export default function PlayerHand({
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 text-amber-400"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                     Cast Blight Magic
                   </span>
-                  
-                  {/* Pulse effect for Blight Card button */}
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ 
-                      scale: [1, 1.2, 1.2, 1], 
-                      opacity: [0.7, 0.5, 0.5, 0.7] 
-                    }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    transition={{ 
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatType: "loop"
-                    }}
-                    className="absolute inset-0 bg-amber-600/30 rounded-md"
-                    style={{ zIndex: 0 }}
-                  />
                 </Button>
               </motion.div>
             )}
@@ -217,10 +203,24 @@ export default function PlayerHand({
             </div>
             {/* Blight card info */}
             {currentPlayer.blightCard && (
-              <div className={`mt-1 flex items-center ${currentPlayer.hasUsedBlightCard ? 'text-amber-500/40' : 'text-amber-500'}`}>
+              <div 
+                className={`mt-1 flex items-center ${currentPlayer.hasUsedBlightCard ? 'text-amber-500/40' : 'text-amber-500'} ${!currentPlayer.hasUsedBlightCard ? 'cursor-pointer hover:text-amber-300' : ''}`}
+                onClick={() => {
+                  if (!currentPlayer.hasUsedBlightCard) {
+                    setShowBlightDetails(true)
+                  }
+                }}
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                <span className="text-xs font-serif">
-                  {currentPlayer.hasUsedBlightCard ? 'Magic depleted' : currentPlayer.blightCard.name}
+                <span className="text-xs font-serif flex items-center gap-1">
+                  {currentPlayer.hasUsedBlightCard ? 'Magic depleted' : (
+                    <>
+                      {currentPlayer.blightCard.name}
+                      {!currentPlayer.hasUsedBlightCard && (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                      )}
+                    </>
+                  )}
                 </span>
               </div>
             )}
@@ -255,6 +255,35 @@ export default function PlayerHand({
           player={currentPlayer}
           onClose={() => setShowDiscardPile(false)}
         />
+      )}
+      
+      {/* Blight card details dialog */}
+      {showBlightDetails && currentPlayer.blightCard && (
+        <Dialog open={showBlightDetails} onOpenChange={setShowBlightDetails}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-2xl flex items-center gap-2">
+                <span className="text-3xl">{currentPlayer.blightCard.icon}</span>
+                {currentPlayer.blightCard.name}
+              </DialogTitle>
+              <DialogDescription className="text-md pt-2">
+                Blight Card Effect
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <Card className="bg-card/50 shadow-md">
+                <CardContent className="pt-6">
+                  <CardDescription className="text-md leading-relaxed">
+                    {currentPlayer.blightCard.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </div>
+            <p className="text-sm text-muted-foreground italic">
+              Note: Blight cards can only be used once per match at the beginning of your turn.
+            </p>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   )

@@ -27,12 +27,12 @@ export default function GameRulesModal({
         
         <div className="space-y-4">
           <div>
-            <h4 className="text-lg font-semibold text-primary">Game Overview</h4>
+            <h4 className="text-lg font-semibold text-primary-foreground border-b border-primary pb-1 mb-2 bg-primary/20 px-2 py-1 rounded">Game Overview</h4>
             <p>GWAN is a strategic card game where players compete to score the highest total value across their side of the board. Players take turns playing cards or passing, with each card providing both value and potential special abilities.</p>
           </div>
           
           <div>
-            <h4 className="text-lg font-semibold text-primary">Game Structure</h4>
+            <h4 className="text-lg font-semibold text-primary-foreground border-b border-primary pb-1 mb-2 bg-primary/20 px-2 py-1 rounded">Game Structure</h4>
             <ul className="list-disc list-inside ml-4">
               <li>1 game = Best 2 of 3 rounds</li>
               <li>Each round ends when both players pass or run out of cards</li>
@@ -40,7 +40,7 @@ export default function GameRulesModal({
           </div>
           
           <div>
-            <h4 className="text-lg font-semibold text-primary">Setup</h4>
+            <h4 className="text-lg font-semibold text-primary-foreground border-b border-primary pb-1 mb-2 bg-primary/20 px-2 py-1 rounded">Setup</h4>
             <ul className="list-disc list-inside ml-4">
               <li>Each player is dealt 10 cards from the standard deck</li>
               <li>Players roll to determine who goes first in round 1</li>
@@ -48,7 +48,7 @@ export default function GameRulesModal({
           </div>
           
           <div>
-            <h4 className="text-lg font-semibold text-primary">Gameplay Basics</h4>
+            <h4 className="text-lg font-semibold text-primary-foreground border-b border-primary pb-1 mb-2 bg-primary/20 px-2 py-1 rounded">Gameplay Basics</h4>
             <p className="font-medium">Objective:</p>
             <p className="ml-4 mb-2">Score the highest total value on your side of the field by strategically placing cards and using their special abilities.</p>
             
@@ -60,7 +60,7 @@ export default function GameRulesModal({
           </div>
           
           <div>
-            <h4 className="text-lg font-semibold text-primary">Card Placement</h4>
+            <h4 className="text-lg font-semibold text-primary-foreground border-b border-primary pb-1 mb-2 bg-primary/20 px-2 py-1 rounded">Card Placement</h4>
             <p>Cards are placed in rows according to their suit:</p>
             <ul className="list-disc list-inside ml-4">
               <li>Clubs (Close Combat row): +2 row bonus when no weather effects</li>
@@ -71,7 +71,7 @@ export default function GameRulesModal({
           </div>
           
           <div>
-            <h4 className="text-lg font-semibold text-primary">Scoring</h4>
+            <h4 className="text-lg font-semibold text-primary-foreground border-b border-primary pb-1 mb-2 bg-primary/20 px-2 py-1 rounded">Scoring</h4>
             <ul className="list-disc list-inside ml-4">
               <li>Each card contributes its base value to your score</li>
               <li>Each row with at least one card gets its row bonus (if no weather effect)</li>
@@ -80,7 +80,7 @@ export default function GameRulesModal({
           </div>
           
           <div>
-            <h4 className="text-lg font-semibold text-primary">Special Card Types</h4>
+            <h4 className="text-lg font-semibold text-primary-foreground border-b border-primary pb-1 mb-2 bg-primary/20 px-2 py-1 rounded">Special Card Types</h4>
             
             <div className="ml-4 mb-2">
               <h5 className="font-semibold text-yellow-400">Commander Cards (Face Cards)</h5>
@@ -129,7 +129,7 @@ export default function GameRulesModal({
               </ul>
             </div>
             
-            <div className="ml-4">
+            <div className="ml-4 mb-2">
               <h5 className="font-semibold text-orange-400">Decoy Cards (4s)</h5>
               <ul className="list-disc list-inside ml-4">
                 <li>Worth 0 points when played</li>
@@ -138,10 +138,52 @@ export default function GameRulesModal({
                 <li>After playing, choose any card from your field to return to your hand</li>
               </ul>
             </div>
+            
+            <div className="ml-4 mb-2">
+              <h5 className="font-semibold text-cyan-400">Rogue Cards (6s)</h5>
+              <ul className="list-disc list-inside ml-4">
+                <li>When played, roll 1D6 to determine the card's value (1-6)</li>
+                <li>Play to your side of the board like normal cards</li>
+                <li>Strategic risk-taking: can be extremely low or high value</li>
+              </ul>
+            </div>
+            
+            <div className="ml-4 mb-2">
+              <h5 className="font-semibold text-indigo-400">Sniper Cards (7s)</h5>
+              <ul className="list-disc list-inside ml-4">
+                <li>When played, roll 2D6</li>
+                <li>If doubles are rolled, you can target and destroy one enemy non-Commander card</li>
+                <li>Played to your side of the board like normal cards</li>
+              </ul>
+            </div>
+            
+            <div className="ml-4 mb-2">
+              <h5 className="font-semibold text-rose-400">Devil Cards (2s)</h5>
+              <ul className="list-disc list-inside ml-4">
+                <li>Allow you to steal one card from your opponent's discard pile</li>
+                <li>Must roll at least three 6s or three of the same number with 6 rolls of 3D6</li>
+                <li>Play to your side of the board like normal cards</li>
+                <li>High risk, high reward: difficult to trigger but powerful effect</li>
+              </ul>
+            </div>
           </div>
           
           <div>
-            <h4 className="text-lg font-semibold text-primary">Rounds and Victory</h4>
+            <h4 className="text-lg font-semibold text-primary-foreground border-b border-primary pb-1 mb-2 bg-primary/20 px-2 py-1 rounded">Blight Cards</h4>
+            <p className="mb-2">Each player secretly selects one powerful Blight card at the beginning of a match:</p>
+            <ul className="list-disc list-inside ml-4">
+              <li>Blight cards have unique, powerful effects that can change the course of the game</li>
+              <li>Each player can only use their Blight card once per entire match</li>
+              <li>Blight cards can only be played at the beginning of your turn</li>
+              <li>To use your Blight card, click on "Cast Blight Magic" at the start of your turn</li>
+              <li>Some Blight cards require dice rolls or targeting specific cards or rows</li>
+              <li>Examples include doubling a card's value, stealing cards, or destroying opponent's cards</li>
+            </ul>
+            <p className="mt-2 text-sm italic">Click on your Blight card name in the arsenal info section to see details about your chosen Blight card.</p>
+          </div>
+          
+          <div>
+            <h4 className="text-lg font-semibold text-primary-foreground border-b border-primary pb-1 mb-2 bg-primary/20 px-2 py-1 rounded">Rounds and Victory</h4>
             <ul className="list-disc list-inside ml-4">
               <li>The player with the highest total score when both players pass wins the round</li>
               <li>First player to win 2 rounds wins the game</li>
@@ -151,7 +193,7 @@ export default function GameRulesModal({
           </div>
           
           <div>
-            <h4 className="text-lg font-semibold text-primary">Strategy Tips</h4>
+            <h4 className="text-lg font-semibold text-primary-foreground border-b border-primary pb-1 mb-2 bg-primary/20 px-2 py-1 rounded">Strategy Tips</h4>
             <ul className="list-disc list-inside ml-4">
               <li>Weather timing: Play weather cards to weaken rows where your opponent is strong</li>
               <li>Commanders: Save commander cards for rows affected by weather since they keep their value</li>
