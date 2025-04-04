@@ -903,6 +903,18 @@ export default function GwanGame() {
     
     if (result.success) {
       setGameState(game.getGameState())
+      
+      // Close the Suicide King modal
+      setShowSuicideKingModal(false)
+      setPendingSuicideKingCardIndex(null)
+      
+      // Get current player's blight card IDs to exclude from selection
+      const currentBlightCards = gameState.players[playerView].blightCards.map(card => card.id)
+      setExcludedBlightCardIds(currentBlightCards)
+      
+      // Show blight card selection modal with second selection flag
+      setIsSecondBlightSelection(true)
+      setShowBlightCardSelection(true)
       setShowSuicideKingModal(false)
       setPendingSuicideKingCardIndex(null)
       
