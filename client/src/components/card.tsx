@@ -25,11 +25,11 @@ export default function CardComponent({
       case "spades":
         return "🏹" // Archer symbol - bow and arrow
       case "diamonds":
-        return "🧨" // Ballista symbol - explosive
+        return "💣" // Ballista symbol - bomb (U+1F4A3)
       case "hearts":
         return "⚜️" // Mercenary symbol - fleur-de-lis
       case "joker":
-        return "👑" // Joker/royal symbol - crown
+        return "⭐" // Joker symbol - star
       default:
         return ""
     }
@@ -75,70 +75,70 @@ export default function CardComponent({
       text: "text-yellow-400", 
       label: "Commander", 
       value: card.baseValue,
-      bg: "bg-gradient-to-b from-amber-950/80 to-amber-900/80" 
+      bg: "bg-gradient-to-b from-amber-800/95 to-amber-900/95" 
     }
     if (card.isWeather) return { 
       border: "border-sky-500", 
       text: "text-sky-400", 
       label: getWeatherLabel(), 
       value: 15,
-      bg: "bg-gradient-to-b from-sky-950/80 to-sky-900/80" 
+      bg: "bg-gradient-to-b from-sky-800/95 to-sky-900/95" 
     }
     if (card.isJoker) return { 
       border: "border-purple-500", 
       text: "text-purple-400", 
       label: "Joker (spy)", 
       value: 1,
-      bg: "bg-gradient-to-b from-purple-950/80 to-purple-900/80" 
+      bg: "bg-gradient-to-b from-purple-800/95 to-purple-900/95" 
     }
     if (card.isSpy && !card.isJoker) return { 
       border: "border-blue-500", 
       text: "text-blue-400", 
       label: "Spy", 
       value: 0,
-      bg: "bg-gradient-to-b from-blue-950/80 to-blue-900/80" 
+      bg: "bg-gradient-to-b from-blue-800/95 to-blue-900/95" 
     }
     if (card.isDecoy) return { 
       border: "border-orange-500", 
       text: "text-orange-400", 
       label: "Decoy", 
       value: 0,
-      bg: "bg-gradient-to-b from-orange-950/80 to-orange-900/80" 
+      bg: "bg-gradient-to-b from-orange-800/95 to-orange-900/95" 
     }
     if (card.isMedic) return { 
       border: "border-green-500", 
       text: "text-green-400", 
       label: "Medic", 
       value: 3,
-      bg: "bg-gradient-to-b from-green-950/80 to-green-900/80" 
+      bg: "bg-gradient-to-b from-green-800/95 to-green-900/95" 
     }
     if (card.isRogue) return { 
       border: "border-amber-500", 
       text: "text-amber-400", 
       label: "Rogue", 
       value: card.diceValue || "?",
-      bg: "bg-gradient-to-b from-amber-950/80 to-amber-900/80" 
+      bg: "bg-gradient-to-b from-amber-800/95 to-amber-900/95" 
     }
     if (card.isSniper) return { 
       border: "border-indigo-500", 
       text: "text-indigo-400", 
       label: "Sniper", 
       value: 2,
-      bg: "bg-gradient-to-b from-indigo-950/80 to-indigo-900/80" 
+      bg: "bg-gradient-to-b from-indigo-800/95 to-indigo-900/95" 
     }
     if (card.suit === "hearts") return { 
       border: "border-rose-500", 
       text: "text-rose-400", 
       label: "", 
       value: 0,
-      bg: "bg-gradient-to-b from-rose-950/80 to-rose-900/80" 
+      bg: "bg-gradient-to-b from-rose-800/95 to-rose-900/95" 
     }
     return { 
       border: "", 
       text: "text-amber-100", 
       label: "", 
       value: 0,
-      bg: "bg-gradient-to-b from-card to-secondary" 
+      bg: "bg-gradient-to-b from-amber-700/90 to-amber-900/90" 
     }
   }
 

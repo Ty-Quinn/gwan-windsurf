@@ -153,10 +153,10 @@ export default function GameBoard({
       <div className="flex justify-between items-center mb-4">
         {isOpponent ? (
           <h2 className="text-xl font-semibold text-amber-200">
-            Opponent's Realm ({currentPlayer.name})
+            Opponent's Field ({currentPlayer.name})
           </h2>
         ) : (
-          <h2 className="text-xl font-semibold text-amber-200">Your Kingdom</h2>
+          <h2 className="text-xl font-semibold text-amber-200">Your Field</h2>
         )}
         
         <div className="flex items-center relative">
