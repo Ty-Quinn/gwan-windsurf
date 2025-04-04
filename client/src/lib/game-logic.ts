@@ -556,14 +556,14 @@ export class GwanGameLogic {
         isSniperDiceRoll: true, // Signal to UI that we need to show dice roll for Sniper
       };
     }
-    
+
     // Handle Suicide King (King of Hearts)
     if (card.isSuicideKing) {
       // Suicide King offers a choice between clearing all weather effects
       // or selecting a second Blight card. Card is removed entirely after use.
       // Set flag so UI can show choice dialog
       this.isSuicideKingBeingPlayed = true;
-      
+
       // Store card index so we can remove it after choice is made
       // For now, just signal that we need to show the Suicide King choice dialog
       return {
@@ -722,7 +722,7 @@ export class GwanGameLogic {
     this.availableBlightCards = state.availableBlightCards ? [...state.availableBlightCards] : [];
     this.isBlightCardBeingPlayed = state.isBlightCardBeingPlayed || false;
     this.isSuicideKingBeingPlayed = state.isSuicideKingBeingPlayed || false;
-    
+
     // Check if we need to initialize the deck
     if (state.deckCount === undefined || state.deckCount === 0 || this.deck.length === 0) {
       // Only create a new deck at the beginning of the game
@@ -731,7 +731,7 @@ export class GwanGameLogic {
         this.shuffleDeck();
       }
     }
-    
+
     this.gameEnded = false;
   }
 
@@ -741,23 +741,23 @@ export class GwanGameLogic {
     if (playerIndex !== this.currentPlayer) {
       return { success: false, message: "It's not your turn" };
     }
-    
+
     // Find the card in the specified row
     const rowCards = this.players[playerIndex].field[rowName];
     const cardIndex = rowCards.findIndex(c => 
       c.suit === cardToReturn.suit && c.value === cardToReturn.value
     );
-    
+
     if (cardIndex === -1) {
       return { success: false, message: "Card not found" };
     }
-    
+
     // Remove the card from the field
     const removedCard = rowCards.splice(cardIndex, 1)[0];
-    
+
     // Return the card to the player's hand
     this.players[playerIndex].hand.push(removedCard);
-    
+
     // If it's a weather card, remove its effect
     if (removedCard.isWeather) {
       // For weather cards other than Ace of Hearts, clear the weather effect
@@ -767,13 +767,13 @@ export class GwanGameLogic {
       // For Ace of Hearts, we can't restore the previous weather effect,
       // but at least the card is back in hand
     }
-    
+
     return {
       success: true,
       message: "Card returned to your hand"
     };
   }
-  
+
   // Calculate scores for both players - made public for end-of-turn score updates
   public calculateScores(): void {
     for (let i = 0; i < this.players.length; i++) {
@@ -958,7 +958,7 @@ export class GwanGameLogic {
     // If player still has cards, switch to the next player
     // Only switch if the other player hasn't passed
     if (!this.players[1 - playerIndex].pass) {
-      this.currentPlayer = 1 - this.currentPlayer;
+      this.currentPlayer = 1 - playerIndex;
     }
 
     return { 
@@ -1242,9 +1242,18 @@ export class GwanGameLogic {
       return { success: false, message: "Invalid player index" };
     }
 
-    // In case of Suicide King selecting a second blight card, we don't need to check
-    // Add the blight card to the player's blight cards array
-    this.players[playerIndex].blightCards.push({ ...blightCard });
+    // For Suicide King selecting a second blight card
+    // Only add if it's not already in the player's blight cards
+    const existingCard = this.players[playerIndex].blightCards.find(card => card.id === blightCard.id);
+    if (!existingCard) {
+      this.players[playerIndex].blightCards.push({ ...blightCard });
+    }
+
+    // Remove the Suicide King card if it's being used to select a second blight
+    if (this.isSuicideKingBeingPlayed) {
+      // Reset the flag before returning
+      this.isSuicideKingBeingPlayed = false;
+    }
 
     return { 
       success: true, 
@@ -1423,7 +1432,7 @@ export class GwanGameLogic {
         if (!targetRowName || targetCardIndex === undefined) {
           return { success: false, message: "Invalid target for The Lovers effect" };
         }
-        
+
         // Ensure we can only target the current player's cards
         if (targetPlayerIndex !== playerIndex) {
           return { success: false, message: "The Lovers can only target your own cards" };
@@ -1580,23 +1589,23 @@ export class GwanGameLogic {
           // Success - move cards to discard pile and clear the row
           if (targetRow.length > 0) {
             console.log(`Before operation: ${targetRowName} row has ${targetRow.length} cards`);
-            
+
             // Step 1: Create a deep copy of all cards in the row BEFORE modifying it
             // Use JSON parse/stringify for a true deep copy to ensure no references remain
             const cardsToDiscard = JSON.parse(JSON.stringify(targetRow));
-            
+
             console.log(`Created a deep copy of ${cardsToDiscard.length} cards to discard`);
-            
+
             // Step 2: Add copied cards to discard pile
             this.players[opponentIndex].discardPile.push(...cardsToDiscard);
-            
+
             console.log(`Added ${cardsToDiscard.length} cards to player ${opponentIndex}'s discard pile. New pile size: ${this.players[opponentIndex].discardPile.length}`);
-            
+
             // Step 3: Clear the row AFTER copying and adding to discard pile
             // Using splice instead of length = 0 for more reliable reactivity
             const countBefore = targetField[targetRowName].length;
             targetField[targetRowName].splice(0, countBefore);
-            
+
             // Double-check that the row is now empty
             console.log(`Row ${targetRowName} cleared: was ${countBefore}, now ${targetField[targetRowName].length}`);
           }
@@ -1725,7 +1734,7 @@ export class GwanGameLogic {
 
     // Reset the flag
     this.isSuicideKingBeingPlayed = false;
-    
+
     // Reset player's Blight card status so they can select a new one
     // We don't need to clear existing blight cards, just mark the player as able to use another one
     this.players[playerIndex].hasUsedBlightCard = false;
@@ -1751,7 +1760,6 @@ export class GwanGameLogic {
 
       // Check if the game has ended
       let gameEnded = false;
-
       if (this.players[0].roundsWon >= 2) {
         gameEnded = true;
       } else if (this.players[1].roundsWon >= 2) {
@@ -1771,7 +1779,7 @@ export class GwanGameLogic {
 
     // Switch to the next player if they haven't passed
     if (!this.players[1 - playerIndex].pass) {
-      this.currentPlayer = 1 - this.currentPlayer;
+      this.currentPlayer = 1 - playerIndex;
     }
 
     return { 
