@@ -1,0 +1,93 @@
+The issue is in how the click handler is implemented in the SuicideKingModal component. You're using a div with an onClick handler instead of a proper Button component for the second Blight card option.
+Here's what's happening:
+jsxCopy<div className="flex flex-col items-center p-4 border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors cursor-pointer" onClick={onSelectSecondBlight}>
+  <Sparkles className="h-8 w-8 text-purple-400 mb-2" />
+  <h3 className="text-lg font-medium mb-2 text-purple-400">Second Blight</h3>
+  <p className="text-sm text-center">
+    Select an additional Blight card to add to your arsenal. If you've already used your first Blight card, this will allow you to use another one.
+  </p>
+</div>
+The issue is likely that the click event isn't being properly captured or propagated. This can happen with complex nested divs, especially when using styling that might interfere with click events.
+Here's the fix:
+jsxCopy<Button 
+  variant="ghost"
+  className="flex flex-col items-center p-4 border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full h-full"
+  onClick={() => {
+    console.log("Second Blight option clicked");
+    onSelectSecondBlight();
+  }}
+>
+  <div className="flex flex-col items-center">
+    <Sparkles className="h-8 w-8 text-purple-400 mb-2" />
+    <h3 className="text-lg font-medium mb-2 text-purple-400">Second Blight</h3>
+    <p className="text-sm text-center">
+      Select an additional Blight card to add to your arsenal. If you've already used your first Blight card, this will allow you to use another one.
+    </p>
+  </div>
+</Button>
+Do the same for the "Clear All Weather" option:
+jsxCopy<Button 
+  variant="ghost"
+  className="flex flex-col items-center p-4 border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full h-full"
+  onClick={() => {
+    console.log("Clear Weather option clicked");
+    onClearWeather();
+  }}
+>
+  <div className="flex flex-col items-center">
+    <Shield className="h-8 w-8 text-sky-400 mb-2" />
+    <h3 className="text-lg font-medium mb-2 text-sky-400">Clear All Weather</h3>
+    <p className="text-sm text-center">
+      Remove all weather effects from the entire board, restoring all rows to their full power.
+    </p>
+  </div>
+</Button>
+This change will ensure that:
+
+You're using an actual Button component, which has better click handling
+The onClick event is properly captured and propagated
+The console logs will help you confirm the click is being registered
+
+Additionally, to make sure there's no interference with the game state logic, make a small adjustment to the handleSuicideKingSelectBlight function:
+jsxCopyconst handleSuicideKingSelectBlight = () => {
+  console.log("handleSuicideKingSelectBlight called");
+  
+  if (!game || !gameState || pendingSuicideKingCardIndex === null) {
+    console.log("Early return: missing dependencies", { 
+      game: !!game, 
+      gameState: !!gameState, 
+      pendingSuicideKingCardIndex 
+    });
+    return;
+  }
+  
+  // First, get the current player's blight cards
+  const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id);
+  console.log("Current player blight cards:", currentPlayerBlightCardIds);
+  
+  // Immediately set up for the second selection
+  setExcludedBlightCardIds(currentPlayerBlightCardIds);
+  setIsSecondBlightSelection(true);
+  
+  // Close suicide king modal
+  setShowSuicideKingModal(false);
+  setPendingSuicideKingCardIndex(null);
+  
+  // Wait a tick to update the UI (close the current modal)
+  setTimeout(() => {
+    console.log("Opening blight card selection modal");
+    setShowBlightCardSelection(true);
+    
+    // Now call the game logic
+    const result = game.completeSuicideKingSelectBlight(playerView, pendingSuicideKingCardIndex);
+    console.log("Game logic result:", result);
+    
+    if (result.success) {
+      setGameState(game.getGameState());
+      setMessage(result.message || "Choose your second Blight card!");
+    } else {
+      setMessage(result.message || "Failed to grant second Blight card");
+    }
+  }, 50);
+}
+This fix uses proper Button components in your SuicideKingModal and ensures the click is properly handled, while also simplifying the state management to avoid potential race conditions.

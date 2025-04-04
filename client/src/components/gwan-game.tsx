@@ -897,50 +897,59 @@ export default function GwanGame() {
   // Using the state variables declared at the top of the component
   
   const handleSuicideKingSelectBlight = () => {
-    if (!game || !gameState || pendingSuicideKingCardIndex === null) return
+    console.log("handleSuicideKingSelectBlight called");
     
-    console.log("Suicide King selection function called")
-    const result = game.completeSuicideKingSelectBlight(playerView, pendingSuicideKingCardIndex)
-    console.log("Game logic result:", result)
-    
-    if (result.success) {
-      // Important: Get current Blight card IDs BEFORE updating game state
-      const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id)
-      
-      // First close the Suicide King modal completely
-      setShowSuicideKingModal(false)
-      setPendingSuicideKingCardIndex(null)
-      
-      // Wait for React to process those state changes
-      setTimeout(() => {
-        setGameState(game.getGameState())
-        setExcludedBlightCardIds(currentPlayerBlightCardIds)
-        setIsSecondBlightSelection(true)
-        setShowBlightCardSelection(true)
-        setMessage(result.message || "The Suicide King grants you a new Blight card selection!")
-        
-        console.log("Showing Blight selection modal", {
-          excludedCards: currentPlayerBlightCardIds,
-          isSecondSelection: true
-        })
-      }, 50)
-      
-      // Move the game end checks inside the timeout to happen after selection modal appears
-      setTimeout(() => {
-        if (result.gameEnded) {
-          setRoundWinner(result.roundWinner)
-          setGameWinner(result.roundWinner)
-          setShowGameEnd(true)
-        } else if (result.roundWinner !== undefined || result.roundTied) {
-          setRoundWinner(result.roundWinner)
-          setRoundTied(result.roundTied || false)
-          setShowRoundSummary(true)
-          setNextRoundPending(true)
-        }
-      }, 100)
-    } else {
-      setMessage(result.message || "Failed to grant second Blight card")
+    if (!game || !gameState || pendingSuicideKingCardIndex === null) {
+      console.log("Early return: missing dependencies", { 
+        game: !!game, 
+        gameState: !!gameState, 
+        pendingSuicideKingCardIndex 
+      });
+      return;
     }
+    
+    // First, get the current player's blight cards
+    const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id);
+    console.log("Current player blight cards:", currentPlayerBlightCardIds);
+    
+    // Immediately set up for the second selection
+    setExcludedBlightCardIds(currentPlayerBlightCardIds);
+    setIsSecondBlightSelection(true);
+    
+    // Close suicide king modal
+    setShowSuicideKingModal(false);
+    setPendingSuicideKingCardIndex(null);
+    
+    // Wait a tick to update the UI (close the current modal)
+    setTimeout(() => {
+      console.log("Opening blight card selection modal");
+      setShowBlightCardSelection(true);
+      
+      // Now call the game logic
+      const result = game.completeSuicideKingSelectBlight(playerView, pendingSuicideKingCardIndex);
+      console.log("Game logic result:", result);
+      
+      if (result.success) {
+        setGameState(game.getGameState());
+        setMessage(result.message || "Choose your second Blight card!");
+        
+        // Check for game end conditions
+        setTimeout(() => {
+          if (result.gameEnded) {
+            setRoundWinner(result.roundWinner);
+            setGameWinner(result.roundWinner);
+            setShowGameEnd(true);
+          } else if (result.roundWinner !== undefined || result.roundTied) {
+            setRoundWinner(result.roundWinner);
+            setRoundTied(result.roundTied || false);
+            setShowRoundSummary(true);
+            setNextRoundPending(true);
+          }
+        }, 50);
+      } else {
+        setMessage(result.message || "Failed to grant second Blight card");
+      }
+    }, 50);
   }
 
   return (
