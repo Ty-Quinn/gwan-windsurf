@@ -32,12 +32,20 @@ export default function PlayerHand({
 }: PlayerHandProps) {
   const [justSwitched, setJustSwitched] = useState(false);
   const [showDiscardPile, setShowDiscardPile] = useState(false);
+  const [hasPlayedCardThisTurn, setHasPlayedCardThisTurn] = useState(false);
 
+  // Wrapper for handling card plays to track when a card is played
+  const handleCardPlay = (cardIndex: number) => {
+    handlePlayCard(cardIndex);
+    setHasPlayedCardThisTurn(true);
+  };
+  
   // Handle the End Turn animation effect
   const handleEndTurn = () => {
     if (switchPlayerView) {
       setJustSwitched(true);
       switchPlayerView();
+      setHasPlayedCardThisTurn(false); // Reset the state when turn ends
       
       // Reset animation state after animation completes
       setTimeout(() => {
@@ -80,12 +88,15 @@ export default function PlayerHand({
               className="relative"
             >
               <Button 
-                onClick={handlePass}
+                onClick={() => {
+                  handlePass();
+                  setHasPlayedCardThisTurn(false); // Reset card played state when passing
+                }}
                 disabled={!isCurrentTurn || currentPlayer.pass}
                 variant="destructive"
                 className="relative overflow-hidden bg-red-900 border border-red-700 text-amber-100 hover:bg-red-800 font-medieval"
               >
-                <span className="z-10 relative">Retreat</span>
+                <span className="z-10 relative">Pass</span>
                 
                 {/* Pulse effect only if opponent has already passed */}
                 <AnimatePresence>
@@ -120,7 +131,10 @@ export default function PlayerHand({
                 className="relative"
               >
                 <Button 
-                  onClick={showBlightCard}
+                  onClick={() => {
+                    if (showBlightCard) showBlightCard();
+                    setHasPlayedCardThisTurn(true); // Casting blight magic counts as playing a card
+                  }}
                   variant="outline"
                   className="relative bg-gradient-to-b from-amber-950 to-amber-900 text-amber-100 hover:from-amber-900 hover:to-amber-800 border-amber-700 font-medieval"
                 >
@@ -166,8 +180,9 @@ export default function PlayerHand({
                     {/* Pulse effect only if it's current turn and player has played at least one card */}
                     <AnimatePresence>
                       {isCurrentTurn && 
-                        // Check if player has already played cards (hand size is less than max)
-                        currentPlayer.hand.length < 10 && !currentPlayer.pass && (
+                        !currentPlayer.pass && 
+                        // Only pulse if player has played a card in this turn
+                        hasPlayedCardThisTurn && (
                         <motion.div
                           initial={{ scale: 0, opacity: 0 }}
                           animate={{ 
@@ -227,7 +242,7 @@ export default function PlayerHand({
               key={`hand-${index}`}
               card={card}
               selected={selectedCard === index}
-              onClick={() => isCurrentTurn && !currentPlayer.pass && handlePlayCard(index)}
+              onClick={() => isCurrentTurn && !currentPlayer.pass && handleCardPlay(index)}
               disabled={!isCurrentTurn || currentPlayer.pass}
             />
           </div>

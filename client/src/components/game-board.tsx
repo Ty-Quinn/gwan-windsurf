@@ -184,7 +184,7 @@ export default function GameBoard({
           </div>
           
           <span className="text-amber-300 mr-4 font-serif">Victories: {currentPlayer.roundsWon}</span>
-          {currentPlayer.pass && <span className="text-red-400 mr-4 font-medieval">Retreated</span>}
+          {currentPlayer.pass && <span className="text-red-400 mr-4 font-medieval">Passed</span>}
         </div>
       </div>
       
