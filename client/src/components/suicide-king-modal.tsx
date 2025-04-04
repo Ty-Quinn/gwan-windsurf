@@ -49,7 +49,7 @@ export default function SuicideKingModal({
             <Sparkles className="h-8 w-8 text-purple-400 mb-2" />
             <h3 className="text-lg font-medium mb-2 text-purple-400">Second Blight</h3>
             <p className="text-sm text-center">
-              Select a second powerful Blight card to add to your arsenal for the remainder of the match.
+              Select an additional Blight card to add to your arsenal. If you've already used your first Blight card, this will allow you to use another one.
             </p>
           </div>
         </div>
