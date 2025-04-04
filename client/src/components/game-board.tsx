@@ -149,19 +149,19 @@ export default function GameBoard({
   }
   
   return (
-    <div className="mb-8 relative overflow-visible">
-      <div className="flex justify-between items-center mb-2">
+    <div className="mb-8 relative overflow-visible gwan-board-container p-4">
+      <div className="flex justify-between items-center mb-4">
         {isOpponent ? (
-          <h2 className="text-xl font-semibold">
-            Opponent ({currentPlayer.name})
+          <h2 className="text-xl font-semibold text-amber-200">
+            Opponent's Realm ({currentPlayer.name})
           </h2>
         ) : (
-          <h2 className="text-xl font-semibold">Your Board</h2>
+          <h2 className="text-xl font-semibold text-amber-200">Your Kingdom</h2>
         )}
         
         <div className="flex items-center relative">
           <div className="relative">
-            <span className="text-yellow-400 mr-4 font-bold text-lg">
+            <span className="text-amber-400 mr-4 font-bold text-lg">
               Score: {currentPlayer.score}
             </span>
             
@@ -174,7 +174,7 @@ export default function GameBoard({
                   exit={{ opacity: 0 }}
                   className={cn(
                     "absolute -right-2 -top-8 px-2 py-1 rounded-md font-bold text-white",
-                    scoreChange > 0 ? "bg-green-500" : "bg-red-500"
+                    scoreChange > 0 ? "bg-green-700/90" : "bg-red-700/90"
                   )}
                 >
                   {scoreChange > 0 ? `+${scoreChange}` : scoreChange}
@@ -183,28 +183,29 @@ export default function GameBoard({
             </AnimatePresence>
           </div>
           
-          <span className="text-primary mr-4">Rounds won: {currentPlayer.roundsWon}</span>
-          {currentPlayer.pass && <span className="text-red-500 mr-4">Passed</span>}
+          <span className="text-amber-300 mr-4 font-serif">Victories: {currentPlayer.roundsWon}</span>
+          {currentPlayer.pass && <span className="text-red-400 mr-4 font-medieval">Retreated</span>}
         </div>
       </div>
       
       {/* Game Rows */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {rowOrder.map((rowKey) => (
           <div key={`${isOpponent ? "op" : "pl"}-${rowKey}-row`} className="flex items-center">
-            <div className="w-32 text-right pr-3 font-semibold">
-              <div className="text-sm">{rowLabels[rowKey].name}</div>
-              <div className="text-yellow-400">({rowLabels[rowKey].bonus})</div>
-              <div className="text-xs text-muted-foreground">{rowLabels[rowKey].unitName}</div>
+            <div className="w-32 text-right pr-3 font-medieval">
+              <div className="text-amber-200">{rowLabels[rowKey].name}</div>
+              <div className="text-amber-400 font-serif">({rowLabels[rowKey].bonus})</div>
+              <div className="text-xs text-amber-100/80">{rowLabels[rowKey].unitName}</div>
             </div>
             <motion.div 
-              className={`flex-1 h-20 flex items-center p-2 pt-5 rounded-lg ${gameState.weatherEffects[rowKey] ? "bg-red-900/20" : "bg-card"} relative
-                ${targetRowSelection ? "border-2 border-yellow-400 cursor-pointer" : ""}`}
+              className={`game-row flex-1 h-20 flex items-center p-2 pt-5 rounded-lg relative
+                ${gameState.weatherEffects[rowKey] ? "bg-gradient-to-r from-red-900/30 to-slate-800/20" : ""} 
+                ${targetRowSelection ? "border-2 border-amber-400 cursor-pointer" : ""}`}
               onClick={() => targetRowSelection && handleRowSelect(rowKey)}
               initial={{ opacity: 1 }}
               animate={{ 
                 boxShadow: recentRowUpdate === rowKey 
-                  ? ["0px 0px 0px rgba(255, 215, 0, 0)", "0px 0px 15px rgba(255, 215, 0, 0.7)", "0px 0px 0px rgba(255, 215, 0, 0)"]
+                  ? ["0px 0px 0px rgba(245, 158, 11, 0)", "0px 0px 15px rgba(245, 158, 11, 0.7)", "0px 0px 0px rgba(245, 158, 11, 0)"]
                   : "none"
               }}
               transition={{
@@ -213,8 +214,8 @@ export default function GameBoard({
               }}
             >
               {gameState.weatherEffects[rowKey] && (
-                <div className="absolute -top-2 left-3 text-xs bg-destructive px-2 py-0.5 rounded text-white shadow-md z-10">
-                  {weatherLabels[rowKey]} Effect
+                <div className="absolute -top-2 left-3 text-xs bg-gradient-to-r from-red-900 to-red-700 px-3 py-1 rounded-sm text-amber-100 shadow-md z-10 font-medieval border border-amber-900/50">
+                  {weatherLabels[rowKey]} Magic
                 </div>
               )}
               
@@ -241,7 +242,7 @@ export default function GameBoard({
                           />
                           {/* Value badge overlay */}
                           <div 
-                            className={`absolute -top-2 -right-2 bg-black/80 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border ${getValueColor(card, rowKey, gameState.weatherEffects)}`}
+                            className={`absolute -top-2 -right-2 bg-stone-900/90 text-amber-100 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border ${getValueColor(card, rowKey, gameState.weatherEffects)}`}
                             title={`Card Value: ${calculateCardValue(card, rowKey, gameState.weatherEffects)}`}
                           >
                             {calculateCardValue(card, rowKey, gameState.weatherEffects)}
@@ -249,8 +250,8 @@ export default function GameBoard({
                         </div>
                         {/* Tooltip displaying card details on hover */}
                         <div className="absolute left-1/2 bottom-full -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none">
-                          <div className="bg-black/90 text-white p-2 rounded text-sm whitespace-nowrap">
-                            <div className="font-bold">{card.value} of {card.suit}</div>
+                          <div className="bg-stone-900/95 text-amber-100 p-3 rounded-md text-sm whitespace-nowrap border border-amber-900/60 font-serif">
+                            <div className="font-bold text-amber-200">{card.value} of {card.suit}</div>
                             
                             {/* Current value after effects */}
                             <div className="text-green-400 font-semibold">
@@ -258,7 +259,7 @@ export default function GameBoard({
                             </div>
                             
                             {/* Base value display */}
-                            <div className="text-muted-foreground text-xs">
+                            <div className="text-amber-100/70 text-xs">
                               Base value: {card.baseValue}
                             </div>
                             
@@ -276,22 +277,22 @@ export default function GameBoard({
                               <div className="text-blue-400">Spy card</div>
                             )}
                             {card.isWeather && (
-                              <div className="text-red-400">Weather card</div>
+                              <div className="text-sky-400">Weather card</div>
                             )}
                             {card.isMedic && (
-                              <div className="text-pink-400">Medic card</div>
+                              <div className="text-green-400">Medic card</div>
                             )}
                             {card.isDecoy && (
                               <div className="text-orange-400">Decoy card</div>
                             )}
                           </div>
-                          <div className="w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-black/90 absolute left-1/2 top-full -translate-x-1/2"></div>
+                          <div className="w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-stone-900/95 absolute left-1/2 top-full -translate-x-1/2"></div>
                         </div>
                       </motion.div>
                     ))}
                   </motion.div>
                 ) : (
-                  <div className="text-muted-foreground">No cards</div>
+                  <div className="text-amber-100/50 font-serif italic">No cards deployed</div>
                 )}
               </AnimatePresence>
             </motion.div>

@@ -47,12 +47,15 @@ export default function PlayerHand({
   };
 
   return (
-    <div className="mt-10 relative isolate">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold">Your Hand</h2>
+    <div className="mt-10 relative isolate gwan-board-container p-4">
+      <div className="flex items-center justify-between mb-6 border-b border-amber-800/40 pb-3">
+        <h2 className="text-xl font-medieval text-amber-200 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-400"><path d="M9.5 14.5 3 21"/><path d="M9.5 14.5 21 3"/><path d="M9.5 14.5 14.5 9.5"/><path d="M14.5 9.5 21 3"/><path d="M14.5 9.5 17.5 6.5"/><path d="M6.5 17.5l3-3"/><path d="M3 21a8 8 0 0 0 4-1 8 8 0 0 1 8-7 8 8 0 0 1 6 3 8 8 0 0 0 0-10 4 4 0 0 0-6 0c-2 2-4 4-4 6-1.1 2-2 5.5-8 5.5l-3 3"/></svg>
+          Your Arsenal
+        </h2>
         
         <div className="flex items-center space-x-4">
-          <div className="flex space-x-2">
+          <div className="flex space-x-3">
             {/* Undo button */}
             {handleUndo && (
               <motion.div
@@ -64,9 +67,9 @@ export default function PlayerHand({
                   onClick={handleUndo}
                   disabled={!canUndo}
                   variant="outline"
-                  className="relative"
+                  className="relative border-amber-700/50 font-serif text-amber-200"
                 >
-                  Undo Last Card
+                  ↩ Recall Card
                 </Button>
               </motion.div>
             )}
@@ -80,9 +83,9 @@ export default function PlayerHand({
                 onClick={handlePass}
                 disabled={!isCurrentTurn || currentPlayer.pass}
                 variant="destructive"
-                className="relative overflow-hidden"
+                className="relative overflow-hidden bg-red-900 border border-red-700 text-amber-100 hover:bg-red-800 font-medieval"
               >
-                <span className="z-10 relative">Pass Turn</span>
+                <span className="z-10 relative">Retreat</span>
                 
                 {/* Pulse effect only if opponent has already passed */}
                 <AnimatePresence>
@@ -101,7 +104,7 @@ export default function PlayerHand({
                         repeat: 2,
                         repeatType: "loop"
                       }}
-                      className="absolute inset-0 bg-destructive/40 rounded-md"
+                      className="absolute inset-0 bg-red-700/40 rounded-md"
                       style={{ zIndex: 0 }}
                     />
                   )}
@@ -119,11 +122,11 @@ export default function PlayerHand({
                 <Button 
                   onClick={showBlightCard}
                   variant="outline"
-                  className="relative bg-amber-800 text-amber-100 hover:bg-amber-700 hover:text-amber-50 border-amber-600"
+                  className="relative bg-gradient-to-b from-amber-950 to-amber-900 text-amber-100 hover:from-amber-900 hover:to-amber-800 border-amber-700 font-medieval"
                 >
                   <span className="z-10 relative flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    Play Blight Card
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 text-amber-400"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    Cast Blight Magic
                   </span>
                   
                   {/* Pulse effect for Blight Card button */}
@@ -156,7 +159,7 @@ export default function PlayerHand({
                   <Button 
                     onClick={handleEndTurn}
                     variant="secondary"
-                    className="relative overflow-hidden"
+                    className="relative overflow-hidden bg-gradient-to-b from-emerald-950 to-emerald-900 text-amber-100 border border-emerald-700 hover:from-emerald-900 hover:to-emerald-800 font-medieval"
                   >
                     <span className="z-10 relative">End Turn</span>
                     
@@ -177,7 +180,7 @@ export default function PlayerHand({
                             repeat: 2,
                             repeatType: "loop"
                           }}
-                          className="absolute inset-0 bg-primary rounded-md"
+                          className="absolute inset-0 bg-emerald-700/30 rounded-md"
                           style={{ zIndex: 0 }}
                         />
                       )}
@@ -188,21 +191,21 @@ export default function PlayerHand({
             )}
 
           </div>
-          <div className="flex flex-col text-sm text-muted-foreground items-end">
-            <div>{currentPlayer.hand.length} cards in hand</div>
+          <div className="flex flex-col text-sm items-end pr-2 border-l border-amber-800/30 pl-4">
+            <div className="font-serif text-amber-100">{currentPlayer.hand.length} cards in arsenal</div>
             <div 
-              className="cursor-pointer hover:text-primary flex items-center"
+              className="cursor-pointer hover:text-amber-400 flex items-center text-amber-200/80 font-serif transition-colors"
               onClick={() => setShowDiscardPile(true)}
             >
-              {currentPlayer.discardPile.length} cards in discard pile
+              {currentPlayer.discardPile.length} cards in graveyard
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
             </div>
             {/* Blight card info */}
             {currentPlayer.blightCard && (
-              <div className={`mt-1 flex items-center ${currentPlayer.hasUsedBlightCard ? 'text-muted-foreground/50' : 'text-amber-500'}`}>
+              <div className={`mt-1 flex items-center ${currentPlayer.hasUsedBlightCard ? 'text-amber-500/40' : 'text-amber-500'}`}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                <span className="text-xs">
-                  {currentPlayer.hasUsedBlightCard ? 'Blight Card used' : currentPlayer.blightCard.name}
+                <span className="text-xs font-serif">
+                  {currentPlayer.hasUsedBlightCard ? 'Magic depleted' : currentPlayer.blightCard.name}
                 </span>
               </div>
             )}
@@ -217,7 +220,7 @@ export default function PlayerHand({
         ))}
       </div>
       
-      <div className="flex flex-wrap items-center justify-center py-6 px-2 gap-4 relative overflow-visible">
+      <div className="flex flex-wrap items-center justify-center py-6 px-2 gap-5 relative overflow-visible">
         {currentPlayer.hand.map((card, index) => (
           <div key={`hand-card-wrapper-${index}`} className="relative overflow-visible">
             <CardComponent

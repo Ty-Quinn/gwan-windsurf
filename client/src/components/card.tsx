@@ -21,15 +21,15 @@ export default function CardComponent({
   const getSuitSymbol = (suit: string) => {
     switch (suit) {
       case "clubs":
-        return "♣"
+        return "⚔️" // Infantry symbol - sword
       case "spades":
-        return "♠"
+        return "🏹" // Archer symbol - bow and arrow
       case "diamonds":
-        return "♦"
+        return "🧨" // Ballista symbol - explosive
       case "hearts":
-        return "♥"
+        return "⚜️" // Mercenary symbol - fleur-de-lis
       case "joker":
-        return "★"
+        return "👑" // Joker/royal symbol - crown
       default:
         return ""
     }
@@ -54,27 +54,92 @@ export default function CardComponent({
 
   const getSuitColor = (suit: string) => {
     switch (suit) {
-      case "diamonds":
-      case "hearts":
-        return "text-red-400"
+      case "clubs": // Infantry
+        return "text-stone-300"
+      case "spades": // Archer
+        return "text-emerald-300"
+      case "diamonds": // Ballista
+        return "text-amber-300"
+      case "hearts": // Mercenary
+        return "text-rose-300"
       case "joker":
-        return "text-purple-400"
+        return "text-purple-300"
       default:
-        return "text-white"
+        return "text-amber-100"
     }
   }
 
   const getCardType = () => {
-    if (card.isCommander) return { border: "border-yellow-400", text: "text-yellow-400", label: "Commander", value: card.baseValue }
-    if (card.isWeather) return { border: "border-red-500", text: "text-red-500", label: getWeatherLabel(), value: 15 }
-    if (card.isJoker) return { border: "border-purple-500", text: "text-purple-400", label: "Joker (spy)", value: 1 }
-    if (card.isSpy && !card.isJoker) return { border: "border-blue-500", text: "text-blue-400", label: "Spy", value: 0 }
-    if (card.isDecoy) return { border: "border-orange-500", text: "text-orange-400", label: "Decoy", value: 0 }
-    if (card.isMedic) return { border: "border-green-500", text: "text-green-400", label: "Medic", value: 3 }
-    if (card.isRogue) return { border: "border-amber-500", text: "text-amber-400", label: "Rogue", value: card.diceValue || "?" }
-    if (card.isSniper) return { border: "border-indigo-500", text: "text-indigo-400", label: "Sniper", value: 2 }
-    if (card.suit === "hearts") return { border: "border-purple-500", text: "text-white", label: "", value: 0 } // Removed "Flexible" text
-    return { border: "", text: "text-white", label: "", value: 0 }
+    if (card.isCommander) return { 
+      border: "border-yellow-500", 
+      text: "text-yellow-400", 
+      label: "Commander", 
+      value: card.baseValue,
+      bg: "bg-gradient-to-b from-amber-950/80 to-amber-900/80" 
+    }
+    if (card.isWeather) return { 
+      border: "border-sky-500", 
+      text: "text-sky-400", 
+      label: getWeatherLabel(), 
+      value: 15,
+      bg: "bg-gradient-to-b from-sky-950/80 to-sky-900/80" 
+    }
+    if (card.isJoker) return { 
+      border: "border-purple-500", 
+      text: "text-purple-400", 
+      label: "Joker (spy)", 
+      value: 1,
+      bg: "bg-gradient-to-b from-purple-950/80 to-purple-900/80" 
+    }
+    if (card.isSpy && !card.isJoker) return { 
+      border: "border-blue-500", 
+      text: "text-blue-400", 
+      label: "Spy", 
+      value: 0,
+      bg: "bg-gradient-to-b from-blue-950/80 to-blue-900/80" 
+    }
+    if (card.isDecoy) return { 
+      border: "border-orange-500", 
+      text: "text-orange-400", 
+      label: "Decoy", 
+      value: 0,
+      bg: "bg-gradient-to-b from-orange-950/80 to-orange-900/80" 
+    }
+    if (card.isMedic) return { 
+      border: "border-green-500", 
+      text: "text-green-400", 
+      label: "Medic", 
+      value: 3,
+      bg: "bg-gradient-to-b from-green-950/80 to-green-900/80" 
+    }
+    if (card.isRogue) return { 
+      border: "border-amber-500", 
+      text: "text-amber-400", 
+      label: "Rogue", 
+      value: card.diceValue || "?",
+      bg: "bg-gradient-to-b from-amber-950/80 to-amber-900/80" 
+    }
+    if (card.isSniper) return { 
+      border: "border-indigo-500", 
+      text: "text-indigo-400", 
+      label: "Sniper", 
+      value: 2,
+      bg: "bg-gradient-to-b from-indigo-950/80 to-indigo-900/80" 
+    }
+    if (card.suit === "hearts") return { 
+      border: "border-rose-500", 
+      text: "text-rose-400", 
+      label: "", 
+      value: 0,
+      bg: "bg-gradient-to-b from-rose-950/80 to-rose-900/80" 
+    }
+    return { 
+      border: "", 
+      text: "text-amber-100", 
+      label: "", 
+      value: 0,
+      bg: "bg-gradient-to-b from-card to-secondary" 
+    }
   }
 
   const getWeatherLabel = () => {
@@ -106,17 +171,17 @@ export default function CardComponent({
     return (
       <div 
         className={cn(
-          "bg-secondary text-white font-semibold rounded-md flex flex-col items-center justify-center w-14 h-16 relative",
-          cardType.border && `border-2 ${cardType.border}`,
-          cardType.text,
-          selected && "ring-2 ring-primary",
+          "card text-foreground font-serif rounded-md flex flex-col items-center justify-center w-14 h-16 relative",
+          cardType.bg || "bg-gradient-to-b from-card to-secondary",
+          cardType.border && `border ${cardType.border}`,
+          selected && "ring-2 ring-amber-500",
           onClick && !disabled ? "cursor-pointer hover:opacity-80" : "",
           disabled && "opacity-60 cursor-not-allowed"
         )}
         onClick={!disabled ? onClick : undefined}
       >
         <div className={`absolute top-0.5 left-0.5 text-xs ${suitColor}`}>{suitSymbol}</div>
-        <div className={`text-lg ${cardType.text}`}>{card.value}</div>
+        <div className={`text-base ${cardType.text}`}>{card.value}</div>
         <div className={`text-[8px] ${suitColor} mt-0`}>{suitName}</div>
         <div className={`absolute bottom-0.5 right-0.5 text-xs ${suitColor}`}>{suitSymbol}</div>
       </div>
@@ -126,31 +191,43 @@ export default function CardComponent({
   return (
     <div 
       className={cn(
-        "transition-transform bg-gradient-to-b from-card to-secondary text-white font-semibold rounded-lg shadow-md flex flex-col items-center justify-center w-28 h-40 cursor-pointer",
-        "hover:-translate-y-2 mt-3", /* Added margin-top to prevent cutting off during hover */
-        selected && "translate-y-[-12px] shadow-xl border-2 border-primary",
-        cardType.border && `border-2 ${cardType.border}`,
+        "card font-serif rounded-lg flex flex-col items-center justify-center w-28 h-40 cursor-pointer",
+        cardType.bg || "bg-gradient-to-b from-card to-secondary",
+        "hover:-translate-y-2 hover:rotate-1 mt-3", 
+        selected && "selected-card",
+        cardType.border && `border ${cardType.border}`,
         disabled && "opacity-60 cursor-not-allowed"
       )}
       onClick={!disabled ? onClick : undefined}
     >
       <div className="w-full flex justify-between items-center p-2">
-        <div className={`text-lg ${suitColor}`}>{suitSymbol}</div>
-        <div className={`text-lg ${cardType.text}`}>{card.value}</div>
+        <div className={`text-base ${suitColor}`}>{suitSymbol}</div>
+        <div className={`text-base ${cardType.text} font-medieval`}>{card.value}</div>
       </div>
       
-      <div className="flex-grow flex flex-col items-center justify-center">
-        <div className={`text-4xl ${cardType.text} mb-1`}>{card.value}</div>
+      <div className="flex-grow flex flex-col items-center justify-center relative">
+        {/* Card value with medieval styling */}
+        <div className={`text-4xl ${cardType.text} mb-1 font-medieval`}>{card.value}</div>
+        
+        {/* Ornamental divider */}
+        <div className="w-16 h-0.5 bg-amber-700/40 rounded mb-1.5"></div>
+        
+        {/* Suit name */}
         <div className={`text-xs ${suitColor} mb-2 font-medium`}>{suitName}</div>
+        
+        {/* Decorative element */}
+        <div className="absolute w-full h-full flex items-center justify-center opacity-5 pointer-events-none">
+          <div className={`text-6xl ${suitColor}`}>{suitSymbol}</div>
+        </div>
       </div>
       
       <div className="w-full flex justify-between items-center p-2">
-        <div className={`text-lg ${cardType.text}`}>{card.value}</div>
-        <div className={`text-lg ${suitColor}`}>{suitSymbol}</div>
+        <div className={`text-base ${cardType.text} font-medieval`}>{card.value}</div>
+        <div className={`text-base ${suitColor}`}>{suitSymbol}</div>
       </div>
       
       {cardType.label && (
-        <div className="absolute bottom-0 left-0 right-0 text-center text-xs py-1 bg-black/60">
+        <div className="absolute bottom-0 left-0 right-0 text-center text-xs py-1 bg-stone-950/70 font-medieval">
           <span className={cardType.text}>{cardType.label}</span>
           {cardType.value !== 0 && cardType.value !== "?" && <span> ({cardType.value})</span>}
         </div>
