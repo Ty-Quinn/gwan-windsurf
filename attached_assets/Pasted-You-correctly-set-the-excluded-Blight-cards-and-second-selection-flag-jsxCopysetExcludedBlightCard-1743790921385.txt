@@ -1,0 +1,103 @@
+You correctly set the excluded Blight cards and second selection flag:
+
+jsxCopysetExcludedBlightCardIds(currentPlayerBlightCardIds)
+setIsSecondBlightSelection(true)
+setShowBlightCardSelection(true)
+
+After this, you're also checking for game end conditions, which might be interrupting the flow:
+
+jsxCopyif (result.gameEnded) {
+  setRoundWinner(result.roundWinner)
+  setGameWinner(result.roundWinner)
+  setShowGameEnd(true)
+}
+else if (result.roundWinner !== undefined || result.roundTied) {
+  setRoundWinner(result.roundWinner)
+  setRoundTied(result.roundTied || false)
+  setShowRoundSummary(true)
+  setNextRoundPending(true)
+}
+
+The issue could be that the game logic isn't returning the expected result structure, or that the UI state is being overridden.
+
+Let's focus on fixing this by ensuring the Blight card selection modal appears properly:
+
+First, verify that handleSuicideKingSelectBlight is being called when you click the button
+Check that setShowBlightCardSelection(true) is actually executing and not being skipped
+Ensure the BlightCardSelectionModal component renders when showBlightCardSelection is true
+
+Here's my proposed fix:
+jsxCopy// In the handleSuicideKingSelectBlight function, add logging to debug the flow
+const handleSuicideKingSelectBlight = () => {
+  if (!game || !gameState || pendingSuicideKingCardIndex === null) return
+  
+  console.log("Suicide King selection triggered - selecting second Blight card")
+  
+  const result = game.completeSuicideKingSelectBlight(playerView, pendingSuicideKingCardIndex)
+  
+  if (result.success) {
+    // Get currently selected blight card IDs to exclude them from selection
+    const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id)
+    
+    console.log("Setting up second Blight selection", {
+      excludedCards: currentPlayerBlightCardIds,
+      isSecondSelection: true
+    })
+    
+    // Update state in a batch to ensure they take effect together
+    setGameState(game.getGameState())
+    setShowSuicideKingModal(false)
+    setPendingSuicideKingCardIndex(null)
+    setExcludedBlightCardIds(currentPlayerBlightCardIds)
+    setIsSecondBlightSelection(true)
+    
+    // Set this last to ensure other state updates are processed first
+    setTimeout(() => {
+      setShowBlightCardSelection(true)
+      setMessage(result.message || "The Suicide King grants you a new Blight card selection!")
+    }, 0)
+    
+    // Check for game end conditions after the Blight card selection
+    if (result.gameEnded) {
+      // If the game has ended, we need to set both the round winner and game winner
+      setRoundWinner(result.roundWinner)
+      setGameWinner(result.roundWinner)
+      setShowGameEnd(true)
+    }
+    // Otherwise check for round end
+    else if (result.roundWinner !== undefined || result.roundTied) {
+      setRoundWinner(result.roundWinner)
+      setRoundTied(result.roundTied || false)
+      setShowRoundSummary(true)
+      setNextRoundPending(true)
+    }
+  } else {
+    setMessage(result.message || "Failed to grant second Blight card")
+  }
+}
+Additionally, verify the BlightCardSelectionModal component is properly checking the props:
+jsxCopy// In BlightCardSelectionModal, ensure it handles isSecondSelection correctly
+// Add a console log to check that the modal is being rendered with the right props
+console.log("BlightCardSelectionModal rendering with:", {
+  open: open,
+  playerIndex: playerIndex,
+  isSecondSelection: isSecondSelection,
+  excludedCardIds: excludedCardIds
+})
+Finally, check your JSX to make sure the BlightCardSelectionModal is being rendered correctly:
+jsxCopy{/* Blight Card Selection Modal */}
+{showBlightCardSelection && gameState && (
+  <BlightCardSelectionModal
+    open={showBlightCardSelection}
+    playerIndex={playerView}
+    onSelectCard={handleBlightCardSelection}
+    onClose={() => {
+      console.log("Closing Blight card selection modal")
+      setShowBlightCardSelection(false)
+      setIsSecondBlightSelection(false)
+      setExcludedBlightCardIds([])
+    }}
+    excludedCardIds={excludedBlightCardIds}
+    isSecondSelection={isSecondBlightSelection}
+  />
+)}
