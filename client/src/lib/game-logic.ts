@@ -184,16 +184,37 @@ export class GwanGameLogic {
     ).length;
     const jokerCount = this.deck.filter(card => card.isJoker).length;
     
+    // Check for duplicate cards (except jokers)
+    const nonJokerCards = this.deck.filter(card => !card.isJoker);
+    const uniqueCards = new Set();
+    const duplicates: Card[] = [];
+    
+    for (const card of nonJokerCards) {
+      const cardKey = `${card.suit}-${card.value}`;
+      if (uniqueCards.has(cardKey)) {
+        duplicates.push(card);
+      } else {
+        uniqueCards.add(cardKey);
+      }
+    }
+    
     console.log("Deck creation complete. Verification:")
     console.log("- Suicide King (King of Hearts) count:", suicideKingCount);
     console.log("- Joker count:", jokerCount);
     console.log("- Total deck size:", this.deck.length);
+    console.log("- Unique non-joker cards:", uniqueCards.size);
     
-    // Sanity check - there should be exactly 1 Suicide King and 2 Jokers
-    if (suicideKingCount !== 1 || jokerCount !== 2) {
+    // Sanity check - there should be exactly 1 Suicide King, 2 Jokers, 52 unique cards, for a total of 54 cards
+    if (suicideKingCount !== 1 || jokerCount !== 2 || uniqueCards.size !== 52 || this.deck.length !== 54) {
       console.error("DECK ERROR: Incorrect card counts!");
       console.error("Suicide King count should be 1, actual:", suicideKingCount);
       console.error("Joker count should be 2, actual:", jokerCount);
+      console.error("Unique non-joker cards should be 52, actual:", uniqueCards.size);
+      console.error("Total deck size should be 54, actual:", this.deck.length);
+      
+      if (duplicates.length > 0) {
+        console.error("Duplicate cards found:", duplicates);
+      }
     }
   }
 
