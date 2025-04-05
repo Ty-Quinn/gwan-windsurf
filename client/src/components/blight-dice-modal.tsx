@@ -216,12 +216,11 @@ export default function BlightDiceModal({
         </DialogHeader>
 
         <div className="flex flex-col items-center space-y-4 py-4">
-          {/* Display previous rolls */}
-          {rolls.length > 0 && (
+          {/* Display previous rolls - only for Devil effect, not for Wheel of Fortune */}
+          {rolls.length > 0 && effect !== BlightEffect.WHEEL && (
             <div className="flex flex-wrap gap-2 justify-center">
               {rolls.map((roll, index) => (
                 <div key={index} className="bg-amber-950/80 p-2 rounded-md">
-                  {/* Only show "Roll #" for Devil effect, not for Wheel of Fortune */}
                   {effect === BlightEffect.DEVIL && (
                     <div className="text-center mb-2">Roll {index + 1}:</div>
                   )}
