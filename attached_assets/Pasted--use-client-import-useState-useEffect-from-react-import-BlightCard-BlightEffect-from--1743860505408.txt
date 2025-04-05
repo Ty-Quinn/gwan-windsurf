@@ -167,34 +167,17 @@ export default function BlightDiceModal({
     }
   }
 
-  // Determine title and description based on effect
-  let title = "Roll Dice"
-  let description = ""
-
-  switch (effect) {
-    case BlightEffect.MAGICIAN:
-      title = "The Magician - Roll d20"
-      description = "Roll a d20. If your roll exceeds the combined value of all cards in the targeted row (without row bonus), all cards in that row will be discarded."
-      break
-    case BlightEffect.WHEEL:
-      title = "Wheel of Fortune - Roll d10"
-      description = "Roll a d10 to determine bonus points."
-      break
-    case BlightEffect.DEVIL:
-      title = "The Devil - Roll 3d6"
-      description = "Roll 3d6 up to 6 times. If you roll three 6's, you can revive a card from either discard pile."
-      break
-  }
-
   return (
     <Dialog open={open} onOpenChange={onCancel}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl flex items-center gap-2">
             {blightCard?.icon && <span className="text-3xl">{blightCard.icon}</span>}
-            {title}
+            {`The Devil ~ Roll 3d6`}
           </DialogTitle>
-          <p className="text-sm text-muted-foreground mt-2">{description}</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            ROLL 3D6 UP TO 6 TIMES. IF YOU ROLL THREE 6'S, YOU CAN REVIVE A CARD FROM EITHER DISCARD PILE.
+          </p>
         </DialogHeader>
 
         <div className="flex flex-col items-center space-y-4 py-4">
