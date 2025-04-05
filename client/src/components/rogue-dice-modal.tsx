@@ -65,7 +65,12 @@ export default function RogueDiceModal({ open, card, onComplete, onCancel }: Rog
         <div className="flex flex-col items-center my-2">
           {diceTotal !== null && cardWithValue ? (
             <>
-              <CardComponent card={cardWithValue} compact={false} />
+              <div className="relative">
+                <CardComponent card={cardWithValue} compact={false} />
+                <div className="absolute top-2 right-2 bg-amber-900 border-2 border-amber-500 rounded-full w-10 h-10 flex items-center justify-center">
+                  <span className="text-amber-400 font-bold text-xl">{diceTotal}</span>
+                </div>
+              </div>
               <p className="mt-2 text-center text-sm">
                 Your Rogue card value has been set to <span className="font-bold">{diceTotal}</span>
               </p>
