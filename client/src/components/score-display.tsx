@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -25,17 +26,24 @@ export default function ScoreDisplay({ player, isActive, playerNumber, skipAnima
       return;
     }
     
+    // Clear any existing timers when component updates
+    let animationTimer: NodeJS.Timeout;
+    
     if (player.score !== prevScore) {
       const change = player.score - prevScore
       setScoreChange(change)
       setShowAnimation(true)
       
-      const timer = setTimeout(() => {
+      // Set a timer to hide the animation after 2 seconds
+      animationTimer = setTimeout(() => {
         setShowAnimation(false)
         setPrevScore(player.score)
-      }, 2000)
-      
-      return () => clearTimeout(timer)
+      }, 2000) // 2 seconds
+    }
+    
+    // Clean up the timer on unmount or before setting a new one
+    return () => {
+      if (animationTimer) clearTimeout(animationTimer)
     }
   }, [player.score, prevScore, skipAnimation])
 
@@ -64,8 +72,9 @@ export default function ScoreDisplay({ player, isActive, playerNumber, skipAnima
                 initial={{ opacity: 0, y: scoreChange > 0 ? 20 : -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
                 className={cn(
-                  "absolute -right-2 -top-8 px-2 py-1 rounded-md font-bold text-white z-50", // Add z-50 to ensure it's above other elements
+                  "absolute -right-2 -top-8 px-2 py-1 rounded-md font-bold text-white z-50", // z-50 ensures it's above other elements
                   scoreChange > 0 ? "bg-green-500" : "bg-red-500"
                 )}
                 style={{ pointerEvents: "none" }} /* Ensures it doesn't block interactions */
