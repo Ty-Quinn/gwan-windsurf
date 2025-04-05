@@ -646,6 +646,10 @@ export class GwanGameLogic {
     }
 
     // If player still has cards, switch to the next player
+    // Reset the "used this turn" flag for blight cards before switching turns
+    // This allows the player to use a blight card in their next turn
+    this.players[playerIndex].hasUsedBlightThisTurn = false;
+    
     // Only switch if the other player hasn't passed
     if (!this.players[1 - playerIndex].pass) {
       this.currentPlayer = 1 - this.currentPlayer;
@@ -905,6 +909,10 @@ export class GwanGameLogic {
       };
     }
 
+    // Reset the "used this turn" flag for blight cards before switching turns
+    // This allows the player to use a blight card in their next turn
+    this.players[playerIndex].hasUsedBlightThisTurn = false;
+    
     // If player still has cards, switch to the next player
     // Only switch if the other player hasn't passed
     if (!this.players[1 - playerIndex].pass) {
@@ -983,6 +991,10 @@ export class GwanGameLogic {
       };
     }
 
+    // Reset the "used this turn" flag for blight cards before switching turns
+    // This allows the player to use a blight card in their next turn
+    this.players[playerIndex].hasUsedBlightThisTurn = false;
+    
     // If player still has cards, switch to the next player
     // Only switch if the other player hasn't passed
     if (!this.players[1 - playerIndex].pass) {
@@ -1077,6 +1089,10 @@ export class GwanGameLogic {
       };
     }
 
+    // Reset the "used this turn" flag for blight cards before switching turns
+    // This allows the player to use a blight card in their next turn
+    this.players[playerIndex].hasUsedBlightThisTurn = false;
+    
     // If player still has cards, switch to the next player
     // Only switch if the other player hasn't passed
     if (!this.players[1 - playerIndex].pass) {
@@ -1211,6 +1227,10 @@ export class GwanGameLogic {
       };
     }
 
+    // Reset the "used this turn" flag for blight cards before switching turns
+    // This allows the player to use a blight card in their next turn
+    this.players[playerIndex].hasUsedBlightThisTurn = false;
+    
     // If player still has cards, switch to the next player
     // Only switch if the other player hasn't passed
     if (!this.players[1 - playerIndex].pass) {
