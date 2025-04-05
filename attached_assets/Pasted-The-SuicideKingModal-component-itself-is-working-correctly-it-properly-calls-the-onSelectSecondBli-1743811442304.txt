@@ -1,0 +1,93 @@
+The SuicideKingModal component itself is working correctly - it properly calls the onSelectSecondBlight handler when clicked. The issue must be in how the pendingSuicideKingCardIndex is being managed.
+Let's modify the handleSuicideKingSelectBlight function to fix this issue:
+jsxCopyconst handleSuicideKingSelectBlight = () => {
+  console.log("handleSuicideKingSelectBlight called");
+  
+  if (!game || !gameState || pendingSuicideKingCardIndex === null) {
+    console.log("Early return: missing dependencies");
+    return;
+  }
+  
+  // Store the index locally so we don't lose it when we reset the state
+  const cardIndex = pendingSuicideKingCardIndex;
+  
+  // First, get the current player's blight cards for exclusion in the next modal
+  const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id);
+  
+  // First close the Suicide King modal to ensure clean state
+  setShowSuicideKingModal(false);
+  setPendingSuicideKingCardIndex(null);
+  
+  // Then call the game logic with our stored cardIndex to handle Suicide King
+  const result = game.completeSuicideKingSelectBlight(playerView, cardIndex);
+  console.log("Game logic result:", result);
+  
+  if (result.success) {
+    // Get a fresh game state after the card is removed
+    const freshState = game.getGameState();
+    
+    // Log some info for debugging
+    console.log("Player hand before update:", gameState.players[playerView].hand.length);
+    console.log("Player hand after update:", freshState.players[playerView].hand.length);
+    
+    // Update the game state to reflect the removed card
+    setGameState(freshState);
+    
+    // Set up for blight selection
+    setExcludedBlightCardIds(currentPlayerBlightCardIds);
+    setIsSecondBlightSelection(true);
+    
+    // Show the blight selection modal last
+    setTimeout(() => {
+      setShowBlightCardSelection(true);
+      setMessage(result.message || "Choose your second Blight card!");
+    }, 100);
+    
+    // Check for game end conditions
+    if (result.gameEnded) {
+      setRoundWinner(result.roundWinner);
+      setGameWinner(result.roundWinner);
+      setShowGameEnd(true);
+    } else if (result.roundWinner !== undefined || result.roundTied) {
+      setRoundWinner(result.roundWinner);
+      setRoundTied(result.roundTied || false);
+      setShowRoundSummary(true);
+      setNextRoundPending(true);
+    }
+  } else {
+    // If there was an error, show message
+    setMessage(result.message || "Failed to grant second Blight card");
+  }
+}
+The key changes in this fix are:
+
+Immediately store pendingSuicideKingCardIndex in a local variable before clearing the state
+Close the modal first before any game logic to avoid interference
+Use the locally stored card index for the game logic call
+Request a fresh state directly from the game after the operation
+Use a small timeout to ensure the state updates properly before showing the Blight selection modal
+
+Also, let's make sure the code in playCard is correctly setting up the Suicide King flag:
+jsxCopy// In the playCard function, make sure this part is working correctly
+if (card.isSuicideKing) {
+  // Set the flag in the game logic
+  this.isSuicideKingBeingPlayed = true;
+  
+  return {
+    success: true,
+    message: "The Suicide King grants you a powerful choice!",
+    isSuicideKing: true, // Signal to UI that we need to show Suicide King choice dialog
+  };
+}
+If the Suicide King is still not being removed, the issue might be in how the state is being updated in React. Try adding this console log in the game logic to verify it's actually being called and removing the card:
+jsxCopy// Add this at the start of completeSuicideKingSelectBlight
+console.log("completeSuicideKingSelectBlight called with:", {
+  playerIndex,
+  cardIndex,
+  handBefore: this.players[playerIndex].hand.length
+});
+
+// And add this after removing the card
+this.players[playerIndex].hand.splice(cardIndex, 1);
+console.log("Card removed, hand size now:", this.players[playerIndex].hand.length);
+These changes should help identify and fix the issue with the Suicide King not being properly removed from the player's hand.

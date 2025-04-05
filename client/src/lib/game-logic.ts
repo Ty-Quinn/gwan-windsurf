@@ -1690,6 +1690,15 @@ export class GwanGameLogic {
       return { success: false, message: "No Suicide King is being played" };
     }
 
+    // Log the state before removal for debugging
+    console.log("completeSuicideKingClearWeather called with:", {
+      playerIndex,
+      cardIndex,
+      handBefore: this.players[playerIndex].hand.length,
+      suicideKingCard: card,
+      currentWeather: {...this.weatherEffects}
+    });
+
     // Clear ALL weather effects
     this.weatherEffects = {
       clubs: false,
@@ -1700,6 +1709,11 @@ export class GwanGameLogic {
     // Remove the Suicide King card from hand ENTIRELY - not adding it to discard
     // This makes the Suicide King vanish from the game completely when used
     this.players[playerIndex].hand.splice(cardIndex, 1);
+    
+    // Log after removal to verify it's gone
+    console.log("Card removed, hand size now:", this.players[playerIndex].hand.length);
+    console.log("Suicide King completely removed from play (clear weather option)");
+    console.log("Weather effects all cleared:", this.weatherEffects);
     
     // Note: We do NOT add it to the discard pile - it's completely removed from the game
 
@@ -1746,9 +1760,21 @@ export class GwanGameLogic {
       return { success: false, message: "No Blight cards are available" };
     }
 
+    // Log the state before removal for debugging
+    console.log("completeSuicideKingSelectBlight called with:", {
+      playerIndex,
+      cardIndex,
+      handBefore: this.players[playerIndex].hand.length,
+      suicideKingCard: card
+    });
+
     // Remove the Suicide King card from hand ENTIRELY - not adding it to discard
     // This makes the Suicide King vanish from the game completely when used
     this.players[playerIndex].hand.splice(cardIndex, 1);
+    
+    // Log after removal to verify it's gone
+    console.log("Card removed, hand size now:", this.players[playerIndex].hand.length);
+    console.log("Suicide King completely removed from play (not in discard)");
     
     // Note: We do NOT add it to the discard pile - it's completely removed from the game
 

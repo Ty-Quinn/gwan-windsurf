@@ -865,28 +865,47 @@ export default function GwanGame() {
 
   // Handle Suicide King effects
   const handleSuicideKingClearWeather = () => {
-    if (!game || !gameState || pendingSuicideKingCardIndex === null) return
+    if (!game || !gameState || pendingSuicideKingCardIndex === null) {
+      console.log("Early return: missing dependencies", { 
+        game: !!game, 
+        gameState: !!gameState, 
+        pendingSuicideKingCardIndex 
+      });
+      return;
+    }
+    
+    // Store the index locally so we don't lose it when we reset the state
+    const cardIndex = pendingSuicideKingCardIndex;
     
     // Save a reference to the Suicide King card before it's removed
-    const suicideKingCard = gameState.players[playerView].hand[pendingSuicideKingCardIndex];
+    const suicideKingCard = gameState.players[playerView].hand[cardIndex];
     console.log("Suicide King card before removal (clear weather):", suicideKingCard);
     
-    const result = game.completeSuicideKingClearWeather(playerView, pendingSuicideKingCardIndex)
+    // First close the Suicide King modal to ensure clean state
+    setShowSuicideKingModal(false);
+    setPendingSuicideKingCardIndex(null);
+    
+    // Then call the game logic with our stored cardIndex
+    const result = game.completeSuicideKingClearWeather(playerView, cardIndex)
     
     if (result.success) {
-      const updatedState = game.getGameState();
+      // Get a fresh game state after the card is removed
+      const freshState = game.getGameState();
+      
+      // Log some info for debugging
+      console.log("Player hand before update:", gameState.players[playerView].hand.length);
+      console.log("Player hand after update:", freshState.players[playerView].hand.length);
       
       // Verify the card is completely removed (not in hand or discard)
       console.log("Suicide King removed from play (clear weather option)");
       console.log("Suicide King in discard pile:", 
-        updatedState.players[playerView].discardPile.some(
+        freshState.players[playerView].discardPile.some(
           card => card.suit === "hearts" && card.value === "K" && card.isSuicideKing
         )
       );
       
-      setGameState(updatedState)
-      setShowSuicideKingModal(false)
-      setPendingSuicideKingCardIndex(null)
+      // Update the game state to reflect the removed card
+      setGameState(freshState)
       setMessage(result.message || "The Suicide King cleared all weather effects!")
       
       // Check for game end first (takes priority)
@@ -922,62 +941,69 @@ export default function GwanGame() {
       return;
     }
     
+    // Store the index locally so we don't lose it when we reset the state
+    const cardIndex = pendingSuicideKingCardIndex;
+    
     // Save a reference to the Suicide King card before it's removed
-    const suicideKingCard = gameState.players[playerView].hand[pendingSuicideKingCardIndex];
+    const suicideKingCard = gameState.players[playerView].hand[cardIndex];
     console.log("Suicide King card before removal (second blight):", suicideKingCard);
     
-    // First, get the current player's blight cards
+    // First, get the current player's blight cards for exclusion in the next modal
     const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id);
     console.log("Current player blight cards:", currentPlayerBlightCardIds);
     
-    // Immediately set up for the second selection
-    setExcludedBlightCardIds(currentPlayerBlightCardIds);
-    setIsSecondBlightSelection(true);
-    
-    // Close suicide king modal
+    // First close the Suicide King modal to ensure clean state
     setShowSuicideKingModal(false);
     setPendingSuicideKingCardIndex(null);
     
-    // Wait a tick to update the UI (close the current modal)
-    setTimeout(() => {
-      console.log("Opening blight card selection modal");
-      setShowBlightCardSelection(true);
+    // Then call the game logic with our stored cardIndex to handle Suicide King
+    const result = game.completeSuicideKingSelectBlight(playerView, cardIndex);
+    console.log("Game logic result:", result);
+    
+    if (result.success) {
+      // Get a fresh game state after the card is removed
+      const freshState = game.getGameState();
       
-      // Now call the game logic
-      const result = game.completeSuicideKingSelectBlight(playerView, pendingSuicideKingCardIndex);
-      console.log("Game logic result:", result);
+      // Log some info for debugging
+      console.log("Player hand before update:", gameState.players[playerView].hand.length);
+      console.log("Player hand after update:", freshState.players[playerView].hand.length);
       
-      if (result.success) {
-        const updatedState = game.getGameState();
-        
-        // Verify the card is completely removed (not in hand or discard)
-        console.log("Suicide King removed from play (second blight option)");
-        console.log("Suicide King in discard pile:", 
-          updatedState.players[playerView].discardPile.some(
-            card => card.suit === "hearts" && card.value === "K" && card.isSuicideKing
-          )
-        );
-        
-        setGameState(updatedState);
+      // Verify the card is completely removed (not in hand or discard)
+      console.log("Suicide King removed from play (second blight option)");
+      console.log("Suicide King in discard pile:", 
+        freshState.players[playerView].discardPile.some(
+          card => card.suit === "hearts" && card.value === "K" && card.isSuicideKing
+        )
+      );
+      
+      // Update the game state to reflect the removed card
+      setGameState(freshState);
+      
+      // Set up for blight selection
+      setExcludedBlightCardIds(currentPlayerBlightCardIds);
+      setIsSecondBlightSelection(true);
+      
+      // Show the blight selection modal last
+      setTimeout(() => {
+        setShowBlightCardSelection(true);
         setMessage(result.message || "Choose your second Blight card!");
-        
-        // Check for game end conditions
-        setTimeout(() => {
-          if (result.gameEnded) {
-            setRoundWinner(result.roundWinner);
-            setGameWinner(result.roundWinner);
-            setShowGameEnd(true);
-          } else if (result.roundWinner !== undefined || result.roundTied) {
-            setRoundWinner(result.roundWinner);
-            setRoundTied(result.roundTied || false);
-            setShowRoundSummary(true);
-            setNextRoundPending(true);
-          }
-        }, 50);
-      } else {
-        setMessage(result.message || "Failed to grant second Blight card");
+      }, 100);
+      
+      // Check for game end conditions
+      if (result.gameEnded) {
+        setRoundWinner(result.roundWinner);
+        setGameWinner(result.roundWinner);
+        setShowGameEnd(true);
+      } else if (result.roundWinner !== undefined || result.roundTied) {
+        setRoundWinner(result.roundWinner);
+        setRoundTied(result.roundTied || false);
+        setShowRoundSummary(true);
+        setNextRoundPending(true);
       }
-    }, 50);
+    } else {
+      // If there was an error, show message
+      setMessage(result.message || "Failed to grant second Blight card");
+    }
   }
 
   return (
