@@ -1,4 +1,4 @@
-import { Card, Field, Player, GameState, WeatherEffects, PlayResult, BlightCard, BlightEffect } from "./types";
+import { Card, Field, Player, GameState, WeatherEffects, PlayResult, BlightCard, BlightEffect, AIDifficulty } from "./types";
 
 export class GwanGameLogic {
   private players: Player[];
@@ -28,7 +28,7 @@ export class GwanGameLogic {
   }
 
   // Initialize the game
-  public initializeGame(): void {
+  public initializeGame(enableAI: boolean = false): void {
     // Create players
     this.players = [
       {
@@ -41,13 +41,15 @@ export class GwanGameLogic {
         discardPile: [],
         blightCards: [],
         hasUsedBlightThisTurn: false,
-        wheelOfFortuneBonus: 0
+        wheelOfFortuneBonus: 0,
+        isAI: false
       },
       {
-        name: "Player 2",
+        name: enableAI ? "AI Opponent" : "Player 2",
         hand: [],
         field: { clubs: [], spades: [], diamonds: [] },
         score: 0,
+        isAI: enableAI,
         roundsWon: 0,
         pass: false,
         discardPile: [],
@@ -1312,7 +1314,10 @@ export class GwanGameLogic {
       blightCardsSelected: this.players.every(player => player.blightCards.length > 0),
       availableBlightCards: this.availableBlightCards,
       isBlightCardBeingPlayed: this.isBlightCardBeingPlayed,
-      isSuicideKingBeingPlayed: this.isSuicideKingBeingPlayed
+      isSuicideKingBeingPlayed: this.isSuicideKingBeingPlayed,
+      // Add AI-related properties
+      isAIThinking: false,
+      aiDifficulty: AIDifficulty.Medium
     };
   }
 

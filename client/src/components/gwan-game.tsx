@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { GameState, Card, Field, BlightCard, BlightEffect } from "@/lib/types"
+import { GameState, Card, Field, BlightCard, BlightEffect, AIDifficulty } from "@/lib/types"
 import { GwanGameLogic } from "@/lib/game-logic"
+import { AIStrategy, AIDecision } from "@/lib/ai-strategy"
+import AIThinking from "./ai-thinking"
 import GameBoard from "./game-board"
 import PlayerHand from "./player-hand"
 import GameHeader from "./game-header"
@@ -51,6 +53,11 @@ export default function GwanGame() {
   const [roundTied, setRoundTied] = useState<boolean>(false)
   const [gameWinner, setGameWinner] = useState<number | undefined>(undefined)
   const [nextRoundPending, setNextRoundPending] = useState<boolean>(false)
+  
+  // AI functionality
+  const [aiStrategy, setAiStrategy] = useState<AIStrategy | null>(null)
+  const [isAIThinking, setIsAIThinking] = useState<boolean>(false)
+  const [aiThinkingMessage, setAiThinkingMessage] = useState<string>("AI is thinking...")
 
   // Special card functionality
   const [showMedicRevival, setShowMedicRevival] = useState<boolean>(false)
@@ -93,8 +100,12 @@ export default function GwanGame() {
   // Initialize the game
   useEffect(() => {
     const newGame = new GwanGameLogic()
-    newGame.initializeGame()
+    newGame.initializeGame(true) // Pass true to enable AI player
     newGame.initializeRound()
+    
+    // Create AI strategy with medium difficulty
+    const strategy = new AIStrategy(AIDifficulty.Medium)
+    setAiStrategy(strategy)
 
     setGame(newGame)
     setGameState(newGame.getGameState())
@@ -183,6 +194,50 @@ export default function GwanGame() {
       localStorage.setItem('gwanRulesShown', 'true')
     }
   }, [gameState, rulesShownBefore])
+  
+  // Handle AI turns when it's the AI player's turn
+  useEffect(() => {
+    // Only proceed if the game is started and it's the AI's turn
+    if (!gameState || !game || !gameStarted || !aiStrategy) return;
+    
+    // Check if current player is AI player (player 2 is AI)
+    const isAITurn = gameState.currentPlayer === 1 && gameState.players[1].isAI;
+    
+    if (isAITurn && !isAIThinking) {
+      // Set thinking state to show AI thinking indicator
+      setIsAIThinking(true);
+      setAiThinkingMessage("AI is thinking...");
+      
+      // Add a small delay to simulate AI "thinking" (500-1500ms)
+      const thinkingTime = 500 + Math.random() * 1000;
+      
+      // Use setTimeout to give a more natural feel to the AI's moves
+      const aiDecisionTimer = setTimeout(() => {
+        // Get AI decision
+        const aiDecision = aiStrategy.makeDecision(gameState, 1);
+        console.log("AI Decision:", aiDecision);
+        
+        // Execute the decision based on action type
+        if (aiDecision.action === 'play' && aiDecision.cardIndex !== undefined) {
+          // Play a card
+          handlePlayCard(aiDecision.cardIndex, aiDecision.targetRow || null);
+        } else if (aiDecision.action === 'pass') {
+          // Pass the turn
+          handlePass();
+        } else if (aiDecision.action === 'use-blight' && aiDecision.blightCardIndex !== undefined) {
+          // Use a blight card
+          console.log("AI is using blight card:", aiDecision.blightCardIndex);
+          handlePlayBlightCard(aiDecision.blightCardIndex);
+        }
+        
+        // Reset AI thinking state
+        setIsAIThinking(false);
+      }, thinkingTime);
+      
+      // Clean up the timer if component unmounts during AI thinking
+      return () => clearTimeout(aiDecisionTimer);
+    }
+  }, [gameState, game, gameStarted, aiStrategy, isAIThinking, playerView])
 
   // Handle playing a card
   const handlePlayCard = (cardIndex: number, targetRow: string | null = null) => {
@@ -1064,6 +1119,9 @@ export default function GwanGame() {
           localStorage.setItem('gwanRulesShown', 'true')
         }}
       />
+      
+      {/* AI Thinking indicator */}
+      <AIThinking isThinking={isAIThinking} message={aiThinkingMessage} />
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-card p-3 rounded-lg text-center flex flex-col">
@@ -1138,6 +1196,7 @@ export default function GwanGame() {
         handleUndo={handleUndo}
         canUndo={!!lastAction && !turnEnded}
         showBlightCard={() => setShowBlightCardPlay(true)}
+        isAI={currentPlayer.isAI}
       />
 
       {targetRowSelection && (

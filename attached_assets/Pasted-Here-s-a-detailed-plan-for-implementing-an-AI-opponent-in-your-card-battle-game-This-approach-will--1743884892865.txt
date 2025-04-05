@@ -1,0 +1,81 @@
+Here's a detailed plan for implementing an AI opponent in your card battle game. This approach will ensure a modular, maintainable, and scalable solution:
+
+Phase 1: Create the AI Strategy Foundation
+Create an AI Strategy Module
+
+Create a new file client/src/lib/ai-strategy.ts to house the AI decision-making logic
+Define interfaces for AI decisions (card selection, target row selection, pass criteria)
+Implement different difficulty levels (Easy, Medium, Hard)
+Implement Core AI Decision Functions
+
+evaluateHand - to analyze available cards and their strategic value
+selectBestCard - to choose the optimal card to play
+selectTargetRow - to determine where to play hearts/joker cards
+shouldPass - to decide when to pass the turn
+evaluateBlightUse - to determine when and which blight card to use
+Phase 2: Integrate AI with Game Logic
+Modify Game Logic for AI Turns
+
+Update GwanGameLogic class to support AI player designation
+Add a method to trigger AI decisions when it's the AI's turn
+Implement AI delay simulation for natural gameplay feel
+Create an AI Thinking Component
+
+Build a visual indicator showing when the AI is "thinking"
+Use animations to simulate the AI considering its options
+Phase 3: Update UI Components
+Update Game Board Component
+
+Modify gwan-game.tsx to handle AI player state
+Add state tracking for AI turns vs. human turns
+Implement automated turn switching when AI completes its move
+Modify Player Hand Component
+
+Update player-hand.tsx to hide card details when showing AI's hand
+Show only card backs for AI hand (not detailed card information)
+Enhance User Feedback
+
+Update message display to narrate AI actions
+Add animations for AI card movements to improve gameplay experience
+Phase 4: Implement AI Decision Making
+Card Evaluation Logic
+
+Implement scoring for cards based on current game state
+Consider field state, weather effects, and opponent's field
+Add difficulty-specific biases (less optimal decisions for easier difficulty)
+Strategic Decision Making
+
+Implement row targeting intelligence
+Create logic for special card usage (Sniper, Medic, etc.)
+Add blight card evaluation for optimal timing
+Add Randomization for Unpredictability
+
+Include weighted randomization for choices to prevent predictable patterns
+Implement difficulty-based decision accuracy
+Phase 5: Testing and Refinement
+Create Testing Scenarios
+
+Implement test cases for AI decision verification
+Build test utilities to simulate game states
+Balance AI Difficulty
+
+Gather data on AI win rates at different difficulty levels
+Adjust parameters based on observed behaviors
+Fine-tune decision algorithms for appropriate challenge levels
+Phase 6: Game Flow Integration
+Add AI Setup Options in Game Menu
+
+Add AI difficulty selection in game setup
+Create player vs. AI game mode option
+Implement AI profile selection (different AI "personalities")
+Update Game Initialization
+
+Modify player creation to support human and AI designations
+Update blight card selection logic to handle AI selection
+Implementation Considerations
+Use a state machine approach for AI decision flow
+Implement throttling for AI moves to create natural gameplay
+Consider using minimax or Monte Carlo algorithms for advanced difficulty levels
+Ensure AI decision making is separated from UI rendering for performance
+Add debugging tools to visualize AI decision making process
+This roadmap provides a structured approach to implementing your AI opponent while keeping the architecture modular and maintainable.

@@ -19,6 +19,7 @@ interface PlayerHandProps {
   handleUndo?: () => void
   canUndo?: boolean
   showBlightCard?: () => void
+  isAI?: boolean
 }
 
 export default function PlayerHand({
@@ -31,6 +32,7 @@ export default function PlayerHand({
   handleUndo,
   canUndo,
   showBlightCard,
+  isAI = false,
 }: PlayerHandProps) {
   const [justSwitched, setJustSwitched] = useState(false);
   const [showDiscardPile, setShowDiscardPile] = useState(false);
@@ -61,8 +63,17 @@ export default function PlayerHand({
     <div className="mt-10 relative isolate gwan-board-container p-4">
       <div className="flex items-center justify-between mb-6 border-b border-amber-800/40 pb-3">
         <h2 className="text-xl font-medieval text-amber-200 flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-400"><path d="M9.5 14.5 3 21"/><path d="M9.5 14.5 21 3"/><path d="M9.5 14.5 14.5 9.5"/><path d="M14.5 9.5 21 3"/><path d="M14.5 9.5 17.5 6.5"/><path d="M6.5 17.5l3-3"/><path d="M3 21a8 8 0 0 0 4-1 8 8 0 0 1 8-7 8 8 0 0 1 6 3 8 8 0 0 0 0-10 4 4 0 0 0-6 0c-2 2-4 4-4 6-1.1 2-2 5.5-8 5.5l-3 3"/></svg>
-          Your Arsenal
+          {isAI ? (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-400"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M17 3v18"/><path d="M3 7h18"/><path d="M3 17h18"/><circle cx="10" cy="10" r="1"/><circle cx="14" cy="14" r="1"/></svg>
+              AI Opponent's Arsenal
+            </>
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-400"><path d="M9.5 14.5 3 21"/><path d="M9.5 14.5 21 3"/><path d="M9.5 14.5 14.5 9.5"/><path d="M14.5 9.5 21 3"/><path d="M14.5 9.5 17.5 6.5"/><path d="M6.5 17.5l3-3"/><path d="M3 21a8 8 0 0 0 4-1 8 8 0 0 1 8-7 8 8 0 0 1 6 3 8 8 0 0 0 0-10 4 4 0 0 0-6 0c-2 2-4 4-4 6-1.1 2-2 5.5-8 5.5l-3 3"/></svg>
+              Your Arsenal
+            </>
+          )}
         </h2>
         
         <div className="flex items-center space-x-4">
@@ -250,13 +261,40 @@ export default function PlayerHand({
       <div className="flex flex-wrap items-center justify-center py-6 px-2 gap-5 relative overflow-visible">
         {currentPlayer.hand.map((card, index) => (
           <div key={`hand-card-wrapper-${index}`} className="relative overflow-visible">
-            <CardComponent
-              key={`hand-${index}`}
-              card={card}
-              selected={selectedCard === index}
-              onClick={() => isCurrentTurn && !currentPlayer.pass && handleCardPlay(index)}
-              disabled={!isCurrentTurn || currentPlayer.pass}
-            />
+            {isAI ? (
+              // Show card backs for AI player
+              <div 
+                className="relative w-[120px] h-[168px] rounded-md flex items-center justify-center"
+                style={{
+                  background: "radial-gradient(circle at center, #6b341e 0%, #351b10 100%)",
+                  backgroundSize: "100% 100%",
+                  backgroundPosition: "center",
+                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.5)",
+                  border: "2px solid #8a4428"
+                }}
+              >
+                <div className="absolute inset-2 rounded border-2 border-amber-700/40 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="none" viewBox="0 0 24 24" stroke="#d0a170" strokeWidth="1">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 14.5L3 21" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 14.5L21 3" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 14.5L14.5 9.5" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.5 9.5L21 3" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.5 9.5L17.5 6.5" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.5 17.5l3-3" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21a8 8 0 0 0 4-1 8 8 0 0 1 8-7 8 8 0 0 1 6 3 8 8 0 0 0 0-10 4 4 0 0 0-6 0c-2 2-4 4-4 6-1.1 2-2 5.5-8 5.5l-3 3" />
+                  </svg>
+                </div>
+              </div>
+            ) : (
+              // Show actual cards for human player
+              <CardComponent
+                key={`hand-${index}`}
+                card={card}
+                selected={selectedCard === index}
+                onClick={() => isCurrentTurn && !currentPlayer.pass && handleCardPlay(index)}
+                disabled={!isCurrentTurn || currentPlayer.pass}
+              />
+            )}
           </div>
         ))}
       </div>
