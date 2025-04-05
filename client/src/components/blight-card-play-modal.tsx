@@ -33,33 +33,44 @@ export default function BlightCardPlayModal({
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          {player.blightCards.map((blightCard, index) => (
-            <Card key={blightCard.id} className="bg-card/50 shadow-md hover:shadow-lg cursor-pointer transform transition-transform hover:scale-[1.01]" onClick={() => onPlayBlightCard(index)}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-xl">{blightCard.name}</CardTitle>
-                  <span className="text-3xl">{blightCard.icon}</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-sm">
-                  {blightCard.description}
-                </CardDescription>
-              </CardContent>
-              <CardFooter className="pt-0">
-                <Button variant="ghost" size="sm" className="w-full" onClick={(e) => {
-                  e.stopPropagation();
-                  onPlayBlightCard(index);
-                }}>
-                  Select
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+          {player.blightCards
+            .filter(card => !card.used)
+            .map((blightCard, index) => {
+              // Find the actual index in the original array, not the filtered array
+              const originalIndex = player.blightCards.findIndex(card => card.id === blightCard.id);
+              
+              return (
+                <Card 
+                  key={blightCard.id} 
+                  className="bg-card/50 shadow-md hover:shadow-lg cursor-pointer transform transition-transform hover:scale-[1.01]" 
+                  onClick={() => onPlayBlightCard(originalIndex)}
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-xl">{blightCard.name}</CardTitle>
+                      <span className="text-3xl">{blightCard.icon}</span>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-sm">
+                      {blightCard.description}
+                    </CardDescription>
+                  </CardContent>
+                  <CardFooter className="pt-0">
+                    <Button variant="ghost" size="sm" className="w-full" onClick={(e) => {
+                      e.stopPropagation();
+                      onPlayBlightCard(originalIndex);
+                    }}>
+                      Select
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
         </div>
 
         <p className="text-sm text-muted-foreground italic">
-          Note: Once played, you cannot use another Blight card in this match.
+          Note: You can only use one Blight card per turn. Each Blight card can only be used once per match.
         </p>
 
         <DialogFooter className="flex justify-between mt-4">

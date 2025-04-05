@@ -1,0 +1,129 @@
+Great! Now that the Suicide King is working correctly, let's implement the proper handling of multiple Blight cards.
+Here's how to modify your code to ensure players can use both Blight cards throughout a match, one per turn:
+
+First, we need to change how we track used Blight cards. Instead of a single boolean flag, we should track each Blight card's used status individually:
+
+jsxCopy// In your types.ts file, modify BlightCard interface (if needed)
+interface BlightCard {
+  id: string;
+  name: string;
+  description: string;
+  effect: BlightEffect;
+  used: boolean; // Add this property if not already present
+  icon: string;
+}
+
+Next, we need to modify the playBlightCard function in your game logic to check and update individual card usage:
+
+javascriptCopy// In GwanGameLogic class
+public playBlightCard(playerIndex: number, blightCardIndex: number = 0): PlayResult {
+  // Make sure it's the player's turn
+  if (playerIndex !== this.currentPlayer) {
+    return { success: false, message: "It's not your turn" };
+  }
+
+  // Check if the player has already passed
+  if (this.players[playerIndex].pass) {
+    return { success: false, message: "You have already passed" };
+  }
+
+  // Check if the player has any blight cards
+  if (this.players[playerIndex].blightCards.length === 0) {
+    return { success: false, message: "You don't have any blight cards" };
+  }
+
+  // Check if the blight card index is valid
+  if (blightCardIndex < 0 || blightCardIndex >= this.players[playerIndex].blightCards.length) {
+    return { success: false, message: "Invalid blight card index" };
+  }
+
+  // Check if this specific blight card has been used
+  if (this.players[playerIndex].blightCards[blightCardIndex].used) {
+    return { success: false, message: "This Blight card has already been used" };
+  }
+
+  // Check if the player has used any blight card THIS TURN
+  // This ensures they can only use one blight card per turn
+  const hasUsedBlightThisTurn = this.players[playerIndex].hasUsedBlightCard;
+  if (hasUsedBlightThisTurn) {
+    return { success: false, message: "You can only use one Blight card per turn" };
+  }
+
+  const blightCard = this.players[playerIndex].blightCards[blightCardIndex];
+  this.isBlightCardBeingPlayed = true;
+
+  // Rest of the function remains the same...
+}
+
+Then, modify how we mark Blight cards as used after effects are applied:
+
+javascriptCopy// In functions that complete blight card effects, like completeBlightCardDiceRoll
+// Mark the specific blight card as used
+this.players[playerIndex].blightCards.find(card => card.effect === effect).used = true;
+// Mark that player has used a blight card this turn
+this.players[playerIndex].hasUsedBlightCard = true;
+this.isBlightCardBeingPlayed = false;
+
+Update the pass function to reset the "turn" usage flag:
+
+javascriptCopy// In pass function
+public pass(playerIndex: number): PlayResult {
+  // Existing code...
+  
+  // Mark the player as passed
+  this.players[playerIndex].pass = true;
+  
+  // Reset the "used this turn" flag
+  this.players[playerIndex].hasUsedBlightCard = false;
+  
+  // Rest of function...
+}
+
+Do the same in other turn-ending functions like playCard:
+
+javascriptCopy// Near the end of playCard and other similar functions that end turns
+if (!this.players[1 - playerIndex].pass) {
+  this.currentPlayer = 1 - this.currentPlayer;
+  // Reset the "used this turn" flag when changing players
+  this.players[playerIndex].hasUsedBlightCard = false;
+}
+
+Update the UI to show all available Blight cards and their status:
+
+jsxCopy// In the GwanGame component, modify the BlightCardPlay button in PlayerHand
+<Button 
+  disabled={!isCurrentTurn || currentPlayer.hasUsedBlightCard || currentPlayer.blightCards.every(card => card.used)}
+  onClick={() => showBlightCard()}
+>
+  Blight Card ({currentPlayer.blightCards.filter(card => !card.used).length})
+</Button>
+
+And in the BlightCardPlayModal, only show unused Blight cards:
+
+jsxCopy// In BlightCardPlayModal
+<div className="grid gap-4">
+  {player.blightCards
+    .filter(card => !card.used)
+    .map((card, index) => (
+      <Card key={card.id}>
+        <CardHeader>
+          <CardTitle>{card.name} {card.icon}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>{card.description}</p>
+        </CardContent>
+        <CardFooter>
+          <Button onClick={() => onPlayBlightCard(index)}>Use</Button>
+        </CardFooter>
+      </Card>
+    ))}
+</div>
+These changes will:
+
+Track each Blight card's used status individually
+Only allow one Blight card per turn
+Reset the turn restriction when the player's turn ends
+Show only unused Blight cards in the UI
+Allow players to see and use their remaining Blight cards on future turns
+
+The combination of tracking each card's permanent "used" status and the per-turn "hasUsedBlightCard" flag gives you the behavior you want: multiple Blight cards can be used throughout a match, but only one per turn.

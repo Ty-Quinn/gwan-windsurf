@@ -127,7 +127,7 @@ export default function PlayerHand({
             </motion.div>
             
             {/* Blight Card Button */}
-            {showBlightCard && currentPlayer.blightCards.length > 0 && !currentPlayer.hasUsedBlightCard && isCurrentTurn && !currentPlayer.pass && (
+            {showBlightCard && currentPlayer.blightCards.some(card => !card.used) && !currentPlayer.hasUsedBlightCard && isCurrentTurn && !currentPlayer.pass && (
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -143,7 +143,7 @@ export default function PlayerHand({
                 >
                   <span className="z-10 relative flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 text-amber-400"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    Cast Blight Magic
+                    Cast Blight Magic ({currentPlayer.blightCards.filter(card => !card.used).length})
                   </span>
                 </Button>
               </motion.div>
@@ -215,9 +215,11 @@ export default function PlayerHand({
                 <span className="text-xs font-serif flex items-center gap-1">
                   {currentPlayer.hasUsedBlightCard ? 'Magic depleted' : (
                     <>
-                      {currentPlayer.blightCards.length > 1 
-                        ? `${currentPlayer.blightCards.length} Blight Cards` 
-                        : currentPlayer.blightCards[0].name
+                      {currentPlayer.blightCards.filter(card => !card.used).length > 1 
+                        ? `${currentPlayer.blightCards.filter(card => !card.used).length} Blight Cards Available` 
+                        : currentPlayer.blightCards.filter(card => !card.used).length === 1
+                          ? `${currentPlayer.blightCards.find(card => !card.used)?.name} Available`
+                          : `All Blight Cards Used`
                       }
                       {!currentPlayer.hasUsedBlightCard && (
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
@@ -269,15 +271,26 @@ export default function PlayerHand({
                 {currentPlayer.blightCards.length > 1 ? "Your Blight Cards" : "Your Blight Card"}
               </DialogTitle>
               <DialogDescription className="text-md pt-2">
-                You can play one of these cards once per match
+                Each Blight card can only be used once per match. You can only use one Blight card per turn.
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
               {currentPlayer.blightCards.map((blightCard, index) => (
-                <Card key={blightCard.id} className="bg-card/50 shadow-md">
+                <Card 
+                  key={blightCard.id} 
+                  className={`bg-card/50 shadow-md ${blightCard.used ? 'opacity-50' : ''}`}
+                >
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-center">
-                      <CardTitle className="text-xl">{blightCard.name}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-xl">{blightCard.name}</CardTitle>
+                        {blightCard.used && (
+                          <span className="text-xs text-red-500 font-medium px-2 py-1 bg-red-950/30 rounded-full">Used</span>
+                        )}
+                        {!blightCard.used && (
+                          <span className="text-xs text-green-500 font-medium px-2 py-1 bg-green-950/30 rounded-full">Available</span>
+                        )}
+                      </div>
                       <span className="text-3xl">{blightCard.icon}</span>
                     </div>
                   </CardHeader>
@@ -290,7 +303,7 @@ export default function PlayerHand({
               ))}
             </div>
             <p className="text-sm text-muted-foreground italic">
-              Note: Blight cards can only be used once per match at the beginning of your turn.
+              Note: Use the "Cast Blight Magic" button at the beginning of your turn to play a Blight card.
             </p>
           </DialogContent>
         </Dialog>

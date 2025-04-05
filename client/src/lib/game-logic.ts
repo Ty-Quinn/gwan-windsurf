@@ -668,6 +668,9 @@ export class GwanGameLogic {
 
     // Mark the player as passed
     this.players[playerIndex].pass = true;
+    
+    // Reset the "used this turn" flag for blight cards
+    this.players[playerIndex].hasUsedBlightCard = false;
 
     // Calculate scores
     this.calculateScores();
@@ -1295,9 +1298,15 @@ export class GwanGameLogic {
       return { success: false, message: "Invalid blight card index" };
     }
 
-    // Check if the player has already used their blight card
+    // Check if this specific blight card has been used
+    if (this.players[playerIndex].blightCards[blightCardIndex].used) {
+      return { success: false, message: "This Blight card has already been used" };
+    }
+    
+    // Check if the player has used any blight card THIS TURN
+    // This ensures they can only use one blight card per turn
     if (this.players[playerIndex].hasUsedBlightCard) {
-      return { success: false, message: "You've already used your blight card in this match" };
+      return { success: false, message: "You can only use one Blight card per turn" };
     }
 
     const blightCard = this.players[playerIndex].blightCards[blightCardIndex];
@@ -1329,7 +1338,9 @@ export class GwanGameLogic {
 
       case BlightEffect.DEATH:
         // Death effect can be processed immediately (discard hand, draw new cards)
-        // Mark the blight card as used
+        // Mark the specific blight card as used
+        this.players[playerIndex].blightCards[blightCardIndex].used = true;
+        // Mark that player has used a blight card this turn
         this.players[playerIndex].hasUsedBlightCard = true;
         this.isBlightCardBeingPlayed = false;
 
@@ -1407,7 +1418,13 @@ export class GwanGameLogic {
     // Note: We don't need the actual card object for this function, just the effect
     const opponentIndex = 1 - playerIndex;
 
-    // Mark the blight card as used
+    // Find the blight card being played by effect and mark it as used
+    const blightCardIndex = this.players[playerIndex].blightCards.findIndex(card => card.effect === effect);
+    if (blightCardIndex !== -1) {
+      this.players[playerIndex].blightCards[blightCardIndex].used = true;
+    }
+    
+    // Mark that player has used a blight card this turn
     this.players[playerIndex].hasUsedBlightCard = true;
     this.isBlightCardBeingPlayed = false;
 
@@ -1568,7 +1585,13 @@ export class GwanGameLogic {
     // Get the currently playing blight card by effect (not needed for this function)
     const opponentIndex = 1 - playerIndex;
 
-    // Mark the blight card as used
+    // Find the blight card being played by effect and mark it as used
+    const blightCardIndex = this.players[playerIndex].blightCards.findIndex(card => card.effect === effect);
+    if (blightCardIndex !== -1) {
+      this.players[playerIndex].blightCards[blightCardIndex].used = true;
+    }
+    
+    // Mark that player has used a blight card this turn
     this.players[playerIndex].hasUsedBlightCard = true;
     this.isBlightCardBeingPlayed = false;
 
