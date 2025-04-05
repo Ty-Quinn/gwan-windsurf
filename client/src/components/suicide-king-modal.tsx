@@ -36,40 +36,40 @@ export default function SuicideKingModal({
           {card && <CardComponent card={card} compact={false} hideLabel={true} />}
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-          <Button 
-            variant="ghost"
-            className="flex flex-col h-auto border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full"
-            onClick={() => {
-              console.log("Clear Weather option clicked");
-              onClearWeather();
-            }}
-          >
-            <div className="py-5 px-3 flex flex-col items-center justify-between h-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 py-4">
+          <div className="flex flex-col">
+            <Button 
+              variant="ghost"
+              className="flex flex-col items-center py-4 border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full"
+              onClick={() => {
+                console.log("Clear Weather option clicked");
+                onClearWeather();
+              }}
+            >
               <Shield className="h-8 w-8 text-sky-400 mb-2" />
-              <h3 className="text-lg font-medium mb-3 text-sky-400">Clear All Weather</h3>
-              <p className="text-xs text-center">
-                Remove all weather effects from the entire board, restoring all rows to their full power. This ends your turn.
-              </p>
-            </div>
-          </Button>
+              <h3 className="text-lg font-medium text-sky-400">Clear All Weather</h3>
+            </Button>
+            <p className="text-xs text-center mt-2 px-3 text-amber-200/80">
+              Remove all weather effects from the entire board, restoring all rows to their full power. This ends your turn.
+            </p>
+          </div>
           
-          <Button 
-            variant="ghost"
-            className="flex flex-col h-auto border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full"
-            onClick={() => {
-              console.log("Second Blight option clicked");
-              onSelectSecondBlight();
-            }}
-          >
-            <div className="py-5 px-3 flex flex-col items-center justify-between h-full">
+          <div className="flex flex-col">
+            <Button 
+              variant="ghost"
+              className="flex flex-col items-center py-4 border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full"
+              onClick={() => {
+                console.log("Second Blight option clicked");
+                onSelectSecondBlight();
+              }}
+            >
               <Sparkles className="h-8 w-8 text-purple-400 mb-2" />
-              <h3 className="text-lg font-medium mb-3 text-purple-400">Second Blight</h3>
-              <p className="text-xs text-center">
-                Select an additional Blight card. If you've already used your first Blight card, this will allow you to use another one. This ends your turn.
-              </p>
-            </div>
-          </Button>
+              <h3 className="text-lg font-medium text-purple-400">Second Blight</h3>
+            </Button>
+            <p className="text-xs text-center mt-2 px-3 text-amber-200/80">
+              Select an additional Blight card. If you've already used your first Blight card, this will allow you to use another one. This ends your turn.
+            </p>
+          </div>
         </div>
         
         <div className="mt-2 text-center italic text-amber-200/60">
