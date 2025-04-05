@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState } from 'react'
@@ -208,6 +209,8 @@ export default function BlightDiceModal({
               disabled={rolling || 
                 (effect === BlightEffect.DEVIL && (rollCount >= 6 || sixCount >= 3))}
               label={effect === BlightEffect.DEVIL ? "Roll 3d6" : undefined}
+              key={`initial-roller-${rollCount}`}
+              initialValues={undefined}
             />
           )}
 
@@ -226,6 +229,8 @@ export default function BlightDiceModal({
                 autoRoll={false}
                 disabled={rolling}
                 label={`Roll Again (${rollCount}/6)`}
+                key={`devil-roller-${rollCount}`}
+                initialValues={undefined}
               />
             </div>
           )}
