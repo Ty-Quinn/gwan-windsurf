@@ -221,7 +221,10 @@ export default function BlightDiceModal({
             <div className="flex flex-wrap gap-2 justify-center">
               {rolls.map((roll, index) => (
                 <div key={index} className="bg-amber-950/80 p-2 rounded-md">
-                  <div className="text-center mb-2">Roll {index + 1}:</div>
+                  {/* Only show "Roll #" for Devil effect, not for Wheel of Fortune */}
+                  {effect === BlightEffect.DEVIL && (
+                    <div className="text-center mb-2">Roll {index + 1}:</div>
+                  )}
                   <div className="flex justify-center space-x-2">
                     {roll.map((value, diceIndex) => (
                       <span 
