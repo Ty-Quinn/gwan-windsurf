@@ -54,6 +54,7 @@ export default function GameHeader({
             player={player}
             isActive={gameState.currentPlayer === index}
             playerNumber={index + 1}
+            skipAnimation={playerView !== index} // Skip animation when not viewing that player's perspective
           />
         ))}
       </div>
