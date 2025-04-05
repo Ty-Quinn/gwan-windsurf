@@ -127,7 +127,7 @@ export default function PlayerHand({
             </motion.div>
             
             {/* Blight Card Button */}
-            {showBlightCard && currentPlayer.blightCards.some(card => !card.used) && !currentPlayer.hasUsedBlightThisTurn && isCurrentTurn && !currentPlayer.pass && (
+            {showBlightCard && currentPlayer.blightCards.some(card => !card.used) && isCurrentTurn && !currentPlayer.pass && (
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -139,11 +139,15 @@ export default function PlayerHand({
                     setHasPlayedCardThisTurn(true); // Casting blight magic counts as playing a card
                   }}
                   variant="outline"
+                  disabled={currentPlayer.hasUsedBlightThisTurn}
                   className="relative bg-gradient-to-b from-amber-950 to-amber-900 text-amber-100 hover:from-amber-900 hover:to-amber-800 border-amber-700 font-medieval"
                 >
                   <span className="z-10 relative flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 text-amber-400"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    Cast Blight Magic ({currentPlayer.blightCards.filter(card => !card.used).length})
+                    {currentPlayer.hasUsedBlightThisTurn ? 
+                      "Magic Depleted This Turn" : 
+                      `Cast Blight Magic (${currentPlayer.blightCards.filter(card => !card.used).length})`
+                    }
                   </span>
                 </Button>
               </motion.div>
@@ -204,16 +208,21 @@ export default function PlayerHand({
             {/* Blight card info */}
             {currentPlayer.blightCards.length > 0 && (
               <div 
-                className={`mt-1 flex items-center ${currentPlayer.hasUsedBlightThisTurn ? 'text-amber-500/40' : 'text-amber-500'} ${!currentPlayer.hasUsedBlightThisTurn ? 'cursor-pointer hover:text-amber-300' : ''}`}
-                onClick={() => {
-                  if (!currentPlayer.hasUsedBlightThisTurn) {
-                    setShowBlightDetails(true)
-                  }
-                }}
+                className={`mt-1 flex items-center cursor-pointer hover:text-amber-300 ${currentPlayer.hasUsedBlightThisTurn ? 'text-amber-500/60' : 'text-amber-500'}`}
+                onClick={() => setShowBlightDetails(true)}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                 <span className="text-xs font-serif flex items-center gap-1">
-                  {currentPlayer.hasUsedBlightThisTurn ? 'Magic depleted' : (
+                  {currentPlayer.hasUsedBlightThisTurn ? (
+                    <>
+                      Magic Depleted This Turn
+                      {currentPlayer.blightCards.filter(card => !card.used).length > 0 && 
+                        <span className="text-amber-500/80">
+                          ({currentPlayer.blightCards.filter(card => !card.used).length} remaining)
+                        </span>
+                      }
+                    </>
+                  ) : (
                     <>
                       {currentPlayer.blightCards.filter(card => !card.used).length > 1 
                         ? `${currentPlayer.blightCards.filter(card => !card.used).length} Blight Cards Available` 
@@ -221,9 +230,7 @@ export default function PlayerHand({
                           ? `${currentPlayer.blightCards.find(card => !card.used)?.name} Available`
                           : `All Blight Cards Used`
                       }
-                      {!currentPlayer.hasUsedBlightThisTurn && (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                      )}
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                     </>
                   )}
                 </span>
