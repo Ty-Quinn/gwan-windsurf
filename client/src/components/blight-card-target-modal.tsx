@@ -335,6 +335,7 @@ export default function BlightCardTargetModal({
                                 setSelectedCardIndex(cardIndex);
                               }}
                               compact
+                              hideLabel={true}
                             />
                             {/* Overlay for selection */}
                             {selectedPlayerIndex === playerView && 
