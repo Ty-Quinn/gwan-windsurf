@@ -61,6 +61,22 @@ export default function GameBoard({
     }
   }, [currentPlayer.score, prevScore, isOpponent])
 
+  // Determine the order to display rows based on whether this is opponent or player board
+  // For opponent: Long Range (top) -> Mid Range -> Close Range (bottom)
+  // For player: Close Range (top) -> Mid Range -> Long Range (bottom)
+  // This creates a logical battlefield with long range rows furthest apart from each other
+  const rowOrder: FieldKey[] = isOpponent 
+    ? ["diamonds", "spades", "clubs"] // Long -> Mid -> Close
+    : ["clubs", "spades", "diamonds"] // Close -> Mid -> Long
+  
+  // Handle both field naming conventions (old: clubs/spades/diamonds, new: melee/ranged/siege)
+  // Also handle potentially undefined field
+  const fieldMap: Record<FieldKey, ActualFieldKey> = {
+    clubs: "melee",
+    spades: "ranged",
+    diamonds: "siege"
+  }
+  
   // Track card additions to rows
   useEffect(() => {
     // Safety check to ensure currentPlayer and field exist
@@ -89,23 +105,7 @@ export default function GameBoard({
       
       return () => clearTimeout(timer)
     }
-  }, [currentPlayer?.field, fieldMap])
-  
-  // Determine the order to display rows based on whether this is opponent or player board
-  // For opponent: Long Range (top) -> Mid Range -> Close Range (bottom)
-  // For player: Close Range (top) -> Mid Range -> Long Range (bottom)
-  // This creates a logical battlefield with long range rows furthest apart from each other
-  const rowOrder: FieldKey[] = isOpponent 
-    ? ["diamonds", "spades", "clubs"] // Long -> Mid -> Close
-    : ["clubs", "spades", "diamonds"] // Close -> Mid -> Long
-  
-  // Handle both field naming conventions (old: clubs/spades/diamonds, new: melee/ranged/siege)
-  // Also handle potentially undefined field
-  const fieldMap: Record<FieldKey, ActualFieldKey> = {
-    clubs: "melee",
-    spades: "ranged",
-    diamonds: "siege"
-  }
+  }, [currentPlayer?.field])
   
   // Map display keys to weather effect keys
   const weatherMap: Record<FieldKey, keyof WeatherEffects> = {
