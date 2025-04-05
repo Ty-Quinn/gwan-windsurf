@@ -28,7 +28,7 @@ export default function SuicideKingModal({
         <DialogHeader>
           <DialogTitle className="text-xl text-center font-medieval">The Suicide King's Sacrifice</DialogTitle>
           <DialogDescription className="text-center">
-            The King of Hearts - the Suicide King - offers two powerful abilities at the cost of removing himself from the game entirely.
+            The King of Hearts - the Suicide King - offers two powerful abilities at the cost of removing himself from the game entirely. Using this card counts as your complete turn.
           </DialogDescription>
         </DialogHeader>
         
@@ -49,7 +49,7 @@ export default function SuicideKingModal({
               <Shield className="h-8 w-8 text-sky-400 mb-2" />
               <h3 className="text-lg font-medium mb-2 text-sky-400">Clear All Weather</h3>
               <p className="text-xs text-center px-1 break-words">
-                Remove all weather effects from the entire board, restoring all rows to their full power.
+                Remove all weather effects from the entire board, restoring all rows to their full power. This ends your turn.
               </p>
             </div>
           </Button>
@@ -66,7 +66,7 @@ export default function SuicideKingModal({
               <Sparkles className="h-8 w-8 text-purple-400 mb-2" />
               <h3 className="text-lg font-medium mb-2 text-purple-400">Second Blight</h3>
               <p className="text-xs text-center px-1 break-words">
-                Select an additional Blight card. If you've already used your first Blight card, this will allow you to use another one.
+                Select an additional Blight card. If you've already used your first Blight card, this will allow you to use another one. This ends your turn.
               </p>
             </div>
           </Button>

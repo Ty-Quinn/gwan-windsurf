@@ -990,7 +990,7 @@ export default function GwanGame() {
       // Show the blight selection modal last
       setTimeout(() => {
         setShowBlightCardSelection(true);
-        setMessage(result.message || "Choose your second Blight card!");
+        setMessage(result.message || "Choose your second Blight card! Your turn will end after selection.");
       }, 100);
       
       // Check for game end conditions

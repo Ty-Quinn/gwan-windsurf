@@ -1792,7 +1792,7 @@ export class GwanGameLogic {
 
     return { 
       success: true, 
-      message: "The Suicide King clears ALL weather effects from the field and disappears forever!"
+      message: "The Suicide King clears ALL weather effects from the field and disappears forever! Your turn is over."
     };
   }
 
@@ -1848,9 +1848,8 @@ export class GwanGameLogic {
     // Reset the flag
     this.isSuicideKingBeingPlayed = false;
     
-    // Reset player's Blight card status so they can select a new one and also use it this turn if desired
-    // We don't need to clear existing blight cards, just mark the player as able to use another one
-    this.players[playerIndex].hasUsedBlightThisTurn = false;
+    // We don't need to reset hasUsedBlightThisTurn since the player's turn is ending
+    // The next time they get a turn, they'll naturally be able to use their blight cards
 
     // If player has no cards left after the Suicide King removal, end the round
     if (this.players[playerIndex].hand.length === 0) {
@@ -1891,13 +1890,15 @@ export class GwanGameLogic {
       };
     }
 
-    // We don't want to switch players here since the player hasn't completed their turn yet
-    // They've just selected to get a new blight card, but haven't actually played a card
-    // DO NOT switch players
+    // After playing the Suicide King and selecting the second blight card option,
+    // the player's turn is over. Switch to the next player if they haven't passed
+    if (!this.players[1 - playerIndex].pass) {
+      this.currentPlayer = 1 - this.currentPlayer;
+    }
 
     return { 
       success: true, 
-      message: "The Suicide King vanishes, granting you a new Blight card selection!"
+      message: "The Suicide King vanishes, granting you a new Blight card selection! Your turn is over."
     };
   }
 

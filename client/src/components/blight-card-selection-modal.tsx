@@ -111,13 +111,13 @@ export default function BlightCardSelectionModal({
           </DialogTitle>
           <DialogDescription>
             {isSecondSelection 
-              ? "Thanks to the Suicide King's powerful magic, you may select a second Blight card. This is in addition to any Blight card you already have."
+              ? "Thanks to the Suicide King's powerful magic, you may select a second Blight card. This is in addition to any Blight card you already have. Your turn will end after making this selection."
               : playerIndex === 0 
                 ? "You're first to choose! Each player secretly selects one Blight card for the entire match. After you select, Player 2 will choose theirs." 
                 : "Player 1 has made their selection. Now it's your turn to choose your Blight card for the match."}
             <br/><br/>
             {isSecondSelection 
-              ? "This second Blight card follows the same rules - it can be used once at the beginning of your turn before playing a regular card." 
+              ? "This second Blight card follows the same rules - it can be used once at the beginning of your turn before playing a regular card. The Suicide King card will be removed from play entirely." 
               : "Blight cards can be used once at the beginning of your turn before playing a regular card. Choose wisely!"}
           </DialogDescription>
         </DialogHeader>
