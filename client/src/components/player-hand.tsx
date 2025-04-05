@@ -19,7 +19,6 @@ interface PlayerHandProps {
   handleUndo?: () => void
   canUndo?: boolean
   showBlightCard?: () => void
-  isAIOpponent?: boolean // New prop to identify if this is an AI opponent
 }
 
 export default function PlayerHand({
@@ -32,7 +31,6 @@ export default function PlayerHand({
   handleUndo,
   canUndo,
   showBlightCard,
-  isAIOpponent = false, // Default to false for backward compatibility
 }: PlayerHandProps) {
   const [justSwitched, setJustSwitched] = useState(false);
   const [showDiscardPile, setShowDiscardPile] = useState(false);
@@ -250,37 +248,17 @@ export default function PlayerHand({
       </div>
       
       <div className="flex flex-wrap items-center justify-center py-6 px-2 gap-5 relative overflow-visible">
-        {isAIOpponent ? (
-          // For AI opponent, show face-down cards instead of actual cards
-          <div className="flex flex-wrap justify-center gap-2">
-            {Array.from({ length: currentPlayer.hand.length }).map((_, index) => (
-              <div 
-                key={`ai-card-${index}`} 
-                className="w-[100px] h-[140px] rounded-md transform card-back relative"
-              >
-                {/* Card back design */}
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-900/90 to-amber-950/90 rounded-md border-2 border-amber-800/70 shadow-md flex items-center justify-center">
-                  <div className="w-16 h-20 border-2 border-amber-700/50 rounded-sm flex items-center justify-center">
-                    <div className="text-amber-600/80 text-lg font-medieval">AI</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+        {currentPlayer.hand.map((card, index) => (
+          <div key={`hand-card-wrapper-${index}`} className="relative overflow-visible">
+            <CardComponent
+              key={`hand-${index}`}
+              card={card}
+              selected={selectedCard === index}
+              onClick={() => isCurrentTurn && !currentPlayer.pass && handleCardPlay(index)}
+              disabled={!isCurrentTurn || currentPlayer.pass}
+            />
           </div>
-        ) : (
-          // For human player, show actual cards
-          currentPlayer.hand.map((card, index) => (
-            <div key={`hand-card-wrapper-${index}`} className="relative overflow-visible">
-              <CardComponent
-                key={`hand-${index}`}
-                card={card}
-                selected={selectedCard === index}
-                onClick={() => isCurrentTurn && !currentPlayer.pass && handleCardPlay(index)}
-                disabled={!isCurrentTurn || currentPlayer.pass}
-              />
-            </div>
-          ))
-        )}
+        ))}
       </div>
       
       {/* Discard pile modal */}
