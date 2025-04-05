@@ -58,77 +58,34 @@ export default function PlayerHand({
   };
 
   return (
-    <div className="mt-10 relative isolate gwan-board-container p-4 perspective-container">
-      <div className="hand-container">
-      <div className="flex items-center justify-between mb-6 border-b border-amber-800/40 pb-3">
-        <h2 className="text-xl font-medieval text-amber-200 flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-400"><path d="M9.5 14.5 3 21"/><path d="M9.5 14.5 21 3"/><path d="M9.5 14.5 14.5 9.5"/><path d="M14.5 9.5 21 3"/><path d="M14.5 9.5 17.5 6.5"/><path d="M6.5 17.5l3-3"/><path d="M3 21a8 8 0 0 0 4-1 8 8 0 0 1 8-7 8 8 0 0 1 6 3 8 8 0 0 0 0-10 4 4 0 0 0-6 0c-2 2-4 4-4 6-1.1 2-2 5.5-8 5.5l-3 3"/></svg>
-          Your Arsenal
-        </h2>
-        
-        <div className="flex items-center space-x-4">
-          <div className="flex space-x-3">
-            {/* Undo button */}
-            {handleUndo && (
-              <motion.div
-                whileHover={{ scale: canUndo ? 1.05 : 1 }}
-                whileTap={{ scale: canUndo ? 0.95 : 1 }}
-                className="relative"
-              >
-                <Button 
-                  onClick={handleUndo}
-                  disabled={!canUndo}
-                  variant="outline"
-                  className="relative border-amber-700/50 font-serif text-amber-200"
-                >
-                  ↩ Recall Card
-                </Button>
-              </motion.div>
-            )}
+    <div className="mt-10 relative isolate gwan-board-container p-4 game-board-container">
+      <div className="player-hand-3d">
+        <div className="flex items-center justify-between mb-6 border-b border-amber-800/40 pb-3">
+          <h2 className="text-xl font-medieval text-amber-200 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-400"><path d="M9.5 14.5 3 21"/><path d="M9.5 14.5 21 3"/><path d="M9.5 14.5 14.5 9.5"/><path d="M14.5 9.5 21 3"/><path d="M14.5 9.5 17.5 6.5"/><path d="M6.5 17.5l3-3"/><path d="M3 21a8 8 0 0 0 4-1 8 8 0 0 1 8-7 8 8 0 0 1 6 3 8 8 0 0 0 0-10 4 4 0 0 0-6 0c-2 2-4 4-4 6-1.1 2-2 5.5-8 5.5l-3 3"/></svg>
+            Your Arsenal
+          </h2>
           
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="relative"
-            >
-              <Button 
-                onClick={() => {
-                  handlePass();
-                  setHasPlayedCardThisTurn(false); // Reset card played state when passing
-                }}
-                disabled={!isCurrentTurn || currentPlayer.pass}
-                variant="destructive"
-                className="relative overflow-hidden bg-red-900 border border-red-700 text-amber-100 hover:bg-red-800 font-medieval"
-              >
-                <span className="z-10 relative">Pass</span>
-                
-                {/* Pulse effect only if opponent has already passed */}
-                <AnimatePresence>
-                  {isCurrentTurn && 
-                    // Highlight pass button when opponent has passed and this player can still play
-                    !currentPlayer.pass && (
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ 
-                        scale: [1, 1.2, 1.2, 1], 
-                        opacity: [0.7, 0.5, 0.5, 0.7] 
-                      }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ 
-                        duration: 2,
-                        repeat: 2,
-                        repeatType: "loop"
-                      }}
-                      className="absolute inset-0 bg-red-700/40 rounded-md"
-                      style={{ zIndex: 0 }}
-                    />
-                  )}
-                </AnimatePresence>
-              </Button>
-            </motion.div>
+          <div className="flex items-center space-x-4">
+            <div className="flex space-x-3">
+              {/* Undo button */}
+              {handleUndo && (
+                <motion.div
+                  whileHover={{ scale: canUndo ? 1.05 : 1 }}
+                  whileTap={{ scale: canUndo ? 0.95 : 1 }}
+                  className="relative"
+                >
+                  <Button 
+                    onClick={handleUndo}
+                    disabled={!canUndo}
+                    variant="outline"
+                    className="relative border-amber-700/50 font-serif text-amber-200"
+                  >
+                    ↩ Recall Card
+                  </Button>
+                </motion.div>
+              )}
             
-            {/* Blight Card Button */}
-            {showBlightCard && currentPlayer.blightCards.some(card => !card.used) && isCurrentTurn && !currentPlayer.pass && (
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -136,187 +93,230 @@ export default function PlayerHand({
               >
                 <Button 
                   onClick={() => {
-                    if (showBlightCard) showBlightCard();
-                    setHasPlayedCardThisTurn(true); // Casting blight magic counts as playing a card
+                    handlePass();
+                    setHasPlayedCardThisTurn(false); // Reset card played state when passing
                   }}
-                  variant="outline"
-                  disabled={currentPlayer.hasUsedBlightThisTurn}
-                  className="relative bg-gradient-to-b from-amber-950 to-amber-900 text-amber-100 hover:from-amber-900 hover:to-amber-800 border-amber-700 font-medieval"
+                  disabled={!isCurrentTurn || currentPlayer.pass}
+                  variant="destructive"
+                  className="relative overflow-hidden bg-red-900 border border-red-700 text-amber-100 hover:bg-red-800 font-medieval"
                 >
-                  <span className="z-10 relative flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 text-amber-400"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                    {currentPlayer.hasUsedBlightThisTurn ? 
-                      "Magic Depleted This Turn" : 
-                      `Cast Blight Magic (${currentPlayer.blightCards.filter(card => !card.used).length})`
-                    }
-                  </span>
+                  <span className="z-10 relative">Pass</span>
+                  
+                  {/* Pulse effect only if opponent has already passed */}
+                  <AnimatePresence>
+                    {isCurrentTurn && 
+                      // Highlight pass button when opponent has passed and this player can still play
+                      !currentPlayer.pass && (
+                      <motion.div
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ 
+                          scale: [1, 1.2, 1.2, 1], 
+                          opacity: [0.7, 0.5, 0.5, 0.7] 
+                        }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ 
+                          duration: 2,
+                          repeat: 2,
+                          repeatType: "loop"
+                        }}
+                        className="absolute inset-0 bg-red-700/40 rounded-md"
+                        style={{ zIndex: 0 }}
+                      />
+                    )}
+                  </AnimatePresence>
                 </Button>
               </motion.div>
-            )}
-            
-            {switchPlayerView && (
-              <AnimatePresence>
+              
+              {/* Blight Card Button */}
+              {showBlightCard && currentPlayer.blightCards.some(card => !card.used) && isCurrentTurn && !currentPlayer.pass && (
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="relative"
                 >
                   <Button 
-                    onClick={handleEndTurn}
-                    variant="secondary"
-                    className="relative overflow-hidden bg-gradient-to-b from-emerald-950 to-emerald-900 text-amber-100 border border-emerald-700 hover:from-emerald-900 hover:to-emerald-800 font-medieval"
+                    onClick={() => {
+                      if (showBlightCard) showBlightCard();
+                      setHasPlayedCardThisTurn(true); // Casting blight magic counts as playing a card
+                    }}
+                    variant="outline"
+                    disabled={currentPlayer.hasUsedBlightThisTurn}
+                    className="relative bg-gradient-to-b from-amber-950 to-amber-900 text-amber-100 hover:from-amber-900 hover:to-amber-800 border-amber-700 font-medieval"
                   >
-                    <span className="z-10 relative">End Turn</span>
-                    
-                    {/* Pulse effect only if it's current turn and player has played at least one card */}
-                    <AnimatePresence>
-                      {isCurrentTurn && 
-                        !currentPlayer.pass && 
-                        // Only pulse if player has played a card in this turn
-                        hasPlayedCardThisTurn && (
-                        <motion.div
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ 
-                            scale: [1, 1.2, 1.2, 1], 
-                            opacity: [0.7, 0.5, 0.5, 0.7] 
-                          }}
-                          exit={{ scale: 0, opacity: 0 }}
-                          transition={{ 
-                            duration: 2,
-                            repeat: 2,
-                            repeatType: "loop"
-                          }}
-                          className="absolute inset-0 bg-emerald-700/30 rounded-md"
-                          style={{ zIndex: 0 }}
-                        />
-                      )}
-                    </AnimatePresence>
+                    <span className="z-10 relative flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 text-amber-400"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                      {currentPlayer.hasUsedBlightThisTurn ? 
+                        "Magic Depleted This Turn" : 
+                        `Cast Blight Magic (${currentPlayer.blightCards.filter(card => !card.used).length})`
+                      }
+                    </span>
                   </Button>
                 </motion.div>
-              </AnimatePresence>
-            )}
+              )}
+              
+              {switchPlayerView && (
+                <AnimatePresence>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative"
+                  >
+                    <Button 
+                      onClick={handleEndTurn}
+                      variant="secondary"
+                      className="relative overflow-hidden bg-gradient-to-b from-emerald-950 to-emerald-900 text-amber-100 border border-emerald-700 hover:from-emerald-900 hover:to-emerald-800 font-medieval"
+                    >
+                      <span className="z-10 relative">End Turn</span>
+                      
+                      {/* Pulse effect only if it's current turn and player has played at least one card */}
+                      <AnimatePresence>
+                        {isCurrentTurn && 
+                          !currentPlayer.pass && 
+                          // Only pulse if player has played a card in this turn
+                          hasPlayedCardThisTurn && (
+                          <motion.div
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ 
+                              scale: [1, 1.2, 1.2, 1], 
+                              opacity: [0.7, 0.5, 0.5, 0.7] 
+                            }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            transition={{ 
+                              duration: 2,
+                              repeat: 2,
+                              repeatType: "loop"
+                            }}
+                            className="absolute inset-0 bg-emerald-700/30 rounded-md"
+                            style={{ zIndex: 0 }}
+                          />
+                        )}
+                      </AnimatePresence>
+                    </Button>
+                  </motion.div>
+                </AnimatePresence>
+              )}
 
-          </div>
-          <div className="flex flex-col text-sm items-end pr-2 border-l border-amber-800/30 pl-4">
-            <div className="font-serif text-amber-100">{currentPlayer.hand.length} cards in arsenal</div>
-            <div 
-              className="cursor-pointer hover:text-amber-400 flex items-center text-amber-200/80 font-serif transition-colors"
-              onClick={() => setShowDiscardPile(true)}
-            >
-              {currentPlayer.discardPile.length} cards in graveyard
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
             </div>
-            {/* Blight card info */}
-            {currentPlayer.blightCards.length > 0 && (
+            <div className="flex flex-col text-sm items-end pr-2 border-l border-amber-800/30 pl-4">
+              <div className="font-serif text-amber-100">{currentPlayer.hand.length} cards in arsenal</div>
               <div 
-                className={`mt-1 flex items-center cursor-pointer hover:text-amber-300 ${currentPlayer.hasUsedBlightThisTurn ? 'text-amber-500/60' : 'text-amber-500'}`}
-                onClick={() => setShowBlightDetails(true)}
+                className="cursor-pointer hover:text-amber-400 flex items-center text-amber-200/80 font-serif transition-colors"
+                onClick={() => setShowDiscardPile(true)}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                <span className="text-xs font-serif flex items-center gap-1">
-                  {currentPlayer.hasUsedBlightThisTurn ? (
-                    <>
-                      Magic Depleted This Turn
-                      {currentPlayer.blightCards.filter(card => !card.used).length > 0 && 
-                        <span className="text-amber-500/80">
-                          ({currentPlayer.blightCards.filter(card => !card.used).length} remaining)
-                        </span>
-                      }
-                    </>
-                  ) : (
-                    <>
-                      {currentPlayer.blightCards.filter(card => !card.used).length > 1 
-                        ? `${currentPlayer.blightCards.filter(card => !card.used).length} Blight Cards Available` 
-                        : currentPlayer.blightCards.filter(card => !card.used).length === 1
-                          ? `${currentPlayer.blightCards.find(card => !card.used)?.name} Available`
-                          : `All Blight Cards Used`
-                      }
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-                    </>
-                  )}
-                </span>
+                {currentPlayer.discardPile.length} cards in graveyard
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
               </div>
-            )}
+              {/* Blight card info */}
+              {currentPlayer.blightCards.length > 0 && (
+                <div 
+                  className={`mt-1 flex items-center cursor-pointer hover:text-amber-300 ${currentPlayer.hasUsedBlightThisTurn ? 'text-amber-500/60' : 'text-amber-500'}`}
+                  onClick={() => setShowBlightDetails(true)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  <span className="text-xs font-serif flex items-center gap-1">
+                    {currentPlayer.hasUsedBlightThisTurn ? (
+                      <>
+                        Magic Depleted This Turn
+                        {currentPlayer.blightCards.filter(card => !card.used).length > 0 && 
+                          <span className="text-amber-500/80">
+                            ({currentPlayer.blightCards.filter(card => !card.used).length} remaining)
+                          </span>
+                        }
+                      </>
+                    ) : (
+                      <>
+                        {currentPlayer.blightCards.filter(card => !card.used).length > 1 
+                          ? `${currentPlayer.blightCards.filter(card => !card.used).length} Blight Cards Available` 
+                          : currentPlayer.blightCards.filter(card => !card.used).length === 1
+                            ? `${currentPlayer.blightCards.find(card => !card.used)?.name} Available`
+                            : `All Blight Cards Used`
+                        }
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                      </>
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-      
-      {/* This hidden div ensures that no card details leak outside their containers */}
-      <div className="hidden absolute -top-96 left-0 right-0 opacity-0 pointer-events-none">
-        {currentPlayer.hand.map((card, index) => (
-          <span key={`label-blocker-${card.suit}-${card.value}-${index}`}>{card.suit}-{card.value}</span>
-        ))}
-      </div>
-      
-      <div className="flex flex-wrap items-center justify-center py-6 px-2 gap-5 relative overflow-visible">
-        {currentPlayer.hand.map((card, index) => (
-          <div key={`hand-card-wrapper-${index}`} className="relative overflow-visible">
-            <CardComponent
-              key={`hand-${index}`}
-              card={card}
-              selected={selectedCard === index}
-              onClick={() => isCurrentTurn && !currentPlayer.pass && handleCardPlay(index)}
-              disabled={!isCurrentTurn || currentPlayer.pass}
-            />
-          </div>
-        ))}
-      </div>
-      
-      {/* Discard pile modal */}
-      {showDiscardPile && (
-        <DiscardPileModal
-          player={currentPlayer}
-          onClose={() => setShowDiscardPile(false)}
-        />
-      )}
-      
-      {/* Blight card details dialog */}
-      {showBlightDetails && currentPlayer.blightCards.length > 0 && (
-        <Dialog open={showBlightDetails} onOpenChange={setShowBlightDetails}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-2xl">
-                {currentPlayer.blightCards.length > 1 ? "Your Blight Cards" : "Your Blight Card"}
-              </DialogTitle>
-              <DialogDescription className="text-md pt-2">
-                Each Blight card can only be used once per match. You can only use one Blight card per turn.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4 space-y-4">
-              {currentPlayer.blightCards.map((blightCard, index) => (
-                <Card 
-                  key={blightCard.id} 
-                  className={`bg-card/50 shadow-md ${blightCard.used ? 'opacity-50' : ''}`}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-xl">{blightCard.name}</CardTitle>
-                        {blightCard.used && (
-                          <span className="text-xs text-red-500 font-medium px-2 py-1 bg-red-950/30 rounded-full">Used</span>
-                        )}
-                        {!blightCard.used && (
-                          <span className="text-xs text-green-500 font-medium px-2 py-1 bg-green-950/30 rounded-full">Available</span>
-                        )}
-                      </div>
-                      <span className="text-3xl">{blightCard.icon}</span>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-md leading-relaxed">
-                      {blightCard.description}
-                    </CardDescription>
-                  </CardContent>
-                </Card>
-              ))}
+        
+        {/* This hidden div ensures that no card details leak outside their containers */}
+        <div className="hidden absolute -top-96 left-0 right-0 opacity-0 pointer-events-none">
+          {currentPlayer.hand.map((card, index) => (
+            <span key={`label-blocker-${card.suit}-${card.value}-${index}`}>{card.suit}-{card.value}</span>
+          ))}
+        </div>
+        
+        <div className="flex flex-wrap items-center justify-center py-6 px-2 gap-5 relative overflow-visible">
+          {currentPlayer.hand.map((card, index) => (
+            <div key={`hand-card-wrapper-${index}`} className="relative overflow-visible card-3d">
+              <CardComponent
+                key={`hand-${index}`}
+                card={card}
+                selected={selectedCard === index}
+                onClick={() => isCurrentTurn && !currentPlayer.pass && handleCardPlay(index)}
+                disabled={!isCurrentTurn || currentPlayer.pass}
+              />
             </div>
-            <p className="text-sm text-muted-foreground italic">
-              Note: Use the "Cast Blight Magic" button at the beginning of your turn to play a Blight card.
-            </p>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
+          ))}
+        </div>
+        
+        {/* Discard pile modal */}
+        {showDiscardPile && (
+          <DiscardPileModal
+            player={currentPlayer}
+            onClose={() => setShowDiscardPile(false)}
+          />
+        )}
+        
+        {/* Blight card details dialog */}
+        {showBlightDetails && currentPlayer.blightCards.length > 0 && (
+          <Dialog open={showBlightDetails} onOpenChange={setShowBlightDetails}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-2xl">
+                  {currentPlayer.blightCards.length > 1 ? "Your Blight Cards" : "Your Blight Card"}
+                </DialogTitle>
+                <DialogDescription className="text-md pt-2">
+                  Each Blight card can only be used once per match. You can only use one Blight card per turn.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-4 space-y-4">
+                {currentPlayer.blightCards.map((blightCard, index) => (
+                  <Card 
+                    key={blightCard.id} 
+                    className={`bg-card/50 shadow-md ${blightCard.used ? 'opacity-50' : ''}`}
+                  >
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-xl">{blightCard.name}</CardTitle>
+                          {blightCard.used && (
+                            <span className="text-xs text-red-500 font-medium px-2 py-1 bg-red-950/30 rounded-full">Used</span>
+                          )}
+                          {!blightCard.used && (
+                            <span className="text-xs text-green-500 font-medium px-2 py-1 bg-green-950/30 rounded-full">Available</span>
+                          )}
+                        </div>
+                        <span className="text-3xl">{blightCard.icon}</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-md leading-relaxed">
+                        {blightCard.description}
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground italic">
+                Note: Use the "Cast Blight Magic" button at the beginning of your turn to play a Blight card.
+              </p>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
     </div>
   )
 }
