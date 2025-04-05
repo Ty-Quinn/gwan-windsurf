@@ -22,7 +22,11 @@ export default function GameHeader({
   return (
     <header className="mb-8 relative z-50">
       <div className="flex flex-col md:flex-row justify-between items-center">
-        <h1 className="text-3xl font-bold text-primary mb-2 md:mb-0">GWAN</h1>
+        <h1 className="text-4xl font-bold text-primary mb-2 md:mb-0 flex items-center drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]" style={{ textShadow: '0 0 10px rgba(255,215,0,0.4)' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="rgba(255,215,0,0.1)" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 drop-shadow-[0_0_3px_rgba(255,215,0,0.6)]"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+          GWAN
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="rgba(255,215,0,0.1)" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2 drop-shadow-[0_0_3px_rgba(255,215,0,0.6)]"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+        </h1>
         <div className="flex space-x-4">
           <div className="bg-card px-4 py-2 rounded-lg">
             <span className="font-semibold">Round: </span>
