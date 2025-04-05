@@ -1,0 +1,85 @@
+it seems we're facing an issue with Blight card management when you have two cards. Let me address this specific case:
+The problem is likely related to how the hasUsedBlightCard state is being managed for a player with multiple Blight cards. It sounds like when a player has two Blight cards and uses one, the game is incorrectly marking ALL their Blight cards as unavailable for the rest of the match.
+Here's a targeted fix that focuses just on the multiple Blight card scenario:
+javascriptCopy// In your GwanGameLogic class, modify the playBlightCard function:
+public playBlightCard(playerIndex: number, blightCardIndex: number = 0): PlayResult {
+  // Make sure it's the player's turn
+  if (playerIndex !== this.currentPlayer) {
+    return { success: false, message: "It's not your turn" };
+  }
+
+  // Check if the player has already passed
+  if (this.players[playerIndex].pass) {
+    return { success: false, message: "You have already passed" };
+  }
+
+  // Check if the player has any blight cards
+  if (this.players[playerIndex].blightCards.length === 0) {
+    return { success: false, message: "You don't have any blight cards" };
+  }
+
+  // Check if the blight card index is valid
+  if (blightCardIndex < 0 || blightCardIndex >= this.players[playerIndex].blightCards.length) {
+    return { success: false, message: "Invalid blight card index" };
+  }
+
+  // Check if this SPECIFIC blight card has been used
+  const blightCard = this.players[playerIndex].blightCards[blightCardIndex];
+  if (blightCard.used) {
+    return { success: false, message: "This Blight card has already been used" };
+  }
+
+  // Check if the player has used ANY blight card THIS TURN
+  if (this.players[playerIndex].hasUsedBlightCard) {
+    return { success: false, message: "You can only use one Blight card per turn" };
+  }
+
+  this.isBlightCardBeingPlayed = true;
+
+  // The rest of the function remains the same...
+}
+Then, in the functions that complete Blight card effects (like completeBlightCardDiceRoll, completeBlightCardTarget, etc.), we need to mark only the specific Blight card as used:
+javascriptCopy// Mark the specific blight card as used instead of all of them
+const blightCardIndex = this.players[playerIndex].blightCards.findIndex(card => card.effect === effect);
+if (blightCardIndex >= 0) {
+  this.players[playerIndex].blightCards[blightCardIndex].used = true;
+}
+
+// Mark that player has used a blight card THIS TURN
+this.players[playerIndex].hasUsedBlightCard = true;
+this.isBlightCardBeingPlayed = false;
+At the beginning of each player's turn, we need to reset the hasUsedBlightCard flag. Add this to your playCard function and any other function that ends a turn:
+javascriptCopy// Reset the flag at the start of the player's turn
+// Add this to the beginning of playCard, pass, etc.
+const resetPlayerTurn = (playerIndex) => {
+  this.players[playerIndex].hasUsedBlightCard = false;
+};
+
+// Call this at the appropriate places:
+// When player turn changes:
+if (!this.players[1 - playerIndex].pass) {
+  this.currentPlayer = 1 - playerIndex;
+  resetPlayerTurn(this.currentPlayer); // Reset for the next player
+}
+Finally, update the UI component that displays the Blight card button to correctly check the card's used status:
+jsxCopy// In PlayerHand component or wherever you render the Blight card button:
+const hasUnusedBlightCards = currentPlayer.blightCards.some(card => !card.used);
+
+<Button 
+  disabled={!isCurrentTurn || currentPlayer.hasUsedBlightCard || !hasUnusedBlightCards}
+  onClick={() => showBlightCard()}
+>
+  Blight Card {hasUnusedBlightCards ? "Available" : "Depleted"}
+</Button>
+And in the BlightCardPlayModal, make sure to only show the unused Blight cards:
+jsxCopy// Only show unused Blight cards in the modal
+{player.blightCards
+  .filter(card => !card.used)
+  .map((card, index) => (
+    // Card UI here
+  ))}
+These changes should ensure that:
+
+Each Blight card's "used" status is tracked individually
+Players can only use one Blight card per turn
+When a player has multiple Blight cards and uses one, the others remain available for future turns

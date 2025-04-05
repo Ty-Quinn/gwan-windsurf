@@ -980,7 +980,11 @@ export default function GwanGame() {
       setGameState(freshState);
       
       // Set up for blight selection
-      setExcludedBlightCardIds(currentPlayerBlightCardIds);
+      // Make sure we're using the most up-to-date list of blight cards to exclude
+      const updatedExcludedCardIds = freshState.players[playerView].blightCards.map(card => card.id);
+      console.log("Updated excluded card IDs:", updatedExcludedCardIds);
+      
+      setExcludedBlightCardIds(updatedExcludedCardIds);
       setIsSecondBlightSelection(true);
       
       // Show the blight selection modal last
