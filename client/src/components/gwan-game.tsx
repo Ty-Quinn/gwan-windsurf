@@ -151,8 +151,19 @@ export default function GwanGame() {
         !gameState.blightCardsSelected &&
         gameState.players[0].blightCards.length > 0 && 
         gameState.players[1].blightCards.length === 0) {
-      // Player 2's turn to select after Player 1 has selected
-      setPlayerView(1); // Switch to Player 2's view for selection
+      
+      // Check if player 2 is AI
+      const isPlayer2AI = gameState.players[1].isAI;
+      
+      if (!isPlayer2AI) {
+        // Only switch view if player 2 is human
+        setPlayerView(1); // Switch to Player 2's view for selection
+        console.log("Switching to Player 2 view for blight card selection");
+      } else {
+        console.log("Player 2 is AI - keeping view on human player for blight card selection");
+        // AI blight card selection will be handled automatically
+      }
+      
       setShowBlightCardSelection(true);
     }
   }, [gameStarted, gameState?.blightCardsSelected, 
@@ -172,7 +183,15 @@ export default function GwanGame() {
 
     setGame(updatedGame)
     setGameState(updatedGameState)
-    setPlayerView(firstPlayerIndex) // Set the view to the player who goes first
+    
+    // Set view to first player, but if it's an AI game and the AI goes first, keep view on human player
+    if (!(updatedGameState.players[1].isAI && firstPlayerIndex === 1)) {
+      setPlayerView(firstPlayerIndex); // Set the view to the player who goes first 
+      console.log("Setting player view to first player:", firstPlayerIndex);
+    } else {
+      console.log("AI goes first but keeping view on human player");
+      setPlayerView(0); // Keep view on human player even if AI goes first
+    }
     setShowDiceRoll(false)
     setGameStarted(true)
     setMessage(`Player ${firstPlayerIndex + 1} won the roll and goes first! Play a card or pass.`)
@@ -203,10 +222,19 @@ export default function GwanGame() {
     // Check if current player is AI player (player 2 is AI)
     const isAITurn = gameState.currentPlayer === 1 && gameState.players[1].isAI;
     
+    console.log("AI Turn Check:", { 
+      currentPlayer: gameState.currentPlayer, 
+      isAI: gameState.players[1].isAI, 
+      isAITurn, 
+      playerView, 
+      thinking: isAIThinking 
+    });
+    
     if (isAITurn && !isAIThinking) {
       // Set thinking state to show AI thinking indicator
       setIsAIThinking(true);
       setAiThinkingMessage("AI is thinking...");
+      console.log("AI STARTED THINKING");
       
       // Add a small delay to simulate AI "thinking" (500-1500ms)
       const thinkingTime = 500 + Math.random() * 1000;
@@ -466,9 +494,15 @@ export default function GwanGame() {
         setShowRoundSummary(true)
         setNextRoundPending(true)
       }
-      // If round isn't over, automatically switch to the other player
+      // If round isn't over, handle player view switching
       else {
-        setPlayerView(1 - playerView)
+        // Only switch view if not playing against AI
+        const isAIGame = gameState.players[1].isAI;
+        if (!isAIGame) {
+          setPlayerView(1 - playerView)
+        } else {
+          console.log("AI game - keeping view on human player");
+        }
       }
     } else {
       setMessage(result.message)
@@ -652,7 +686,13 @@ export default function GwanGame() {
       setGameState(game.getGameState())
     }
 
-    setPlayerView(1 - playerView)
+    // Only switch the view if not playing against AI
+    if (gameState && !gameState.players[1].isAI) {
+      setPlayerView(1 - playerView);
+      console.log("Switching player view to:", 1 - playerView);
+    } else {
+      console.log("AI game - not switching player view");
+    }
   }
 
   // Start a new round
@@ -670,7 +710,14 @@ export default function GwanGame() {
     setGameState(newState)
 
     // Set player view to match the starting player (loser of previous round goes first)
-    setPlayerView(newState.currentPlayer)
+    // But only if this is not an AI game
+    if (!newState.players[1].isAI) {
+      setPlayerView(newState.currentPlayer)
+    } else {
+      // For AI games, keep the human player's view
+      setPlayerView(0)
+      console.log("AI game - keeping view on human player for new round")
+    }
 
     setMessage(`Round ${newState.currentRound} starting!`)
   }
