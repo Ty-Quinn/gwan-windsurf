@@ -1287,9 +1287,13 @@ export default function GwanGame() {
           playerIndex={playerView}
           onSelectCard={handleBlightCardSelection}
           onClose={() => {
-            setShowBlightCardSelection(false)
-            setIsSecondBlightSelection(false)
-            setExcludedBlightCardIds([])
+            // Only allow closing if it's a second selection from Suicide King
+            // For initial blight card selection, players must choose a card
+            if (isSecondBlightSelection) {
+              setShowBlightCardSelection(false)
+              setIsSecondBlightSelection(false)
+              setExcludedBlightCardIds([])
+            }
           }}
           excludedCardIds={excludedBlightCardIds}
           isSecondSelection={isSecondBlightSelection}

@@ -101,7 +101,7 @@ export default function BlightCardSelectionModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={isSecondSelection ? onClose : undefined}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle className="text-2xl">
