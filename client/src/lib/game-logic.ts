@@ -765,10 +765,31 @@ export class GwanGameLogic {
     this.isBlightCardBeingPlayed = state.isBlightCardBeingPlayed || false;
     this.isSuicideKingBeingPlayed = state.isSuicideKingBeingPlayed || false;
     
-    // Check if we need to initialize the deck
-    if (state.deckCount === undefined || state.deckCount === 0 || this.deck.length === 0) {
+    // Important: Set the deck count to match what's in the state
+    // This prevents recreating the deck unnecessarily
+    if (state.deckCount !== undefined) {
+      // If we have a valid deck count in the state, make sure our deck matches that size
+      if (this.deck.length !== state.deckCount) {
+        if (state.deckCount === 0) {
+          this.deck = []; // Empty deck case
+        } else if (this.deck.length === 0 && state.deckCount > 0 && this.currentRound === 1) {
+          // Only create a new deck if we don't have one yet and it's the first round
+          console.log("Creating initial deck since none exists");
+          this.createDeck();
+          this.shuffleDeck();
+          
+          // Remove cards to match state.deckCount (cards that have been dealt)
+          const cardsToRemove = this.deck.length - state.deckCount;
+          if (cardsToRemove > 0) {
+            this.deck = this.deck.slice(0, state.deckCount);
+          }
+        }
+      }
+    } else if (this.deck.length === 0 && this.currentRound === 1) {
+      // Fallback for older states without deckCount
       // Only create a new deck at the beginning of the game
-      if (this.currentRound === 1 && !this.players.some(p => p.discardPile.length > 0 || p.field.clubs.length > 0 || p.field.diamonds.length > 0 || p.field.spades.length > 0)) {
+      if (!this.players.some(p => p.discardPile.length > 0 || p.field.clubs.length > 0 || p.field.diamonds.length > 0 || p.field.spades.length > 0)) {
+        console.log("Creating initial deck (fallback)");
         this.createDeck();
         this.shuffleDeck();
       }
