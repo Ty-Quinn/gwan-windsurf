@@ -63,9 +63,11 @@ export default function GameBoard({
     
     // Try to detect which row received a new card
     for (const row of rowKeys) {
-      const currentCount = currentPlayer.field[row].length
-      // Simple assumption: if a row has cards, it might be the recently updated one
-      if (currentCount > 0) {
+      const fieldKey = currentPlayer.field.hasOwnProperty("melee") ? 
+        (row === "clubs" ? "melee" : row === "spades" ? "ranged" : "siege") : 
+        row;
+      
+      if (currentPlayer.field[fieldKey] && currentPlayer.field[fieldKey].length > 0) {
         updatedRow = row
         break
       }
@@ -90,6 +92,13 @@ export default function GameBoard({
   const rowOrder: FieldKey[] = isOpponent 
     ? ["diamonds", "spades", "clubs"] // Long -> Mid -> Close
     : ["clubs", "spades", "diamonds"] // Close -> Mid -> Long
+  
+  // Handle both field naming conventions (old: clubs/spades/diamonds, new: melee/ranged/siege)
+  const fieldMap: Record<FieldKey, keyof Field> = {
+    clubs: currentPlayer.field.hasOwnProperty("melee") ? "melee" : "clubs",
+    spades: currentPlayer.field.hasOwnProperty("ranged") ? "ranged" : "spades",
+    diamonds: currentPlayer.field.hasOwnProperty("siege") ? "siege" : "diamonds"
+  }
   
   const rowLabels: Record<FieldKey, { name: string; bonus: string; unitName: string }> = {
     clubs: { name: "Close Range", bonus: "+2", unitName: "Infantry" },
@@ -275,12 +284,12 @@ export default function GameBoard({
               )}
               
               <AnimatePresence>
-                {currentPlayer.field[rowKey].length > 0 ? (
+                {currentPlayer.field[fieldMap[rowKey]] && currentPlayer.field[fieldMap[rowKey]].length > 0 ? (
                   <motion.div 
                     className="flex flex-wrap"
                     layout
                   >
-                    {currentPlayer.field[rowKey].map((card, index) => (
+                    {currentPlayer.field[fieldMap[rowKey]].map((card, index) => (
                       <motion.div 
                         key={`${isOpponent ? "op" : "pl"}-${rowKey}-${index}`} 
                         className="mx-1 relative group"
@@ -297,10 +306,10 @@ export default function GameBoard({
                           />
                           {/* Value badge overlay */}
                           <div 
-                            className={`absolute -top-2 -right-2 bg-stone-900/90 text-amber-100 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border ${getValueColor(card, rowKey, gameState.weatherEffects)}`}
-                            title={`Card Value: ${calculateCardValue(card, rowKey, gameState.weatherEffects)}`}
+                            className={`absolute -top-2 -right-2 bg-stone-900/90 text-amber-100 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border ${getValueColor(card, fieldMap[rowKey], gameState.weatherEffects)}`}
+                            title={`Card Value: ${calculateCardValue(card, fieldMap[rowKey], gameState.weatherEffects)}`}
                           >
-                            {calculateCardValue(card, rowKey, gameState.weatherEffects)}
+                            {calculateCardValue(card, fieldMap[rowKey], gameState.weatherEffects)}
                           </div>
                         </div>
                         {/* Tooltip displaying card details on hover */}
