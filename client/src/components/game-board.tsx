@@ -7,7 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from "@/lib/utils"
 
 // Define type for field keys
-type FieldKey = keyof Field;
+// Define both the old field keys (for display and labels) and the actual field keys
+type FieldKey = "clubs" | "spades" | "diamonds"; // UI display keys
+type ActualFieldKey = keyof Field; // Actual keys in the Field object: "melee", "ranged", "siege"
 
 interface GameBoardProps {
   gameState: GameState
@@ -24,7 +26,10 @@ export default function GameBoard({
   targetRowSelection,
   handleRowSelect,
 }: GameBoardProps) {
-  const [prevScore, setPrevScore] = useState(currentPlayer.score)
+  // Handle the case when currentPlayer might be undefined or incomplete
+  const initialScore = currentPlayer?.score || 0
+  
+  const [prevScore, setPrevScore] = useState(initialScore)
   const [scoreChange, setScoreChange] = useState(0)
   const [showScoreAnimation, setShowScoreAnimation] = useState(false)
   const [recentRowUpdate, setRecentRowUpdate] = useState<FieldKey | null>(null)
@@ -58,16 +63,17 @@ export default function GameBoard({
 
   // Track card additions to rows
   useEffect(() => {
+    // Safety check to ensure currentPlayer and field exist
+    if (!currentPlayer || !currentPlayer.field) return;
+    
     const rowKeys: FieldKey[] = ['clubs', 'spades', 'diamonds']
     let updatedRow: FieldKey | null = null
     
     // Try to detect which row received a new card
     for (const row of rowKeys) {
-      const fieldKey = currentPlayer.field.hasOwnProperty("melee") ? 
-        (row === "clubs" ? "melee" : row === "spades" ? "ranged" : "siege") : 
-        row;
+      const actualFieldKey = fieldMap[row];
       
-      if (currentPlayer.field[fieldKey] && currentPlayer.field[fieldKey].length > 0) {
+      if (currentPlayer.field[actualFieldKey] && currentPlayer.field[actualFieldKey].length > 0) {
         updatedRow = row
         break
       }
@@ -83,7 +89,7 @@ export default function GameBoard({
       
       return () => clearTimeout(timer)
     }
-  }, [currentPlayer.field])
+  }, [currentPlayer?.field, fieldMap])
   
   // Determine the order to display rows based on whether this is opponent or player board
   // For opponent: Long Range (top) -> Mid Range -> Close Range (bottom)
@@ -94,10 +100,18 @@ export default function GameBoard({
     : ["clubs", "spades", "diamonds"] // Close -> Mid -> Long
   
   // Handle both field naming conventions (old: clubs/spades/diamonds, new: melee/ranged/siege)
-  const fieldMap: Record<FieldKey, keyof Field> = {
-    clubs: currentPlayer.field.hasOwnProperty("melee") ? "melee" : "clubs",
-    spades: currentPlayer.field.hasOwnProperty("ranged") ? "ranged" : "spades",
-    diamonds: currentPlayer.field.hasOwnProperty("siege") ? "siege" : "diamonds"
+  // Also handle potentially undefined field
+  const fieldMap: Record<FieldKey, ActualFieldKey> = {
+    clubs: "melee",
+    spades: "ranged",
+    diamonds: "siege"
+  }
+  
+  // Map display keys to weather effect keys
+  const weatherMap: Record<FieldKey, keyof WeatherEffects> = {
+    clubs: "frost",
+    spades: "rain",
+    diamonds: "fog"
   }
   
   const rowLabels: Record<FieldKey, { name: string; bonus: string; unitName: string }> = {
@@ -119,7 +133,8 @@ export default function GameBoard({
   function calculateCardValue(card: Card, rowName: FieldKey, weatherEffects: WeatherEffects): number {
     try {
       // If it's a weather-affected row and not a commander card, return 1
-      if (weatherEffects[rowName] && !card.isCommander) {
+      const weatherKey = weatherMap[rowName];
+      if (weatherEffects[weatherKey] && !card.isCommander) {
         return 1;
       }
 
@@ -129,7 +144,7 @@ export default function GameBoard({
       }
 
       // Return the base value (which includes any doubling from Lovers effect)
-      return card.baseValue || parseInt(card.value) || 0;
+      return card.baseValue || (typeof card.value === 'string' ? parseInt(card.value) || 0 : card.value || 0);
     } catch (err) {
       console.error("Error calculating card value:", err);
       // Fallback to a safe value
@@ -143,15 +158,23 @@ export default function GameBoard({
       const currentValue = calculateCardValue(card, rowName, weatherEffects);
       
       // Get original value before any special effects
-      let originalValue = card.isRogue ? 2 : parseInt(card.value, 10);
+      let originalValue: number;
       
-      // Handle face cards
-      if (isNaN(originalValue)) {
-        if (card.value === 'J') originalValue = 11;
-        else if (card.value === 'Q') originalValue = 12;
-        else if (card.value === 'K') originalValue = 13;
-        else if (card.value === 'A') originalValue = 14;
-        else originalValue = 0; // Default for unknown values
+      if (card.isRogue) {
+        originalValue = 2;
+      } else if (typeof card.value === 'number') {
+        originalValue = card.value;
+      } else {
+        originalValue = parseInt(card.value, 10);
+        
+        // Handle face cards
+        if (isNaN(originalValue)) {
+          if (card.value === 'J') originalValue = 11;
+          else if (card.value === 'Q') originalValue = 12;
+          else if (card.value === 'K') originalValue = 13;
+          else if (card.value === 'A') originalValue = 14;
+          else originalValue = 0; // Default for unknown values
+        }
       }
       
       // Compare current value to original value
@@ -263,7 +286,7 @@ export default function GameBoard({
             </div>
             <motion.div 
               className={`game-row flex-1 h-20 flex items-center p-2 pt-5 rounded-lg relative
-                ${gameState.weatherEffects[rowKey] ? "bg-gradient-to-r from-red-900/30 to-slate-800/20" : ""} 
+                ${gameState.weatherEffects[weatherMap[rowKey]] ? "bg-gradient-to-r from-red-900/30 to-slate-800/20" : ""} 
                 ${targetRowSelection ? "border-2 border-amber-400 cursor-pointer" : ""}`}
               onClick={() => targetRowSelection && handleRowSelect(rowKey)}
               initial={{ opacity: 1 }}
@@ -277,7 +300,7 @@ export default function GameBoard({
                 repeat: recentRowUpdate === rowKey ? 1 : 0,
               }}
             >
-              {gameState.weatherEffects[rowKey] && (
+              {gameState.weatherEffects[weatherMap[rowKey]] && (
                 <div className="absolute -top-2 left-3 text-xs bg-gradient-to-r from-red-900 to-red-700 px-3 py-1 rounded-sm text-amber-100 shadow-md z-10 font-medieval border border-amber-900/50">
                   {weatherLabels[rowKey]} Magic
                 </div>
@@ -306,10 +329,10 @@ export default function GameBoard({
                           />
                           {/* Value badge overlay */}
                           <div 
-                            className={`absolute -top-2 -right-2 bg-stone-900/90 text-amber-100 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border ${getValueColor(card, fieldMap[rowKey], gameState.weatherEffects)}`}
-                            title={`Card Value: ${calculateCardValue(card, fieldMap[rowKey], gameState.weatherEffects)}`}
+                            className={`absolute -top-2 -right-2 bg-stone-900/90 text-amber-100 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold border ${getValueColor(card, rowKey, gameState.weatherEffects)}`}
+                            title={`Card Value: ${calculateCardValue(card, rowKey, gameState.weatherEffects)}`}
                           >
-                            {calculateCardValue(card, fieldMap[rowKey], gameState.weatherEffects)}
+                            {calculateCardValue(card, rowKey, gameState.weatherEffects)}
                           </div>
                         </div>
                         {/* Tooltip displaying card details on hover */}

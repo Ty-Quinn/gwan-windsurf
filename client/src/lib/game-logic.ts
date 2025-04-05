@@ -292,6 +292,32 @@ export class GwanGameLogic {
     return JSON.parse(JSON.stringify(this.gameState));
   }
   
+  // Set a blight card for a player
+  setBlightCard(playerIndex: number, blightCard: BlightCard): { success: boolean, message: string } {
+    if (playerIndex < 0 || playerIndex >= this.gameState.players.length) {
+      return { success: false, message: "Invalid player index" };
+    }
+    
+    // Mark the blight card as part of this player's hand
+    this.gameState.players[playerIndex].blightCards.push({...blightCard});
+    
+    // Remove this card from the available blight cards if it's a first selection
+    if (!this.gameState.blightCardsSelected) {
+      this.gameState.availableBlightCards = this.gameState.availableBlightCards.filter(
+        card => card.id !== blightCard.id
+      );
+    }
+    
+    // If both players have chosen their initial blight cards, mark selection as complete
+    if (this.gameState.players[0].blightCards.length > 0 && 
+        this.gameState.players[1].blightCards.length > 0 && 
+        !this.gameState.blightCardsSelected) {
+      this.gameState.blightCardsSelected = true;
+    }
+    
+    return { success: true, message: "Blight card selected successfully" };
+  }
+  
   // Various game actions would be implemented here
   // playCard, passRound, etc.
   

@@ -343,37 +343,43 @@ export default function AIGamePage() {
           />
           
           <div className="opponent-area">
-            <GameBoard
-              gameState={gameState}
-              currentPlayer={gameState.players[1]}
-              isOpponent={playerView === 0}
-              targetRowSelection={false}
-              handleRowSelect={() => {}}
-            />
+            {gameState && gameState.players && gameState.players.length > 1 && (
+              <GameBoard
+                gameState={gameState}
+                currentPlayer={gameState.players[1]}
+                isOpponent={playerView === 0}
+                targetRowSelection={false}
+                handleRowSelect={() => {}}
+              />
+            )}
           </div>
           
           <div className="player-area">
-            <GameBoard
-              gameState={gameState}
-              currentPlayer={gameState.players[0]}
-              isOpponent={playerView === 1}
-              targetRowSelection={targetRowSelection}
-              handleRowSelect={handleRowSelect}
-            />
+            {gameState && gameState.players && gameState.players.length > 0 && (
+              <GameBoard
+                gameState={gameState}
+                currentPlayer={gameState.players[0]}
+                isOpponent={playerView === 1}
+                targetRowSelection={targetRowSelection}
+                handleRowSelect={handleRowSelect}
+              />
+            )}
           </div>
           
           <div className="hand-container">
-            <PlayerHand
-              currentPlayer={gameState.players[playerView]}
-              isCurrentTurn={gameState.currentPlayer === playerView}
-              selectedCard={selectedCard}
-              handlePlayCard={handlePlayCard}
-              handlePass={handlePass}
-              switchPlayerView={switchPlayerView}
-              canUndo={false}
-              handleUndo={() => {}}
-              showBlightCard={() => {}}
-            />
+            {gameState && gameState.players && gameState.players.length > 0 && (
+              <PlayerHand
+                currentPlayer={gameState.players[playerView]}
+                isCurrentTurn={gameState.currentPlayer === playerView}
+                selectedCard={selectedCard}
+                handlePlayCard={handlePlayCard}
+                handlePass={handlePass}
+                switchPlayerView={switchPlayerView}
+                canUndo={false}
+                handleUndo={() => {}}
+                showBlightCard={() => {}}
+              />
+            )}
           </div>
         </div>
       </div>
