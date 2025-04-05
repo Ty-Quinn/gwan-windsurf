@@ -6,6 +6,11 @@
 /* Medieval Fantasy Theme */
 
 /* Game board container */
+/* Custom color for GWAN header */
+.gwan-header {
+  color: #FFD700; /* Bright golden color */
+}
+
 .gwan-board-container {
   position: relative;
   overflow: hidden;
