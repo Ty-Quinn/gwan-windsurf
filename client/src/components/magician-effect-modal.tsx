@@ -35,13 +35,17 @@ export default function MagicianEffectModal({
   useEffect(() => {
     if (open) {
       // Reset state when modal opens
-      setSelectedRow("clubs")
-      setDiceRolled(false)
-      setDiceResults([])
-      setRollTotal(0)
-      setSuccess(false)
+      // Find first non-empty row if possible
+      const rows: (keyof Field)[] = ["clubs", "spades", "diamonds"];
+      const firstNonEmptyRow = rows.find(row => players[opponentIndex].field[row].length > 0);
+      
+      setSelectedRow(firstNonEmptyRow || "clubs");
+      setDiceRolled(false);
+      setDiceResults([]);
+      setRollTotal(0);
+      setSuccess(false);
     }
-  }, [open])
+  }, [open, players, opponentIndex]);
   
   // Calculate the total value of cards in the selected row
   const calculateRowValue = (row: keyof Field): number => {
@@ -60,14 +64,27 @@ export default function MagicianEffectModal({
     }
   }
   
+  // Check if a row is empty
+  const isRowEmpty = (row: keyof Field): boolean => {
+    return players[opponentIndex].field[row].length === 0;
+  }
+  
+  // Check if all rows are empty
+  const areAllRowsEmpty = (): boolean => {
+    return isRowEmpty("clubs") && isRowEmpty("spades") && isRowEmpty("diamonds");
+  }
+  
   // Handle row selection
   const handleSelectRow = (row: keyof Field) => {
-    setSelectedRow(row)
+    // Don't allow selecting empty rows unless all rows are empty
+    if (isRowEmpty(row) && !areAllRowsEmpty()) return;
+    
+    setSelectedRow(row);
     // Reset dice results when a new row is selected
-    setDiceRolled(false)
-    setDiceResults([])
-    setRollTotal(0)
-    setSuccess(false)
+    setDiceRolled(false);
+    setDiceResults([]);
+    setRollTotal(0);
+    setSuccess(false);
   }
   
   // Handle dice roll completion
@@ -114,61 +131,78 @@ export default function MagicianEffectModal({
   
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">Magician Blight Card</DialogTitle>
-          <DialogDescription className="text-lg">
+      <DialogContent className="sm:max-w-[500px] overflow-hidden">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-xl">Magician Blight Card</DialogTitle>
+          <DialogDescription className="text-sm">
             Target a row in your opponent's field. Roll 1D20, and if the roll exceeds the total value of cards in that row, destroy all cards in it.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
-          {/* Always show the step status at the top */}
-          <div className="flex items-center justify-center space-x-2 mb-2">
+        <div className="space-y-2">
+          {/* Step indicator */}
+          <div className="flex items-center justify-center space-x-2 mb-1">
             <div className="h-2 w-2 rounded-full bg-green-500"></div>
-            <div className="text-sm">Select Row</div>
+            <div className="text-xs">Select Row</div>
             <div className="h-px w-8 bg-muted-foreground"></div>
             <div className={`h-2 w-2 rounded-full ${diceRolled ? 'bg-green-500' : 'bg-muted-foreground'}`}></div>
-            <div className="text-sm">Roll Dice</div>
+            <div className="text-xs">Roll Dice</div>
           </div>
           
           {/* Row Selection */}
-          <div className="pb-4 border-b border-border">
-            <div className="text-center text-lg font-medium mb-2">
+          <div className="pb-2 border-b border-border">
+            <div className="text-center text-sm font-medium mb-1">
               Step 1: Select an opponent's row to target
             </div>
             
             <Tabs 
               value={selectedRow} 
               onValueChange={(value) => handleSelectRow(value as keyof Field)}
-              defaultValue="clubs"
+              defaultValue={selectedRow}
             >
               <TabsList className="grid grid-cols-3 w-full">
-                <TabsTrigger value="clubs">Clubs</TabsTrigger>
-                <TabsTrigger value="spades">Spades</TabsTrigger>
-                <TabsTrigger value="diamonds">Diamonds</TabsTrigger>
+                <TabsTrigger 
+                  value="clubs" 
+                  disabled={isRowEmpty("clubs") && !areAllRowsEmpty()}
+                  className={isRowEmpty("clubs") && !areAllRowsEmpty() ? "opacity-50" : ""}
+                >
+                  Clubs
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="spades" 
+                  disabled={isRowEmpty("spades") && !areAllRowsEmpty()}
+                  className={isRowEmpty("spades") && !areAllRowsEmpty() ? "opacity-50" : ""}
+                >
+                  Spades
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="diamonds" 
+                  disabled={isRowEmpty("diamonds") && !areAllRowsEmpty()}
+                  className={isRowEmpty("diamonds") && !areAllRowsEmpty() ? "opacity-50" : ""}
+                >
+                  Diamonds
+                </TabsTrigger>
               </TabsList>
               
-              {/* Only render the content for the selected row */}
-              <div className="mt-3">
-                <div className="bg-muted rounded-md p-3 ring-2 ring-primary">
-                  <h3 className="font-medium">{getRowDisplayName(selectedRow)}</h3>
-                  <div className="flex items-center justify-between mt-2">
+              <div className="mt-2">
+                <div className="bg-muted rounded-md p-2 ring-1 ring-primary">
+                  <h3 className="font-medium text-sm">{getRowDisplayName(selectedRow)}</h3>
+                  <div className="flex items-center justify-between mt-1 text-xs">
                     <span>Cards in row: {players[opponentIndex].field[selectedRow].length}</span>
                     <span>Total value: {calculateRowValue(selectedRow)}</span>
                   </div>
                   
-                  <div className="flex flex-wrap mt-3 gap-2">
+                  <div className="flex flex-wrap mt-2 gap-1">
                     {players[opponentIndex].field[selectedRow].map((card, idx) => (
                       <div 
                         key={idx} 
-                        className="bg-card border border-border rounded-md p-2 text-xs"
+                        className="bg-card border border-border rounded-md p-1 text-xs"
                       >
                         {card.suit} {card.value} ({card.baseValue})
                       </div>
                     ))}
                     {players[opponentIndex].field[selectedRow].length === 0 && (
-                      <div className="text-muted-foreground italic">No cards in this row</div>
+                      <div className="text-muted-foreground italic text-xs py-1">No cards in this row</div>
                     )}
                   </div>
                 </div>
@@ -176,18 +210,20 @@ export default function MagicianEffectModal({
             </Tabs>
           </div>
           
-          {/* Dice Rolling Section - Always visible */}
-          <div className="pt-2">
-            <div className="text-center text-lg font-medium mb-2">
+          {/* Dice Rolling Section */}
+          <div className="pt-1">
+            <div className="text-center text-sm font-medium mb-1">
               Step 2: Roll the dice to determine effect
             </div>
             
-            <Card className="p-4">
-              <div className="text-center mb-2">
-                Target Row: <span className="font-bold">{getRowDisplayName(selectedRow)}</span>
-              </div>
-              <div className="text-center mb-4">
-                Row Value: <span className="font-bold">{calculateRowValue(selectedRow)}</span>
+            <Card className="p-3">
+              <div className="grid grid-cols-2 gap-2 text-sm mb-1">
+                <div>
+                  Target: <span className="font-bold">{getRowDisplayName(selectedRow).split(" ")[0]}</span>
+                </div>
+                <div className="text-right">
+                  Value: <span className="font-bold">{calculateRowValue(selectedRow)}</span>
+                </div>
               </div>
               
               <DiceRoller 
@@ -200,14 +236,14 @@ export default function MagicianEffectModal({
               />
               
               {diceRolled && (
-                <div className="mt-4 p-3 rounded-md text-center font-medium" 
+                <div className="mt-2 p-2 rounded-md text-center text-sm font-medium" 
                      style={{ 
                        backgroundColor: success ? "rgba(0, 255, 0, 0.1)" : "rgba(255, 0, 0, 0.1)",
                        color: success ? "rgb(0, 180, 0)" : "rgb(180, 0, 0)"
                      }}>
                   {success 
-                    ? `Success! Roll (${rollTotal}) > Row Value (${calculateRowValue(selectedRow)}). All cards in this row will be destroyed.`
-                    : `Failed! Roll (${rollTotal}) ≤ Row Value (${calculateRowValue(selectedRow)}). No effect.`
+                    ? `Success! ${rollTotal} > ${calculateRowValue(selectedRow)}. All cards will be destroyed.`
+                    : `Failed! ${rollTotal} ≤ ${calculateRowValue(selectedRow)}. No effect.`
                   }
                 </div>
               )}
@@ -215,9 +251,9 @@ export default function MagicianEffectModal({
           </div>
         </div>
         
-        {/* Dialog footer - always visible and fixed to bottom */}
-        <div className="flex justify-between sticky bottom-0 bg-background pt-2">
-          <Button variant="outline" onClick={onCancel}>
+        {/* Dialog footer */}
+        <div className="flex justify-between pt-2">
+          <Button variant="outline" onClick={onCancel} size="sm">
             Cancel
           </Button>
           
@@ -225,9 +261,10 @@ export default function MagicianEffectModal({
             onClick={handleConfirmEffect}
             variant={success ? "default" : "secondary"}
             disabled={!diceRolled}
+            size="sm"
           >
             {diceRolled 
-              ? (success ? "Confirm Destroy Cards" : "Confirm No Effect")
+              ? (success ? "Destroy Cards" : "Confirm No Effect")
               : "Roll Dice First"}
           </Button>
         </div>
