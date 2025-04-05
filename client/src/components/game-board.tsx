@@ -203,16 +203,15 @@ export default function GameBoard({
             
             {/* Score change animation */}
             <AnimatePresence>
-              {showScoreAnimation && !isOpponent && (
+              {showScoreAnimation && (
                 <motion.div
                   initial={{ opacity: 0, y: scoreChange > 0 ? 20 : -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   className={cn(
-                    "absolute -right-2 -top-8 px-2 py-1 rounded-md font-bold text-white z-50", 
+                    "absolute -right-2 -top-8 px-2 py-1 rounded-md font-bold text-white",
                     scoreChange > 0 ? "bg-green-700/90" : "bg-red-700/90"
                   )}
-                  style={{ pointerEvents: "none" }} /* Ensures it doesn't block interactions */
                 >
                   {scoreChange > 0 ? `+${scoreChange}` : scoreChange}
                 </motion.div>

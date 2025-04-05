@@ -54,7 +54,6 @@ export default function GameHeader({
             player={player}
             isActive={gameState.currentPlayer === index}
             playerNumber={index + 1}
-            skipAnimation={playerView !== index} // Skip animation when switching to opponent's view
           />
         ))}
       </div>

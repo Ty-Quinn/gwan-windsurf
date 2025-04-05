@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -11,16 +10,15 @@ interface ScoreDisplayProps {
   player: Player
   isActive: boolean
   playerNumber: number
-  skipAnimation?: boolean // Add option to skip animation
 }
 
-export default function ScoreDisplay({ player, isActive, playerNumber, skipAnimation = false }: ScoreDisplayProps) {
+export default function ScoreDisplay({ player, isActive, playerNumber }: ScoreDisplayProps) {
   const [prevScore, setPrevScore] = useState(player.score)
   const [scoreChange, setScoreChange] = useState(0)
   const [showAnimation, setShowAnimation] = useState(false)
 
   useEffect(() => {
-    if (player.score !== prevScore && !skipAnimation) {
+    if (player.score !== prevScore) {
       const change = player.score - prevScore
       setScoreChange(change)
       setShowAnimation(true)
@@ -31,11 +29,8 @@ export default function ScoreDisplay({ player, isActive, playerNumber, skipAnima
       }, 2000)
       
       return () => clearTimeout(timer)
-    } else {
-      // If skipAnimation or no change, just update the previous score
-      setPrevScore(player.score)
     }
-  }, [player.score, prevScore, skipAnimation])
+  }, [player.score, prevScore])
 
   return (
     <div className="relative">
@@ -63,7 +58,7 @@ export default function ScoreDisplay({ player, isActive, playerNumber, skipAnima
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 className={cn(
-                  "absolute -right-2 -top-8 px-2 py-1 rounded-md font-bold text-white z-50", // Added z-50 for highest priority
+                  "absolute -right-2 -top-8 px-2 py-1 rounded-md font-bold text-white",
                   scoreChange > 0 ? "bg-green-500" : "bg-red-500"
                 )}
               >
