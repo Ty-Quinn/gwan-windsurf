@@ -670,7 +670,11 @@ export class GwanGameLogic {
     this.players[playerIndex].pass = true;
     
     // Reset the "used this turn" flag for blight cards
+    // This allows the player to use a blight card in their next turn
     this.players[playerIndex].hasUsedBlightThisTurn = false;
+    
+    // Do NOT reset individual blight cards' used status as those should remain 
+    // marked for the entire match (each blight card can only be used once per match)
 
     // Calculate scores
     this.calculateScores();
@@ -1418,13 +1422,15 @@ export class GwanGameLogic {
     // Note: We don't need the actual card object for this function, just the effect
     const opponentIndex = 1 - playerIndex;
 
-    // Find the blight card being played by effect and mark it as used
+    // Find the blight card being played by effect and mark ONLY THAT ONE as used
     const blightCardIndex = this.players[playerIndex].blightCards.findIndex(card => card.effect === effect);
     if (blightCardIndex !== -1) {
+      // Mark only this specific blight card as used for the match
       this.players[playerIndex].blightCards[blightCardIndex].used = true;
     }
     
-    // Mark that player has used a blight card this turn
+    // Mark that player has used a blight card THIS TURN (will be reset when player passes)
+    // This prevents using multiple blight cards in a single turn
     this.players[playerIndex].hasUsedBlightThisTurn = true;
     this.isBlightCardBeingPlayed = false;
 
@@ -1585,13 +1591,15 @@ export class GwanGameLogic {
     // Get the currently playing blight card by effect (not needed for this function)
     const opponentIndex = 1 - playerIndex;
 
-    // Find the blight card being played by effect and mark it as used
+    // Find the blight card being played by effect and mark ONLY THAT ONE as used
     const blightCardIndex = this.players[playerIndex].blightCards.findIndex(card => card.effect === effect);
     if (blightCardIndex !== -1) {
+      // Mark only this specific blight card as used for the match
       this.players[playerIndex].blightCards[blightCardIndex].used = true;
     }
     
-    // Mark that player has used a blight card this turn
+    // Mark that player has used a blight card THIS TURN (will be reset when player passes)
+    // This prevents using multiple blight cards in a single turn
     this.players[playerIndex].hasUsedBlightThisTurn = true;
     this.isBlightCardBeingPlayed = false;
 
