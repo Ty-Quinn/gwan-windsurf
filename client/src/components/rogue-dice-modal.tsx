@@ -66,7 +66,7 @@ export default function RogueDiceModal({ open, card, onComplete, onCancel }: Rog
           {diceTotal !== null && cardWithValue ? (
             <>
               <div className="relative">
-                <CardComponent card={cardWithValue} compact={false} hideLabel={true} />
+                <CardComponent card={cardWithValue} compact={false} />
                 <div className="absolute top-2 right-2 bg-amber-900 border-2 border-amber-500 rounded-full w-10 h-10 flex items-center justify-center">
                   <span className="text-amber-400 font-bold text-xl">{diceTotal}</span>
                 </div>
@@ -77,7 +77,7 @@ export default function RogueDiceModal({ open, card, onComplete, onCancel }: Rog
             </>
           ) : (
             <>
-              <CardComponent card={card} compact={false} hideLabel={true} />
+              <CardComponent card={card} compact={false} />
               <p className="mt-2 text-center text-sm text-muted-foreground">Roll dice to determine card value</p>
             </>
           )}
@@ -104,14 +104,7 @@ export default function RogueDiceModal({ open, card, onComplete, onCancel }: Rog
         </div>
         
         <DialogFooter className="flex justify-between sm:justify-between">
-          <Button 
-            variant="outline" 
-            onClick={onCancel} 
-            disabled={diceTotal !== null}
-            size="sm"
-          >
-            Cancel
-          </Button>
+          <Button variant="outline" onClick={onCancel} size="sm">Cancel</Button>
           <Button 
             onClick={handleConfirm} 
             disabled={diceTotal === null}
