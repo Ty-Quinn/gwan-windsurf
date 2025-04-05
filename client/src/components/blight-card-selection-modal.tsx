@@ -43,7 +43,7 @@ const BLIGHT_CARDS: BlightCard[] = [
   {
     id: 'wheel-of-fortune',
     name: 'Wheel of Fortune',
-    description: 'Roll 1D10 and add result to your total score.',
+    description: 'Roll 1D20 and add result to your total score.',
     effect: BlightEffect.WHEEL,
     used: false,
     icon: '🎡'

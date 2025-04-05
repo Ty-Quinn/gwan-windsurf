@@ -93,7 +93,13 @@ export default function SniperDiceModal({ open, card, onComplete, onCancel }: Sn
         </div>
         
         <DialogFooter className="flex justify-between sm:justify-between">
-          <Button variant="outline" onClick={onCancel}>Cancel</Button>
+          <Button 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={diceResults.length > 0} // Disable cancel after rolling
+          >
+            Cancel
+          </Button>
           <Button 
             onClick={handleConfirm} 
             disabled={diceResults.length === 0}

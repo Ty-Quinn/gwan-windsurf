@@ -7,6 +7,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 
 // Custom die component that takes a value and renders the appropriate face
 const DieFace = ({ value }: { value: number }) => {
+  // For d20 dice, just show the number
+  if (value > 6) {
+    return (
+      <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center relative">
+        <span className="text-black font-bold text-xl">{value}</span>
+      </div>
+    )
+  }
+  
+  // For d6 dice, show the traditional pips
   return (
     <div className="w-12 h-12 bg-white rounded-md flex items-center justify-center relative">
       {value === 1 && (
@@ -117,7 +127,7 @@ export default function BlightDiceModal({
     } else if (effect === BlightEffect.MAGICIAN) {
       finalValues = [Math.floor(Math.random() * 20) + 1]
     } else if (effect === BlightEffect.WHEEL) {
-      finalValues = [Math.floor(Math.random() * 10) + 1]
+      finalValues = [Math.floor(Math.random() * 20) + 1]
     } else {
       finalValues = [Math.floor(Math.random() * 6) + 1]
     }
@@ -128,8 +138,16 @@ export default function BlightDiceModal({
     
     const animateRoll = () => {
       if (animationStep < animationSteps - 1) {
-        // Show random values during animation
-        const animationValues = finalValues.map(() => Math.floor(Math.random() * 6) + 1)
+        // Show random values during animation with appropriate ranges
+        const animationValues = finalValues.map((_, index) => {
+          if (effect === BlightEffect.MAGICIAN || effect === BlightEffect.WHEEL) {
+            // For d20 dice (Magician, Wheel)
+            return Math.floor(Math.random() * 20) + 1
+          } else {
+            // For d6 dice (Devil, regular dice)
+            return Math.floor(Math.random() * 6) + 1
+          }
+        })
         setCurrentDice(animationValues)
         animationStep++
         setTimeout(animateRoll, 70)
@@ -177,8 +195,8 @@ export default function BlightDiceModal({
       description = "Roll a d20. If your roll exceeds the combined value of all cards in the targeted row (without row bonus), all cards in that row will be discarded."
       break
     case BlightEffect.WHEEL:
-      title = "Wheel of Fortune - Roll d10"
-      description = "Roll a d10 to determine bonus points."
+      title = "Wheel of Fortune - Roll d20"
+      description = "Roll a d20 to determine bonus points."
       break
     case BlightEffect.DEVIL:
       title = "The Devil - Roll 3d6"
@@ -267,7 +285,11 @@ export default function BlightDiceModal({
         </div>
 
         <DialogFooter className="flex justify-between">
-          <Button variant="outline" onClick={onCancel}>
+          <Button 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={currentDice.length > 0 || isRolling} // Disable cancel after rolling or during roll
+          >
             Cancel
           </Button>
           <Button 

@@ -104,7 +104,14 @@ export default function RogueDiceModal({ open, card, onComplete, onCancel }: Rog
         </div>
         
         <DialogFooter className="flex justify-between sm:justify-between">
-          <Button variant="outline" onClick={onCancel} size="sm">Cancel</Button>
+          <Button 
+            variant="outline" 
+            onClick={onCancel} 
+            size="sm"
+            disabled={diceTotal !== null} // Disable cancel after rolling
+          >
+            Cancel
+          </Button>
           <Button 
             onClick={handleConfirm} 
             disabled={diceTotal === null}
