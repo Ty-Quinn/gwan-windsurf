@@ -43,40 +43,43 @@ const DiceRoller = ({
   const rollDice = () => {
     setRolling(true)
 
-    // Generate random values immediately instead of showing all 1s
-    const generateRandomDice = () => {
-      return Array(count)
-        .fill(0)
-        .map(() => Math.floor(Math.random() * sides) + 1);
-    };
+    // Generate final dice values immediately
+    const finalResults = Array(count)
+      .fill(0)
+      .map(() => Math.floor(Math.random() * sides) + 1)
+    
+    // Set the final values right away so the dice match the reported roll
+    setResults(finalResults)
+    const finalTotal = finalResults.reduce((sum, val) => sum + val, 0)
+    setTotalValue(finalTotal)
 
-    // Set initial random dice values immediately
-    const initialResults = generateRandomDice();
-    setResults(initialResults);
-    setTotalValue(initialResults.reduce((sum, val) => sum + val, 0));
-
-    // Simulate dice rolls with animation
+    // Use animation just for visual effect, but keep the same final values
     let rollCount = 0
-    const maxRolls = 10 // Number of visual "rolls" before settling
+    const maxRolls = 10
+    
     const interval = setInterval(() => {
-      // Generate random dice values
-      const newResults = generateRandomDice();
-      setResults(newResults)
-      setTotalValue(newResults.reduce((sum, val) => sum + val, 0))
-
+      if (rollCount < maxRolls - 1) {
+        // During animation, show random values, but NOT for the final step
+        const tempResults = Array(count)
+          .fill(0)
+          .map(() => Math.floor(Math.random() * sides) + 1)
+        setResults(tempResults)
+      } else {
+        // On the final step, restore the original results
+        setResults(finalResults)
+      }
+      
       rollCount++
       if (rollCount >= maxRolls) {
         clearInterval(interval)
         setRolling(false)
         
-        // Generate final results
-        const finalResults = generateRandomDice();
-        setResults(finalResults);
-        const finalTotal = finalResults.reduce((sum, val) => sum + val, 0);
-        setTotalValue(finalTotal);
+        // Ensure we end with the original generated results
+        setResults(finalResults)
+        setTotalValue(finalTotal)
         
         if (onRollComplete) {
-          onRollComplete(finalResults, finalTotal);
+          onRollComplete(finalResults, finalTotal)
         }
       }
     }, 100)
