@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -53,7 +54,7 @@ export default function RogueDiceModal({ open, card, onComplete, onCancel }: Rog
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
-      <DialogContent className="sm:max-w-md md:max-w-xl text-center">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl">Rogue Card Dice Roll</DialogTitle>
           <DialogDescription>
@@ -61,49 +62,50 @@ export default function RogueDiceModal({ open, card, onComplete, onCancel }: Rog
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-4">
-          <div className="flex flex-col items-center justify-center">
-            <p className="mb-2 text-muted-foreground">Original Card</p>
-            <CardComponent card={card} compact={false} />
+        <div className="grid grid-cols-2 gap-4 my-2">
+          <div className="flex flex-col items-center">
+            <p className="mb-1 text-xs text-muted-foreground">Original Card</p>
+            <CardComponent card={card} compact={true} />
           </div>
           
-          <div className="flex flex-col items-center justify-center">
-            <p className="mb-2 text-muted-foreground">With Dice Value</p>
+          <div className="flex flex-col items-center">
+            <p className="mb-1 text-xs text-muted-foreground">With Dice Value</p>
             {diceTotal !== null && cardWithValue ? (
-              <CardComponent card={cardWithValue} compact={false} />
+              <CardComponent card={cardWithValue} compact={true} />
             ) : (
-              <div className="w-28 h-40 flex items-center justify-center rounded-lg border-2 border-dashed border-primary/50">
-                <p className="text-muted-foreground text-sm">Roll dice to see value</p>
+              <div className="w-20 h-28 flex items-center justify-center rounded-lg border-2 border-dashed border-primary/50">
+                <p className="text-muted-foreground text-xs text-center">Roll dice<br/>to see</p>
               </div>
             )}
           </div>
         </div>
         
-        <div className="py-4 flex flex-col items-center">
+        <div className="py-2">
           <DiceRoller 
             sides={6} 
             count={2} 
             onRollComplete={handleDiceRollComplete} 
-            label="Roll 2d6" 
+            disabled={diceTotal !== null}
           />
           
           {diceResults.length > 0 && (
-            <div className="my-4 p-3 bg-background/10 rounded-lg">
-              <p className="text-lg">You rolled: <span className="font-bold">{diceResults.join(" + ")}</span></p>
-              <p className="text-2xl font-bold text-primary">Total: {diceTotal}</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Your Rogue card will have a value of {diceTotal} when played to the field
-              </p>
+            <div className="mt-2 p-2 bg-background/10 rounded-lg text-center">
+              <p className="text-sm">You rolled: <span className="font-bold">{diceResults.join(" + ")} = {diceTotal}</span></p>
+              {diceTotal !== null && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your Rogue card will have a value of {diceTotal} when played
+                </p>
+              )}
             </div>
           )}
         </div>
         
         <DialogFooter className="flex justify-between sm:justify-between">
-          <Button variant="outline" onClick={onCancel}>Cancel</Button>
+          <Button variant="outline" onClick={onCancel} size="sm">Cancel</Button>
           <Button 
             onClick={handleConfirm} 
             disabled={diceTotal === null}
-            className="ml-2"
+            size="sm"
           >
             Confirm Card Play
           </Button>
