@@ -49,7 +49,7 @@ export interface Player {
   pass: boolean;
   discardPile: Card[];
   blightCards: BlightCard[];
-  hasUsedBlightCard: boolean;
+  hasUsedBlightThisTurn: boolean;
 }
 
 export interface WeatherEffects {

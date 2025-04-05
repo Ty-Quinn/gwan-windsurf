@@ -40,7 +40,7 @@ export class GwanGameLogic {
         pass: false,
         discardPile: [],
         blightCards: [],
-        hasUsedBlightCard: false
+        hasUsedBlightThisTurn: false
       },
       {
         name: "Player 2",
@@ -51,7 +51,7 @@ export class GwanGameLogic {
         pass: false,
         discardPile: [],
         blightCards: [],
-        hasUsedBlightCard: false
+        hasUsedBlightThisTurn: false
       },
     ];
 
@@ -670,7 +670,7 @@ export class GwanGameLogic {
     this.players[playerIndex].pass = true;
     
     // Reset the "used this turn" flag for blight cards
-    this.players[playerIndex].hasUsedBlightCard = false;
+    this.players[playerIndex].hasUsedBlightThisTurn = false;
 
     // Calculate scores
     this.calculateScores();
@@ -1305,7 +1305,7 @@ export class GwanGameLogic {
     
     // Check if the player has used any blight card THIS TURN
     // This ensures they can only use one blight card per turn
-    if (this.players[playerIndex].hasUsedBlightCard) {
+    if (this.players[playerIndex].hasUsedBlightThisTurn) {
       return { success: false, message: "You can only use one Blight card per turn" };
     }
 
@@ -1341,7 +1341,7 @@ export class GwanGameLogic {
         // Mark the specific blight card as used
         this.players[playerIndex].blightCards[blightCardIndex].used = true;
         // Mark that player has used a blight card this turn
-        this.players[playerIndex].hasUsedBlightCard = true;
+        this.players[playerIndex].hasUsedBlightThisTurn = true;
         this.isBlightCardBeingPlayed = false;
 
         // Save the current hand size
@@ -1405,7 +1405,7 @@ export class GwanGameLogic {
     }
 
     // Check if the player has already used their blight card
-    if (this.players[playerIndex].hasUsedBlightCard) {
+    if (this.players[playerIndex].hasUsedBlightThisTurn) {
       return { success: false, message: "You've already used your blight card" };
     }
 
@@ -1425,7 +1425,7 @@ export class GwanGameLogic {
     }
     
     // Mark that player has used a blight card this turn
-    this.players[playerIndex].hasUsedBlightCard = true;
+    this.players[playerIndex].hasUsedBlightThisTurn = true;
     this.isBlightCardBeingPlayed = false;
 
     let message = "";
@@ -1592,7 +1592,7 @@ export class GwanGameLogic {
     }
     
     // Mark that player has used a blight card this turn
-    this.players[playerIndex].hasUsedBlightCard = true;
+    this.players[playerIndex].hasUsedBlightThisTurn = true;
     this.isBlightCardBeingPlayed = false;
 
     let message = "";
@@ -1808,7 +1808,7 @@ export class GwanGameLogic {
     
     // Reset player's Blight card status so they can select a new one
     // We don't need to clear existing blight cards, just mark the player as able to use another one
-    this.players[playerIndex].hasUsedBlightCard = false;
+    this.players[playerIndex].hasUsedBlightThisTurn = false;
 
     // If player has no cards left after the Suicide King removal, end the round
     if (this.players[playerIndex].hand.length === 0) {

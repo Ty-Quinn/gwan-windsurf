@@ -1252,7 +1252,7 @@ export default function GwanGame() {
       )}
       
       {/* Blight Card Play Modal */}
-      {showBlightCardPlay && gameState && currentPlayer.blightCards.length > 0 && !currentPlayer.hasUsedBlightCard && (
+      {showBlightCardPlay && gameState && currentPlayer.blightCards.length > 0 && !currentPlayer.hasUsedBlightThisTurn && (
         <BlightCardPlayModal
           open={showBlightCardPlay}
           player={currentPlayer}

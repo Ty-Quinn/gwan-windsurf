@@ -1,0 +1,120 @@
+there's a logic issue in how the Blight card usage is being tracked. The game is incorrectly treating all Blight cards as "used" after using just one of them.
+Let's fix this by modifying how we track the Blight card usage:
+
+First, let's update the completeSuicideKingSelectBlight function to reset the player's ability to use Blight cards:
+
+javascriptCopy// Handle Suicide King effect to select a second Blight card
+public completeSuicideKingSelectBlight(playerIndex: number, cardIndex: number): PlayResult {
+  // ... existing code ...
+
+  // Reset player's Blight card status so they can use another one
+  // We don't need to clear existing blight cards, just mark the player as able to use another one
+  // Changed from: this.players[playerIndex].hasUsedBlightCard = false;
+  // To reset the turn flag but not individual card usage:
+  this.players[playerIndex].hasUsedBlightThisTurn = false;
+
+  // ... rest of the function ...
+}
+
+Update your player state tracking in the GwanGameLogic class:
+
+javascriptCopy// In the Player interface (types.ts)
+interface Player {
+  // ... existing fields ...
+  blightCards: BlightCard[];
+  hasUsedBlightThisTurn: boolean; // Track per-turn usage
+}
+
+// In initializeGame and initializeRound functions
+this.players = [
+  {
+    // ... existing fields ...
+    blightCards: [],
+    hasUsedBlightThisTurn: false // Initialize the flag
+  },
+  // ... player 2 ...
+];
+
+Update the playBlightCard function:
+
+javascriptCopypublic playBlightCard(playerIndex: number, blightCardIndex: number = 0): PlayResult {
+  // ... existing checks ...
+
+  // Check if the player has used a Blight card THIS TURN
+  if (this.players[playerIndex].hasUsedBlightThisTurn) {
+    return { success: false, message: "You can only use one Blight card per turn" };
+  }
+
+  const blightCard = this.players[playerIndex].blightCards[blightCardIndex];
+  
+  // Check if this specific Blight card has been used
+  if (blightCard.used) {
+    return { success: false, message: "This Blight card has already been used" };
+  }
+
+  this.isBlightCardBeingPlayed = true;
+
+  // ... rest of the function ...
+}
+
+Update all functions that complete Blight card effects to mark both flags:
+
+javascriptCopy// In functions like completeBlightCardDiceRoll, completeBlightCardTarget, etc.
+
+// Mark the specific Blight card as used
+const blightCardIndex = this.players[playerIndex].blightCards.findIndex(card => card.effect === effect);
+if (blightCardIndex >= 0) {
+  this.players[playerIndex].blightCards[blightCardIndex].used = true;
+}
+
+// Mark that player has used a Blight card this turn
+this.players[playerIndex].hasUsedBlightThisTurn = true;
+
+Reset the per-turn usage flag when ending turns:
+
+javascriptCopy// In pass function
+public pass(playerIndex: number): PlayResult {
+  // ... existing code ...
+  
+  // Reset the "used this turn" flag
+  this.players[playerIndex].hasUsedBlightThisTurn = false;
+  
+  // ... rest of function ...
+}
+
+// In playCard and other similar functions that end turns
+if (!this.players[1 - playerIndex].pass) {
+  this.currentPlayer = 1 - this.currentPlayer;
+  // Reset the "used this turn" flag when changing players
+  this.players[playerIndex].hasUsedBlightThisTurn = false;
+}
+
+// Make sure to reset at the start of a new round
+public initializeRound(): void {
+  // ... existing code ...
+  
+  // Reset per-turn flags but preserve the permanent "used" status
+  for (const player of this.players) {
+    player.hasUsedBlightThisTurn = false;
+  }
+  
+  // ... rest of function ...
+}
+
+Update the UI to check the correct flags:
+
+jsxCopy// In the GwanGame component, modify the BlightCardPlay button
+<Button 
+  disabled={!isCurrentTurn || 
+           currentPlayer.hasUsedBlightThisTurn || 
+           currentPlayer.blightCards.every(card => card.used)}
+  onClick={() => showBlightCard()}
+>
+  Blight Card ({currentPlayer.blightCards.filter(card => !card.used).length})
+</Button>
+The key change here is distinguishing between:
+
+hasUsedBlightThisTurn: A temporary flag that resets each turn, allowing one Blight card per turn
+card.used: A permanent flag for each Blight card, indicating it's been used in the match
+
+With these changes, players should be able to use one Blight card per turn, and if they have multiple (like after using a Suicide King), they can use them over multiple turns.
