@@ -90,6 +90,9 @@ export default function GwanGame() {
   const [isSecondBlightSelection, setIsSecondBlightSelection] = useState<boolean>(false)
   const [excludedBlightCardIds, setExcludedBlightCardIds] = useState<string[]>([])
 
+  // 3D perspective toggle
+  const [show3D, setShow3D] = useState(false);
+
   // Initialize the game
   useEffect(() => {
     const newGame = new GwanGameLogic()
@@ -217,7 +220,7 @@ export default function GwanGame() {
 
       // Always keep turnEnded false when a card is played so undo is available
       setTurnEnded(false)
-      
+
       // Recalculate scores immediately after a successful card play
       if (game) {
         game.calculateScores()
@@ -1422,6 +1425,20 @@ export default function GwanGame() {
           }}
         />
       )}
+      <GameRulesModal />
+      <PerspectiveToggle show3D={show3D} onChange={() => setShow3D(!show3D)}/>
     </div>
   )
+}
+
+
+function PerspectiveToggle({ show3D, onChange }: { show3D: boolean; onChange: () => void }) {
+  return (
+    <div>
+      <label>
+        <input type="checkbox" checked={show3D} onChange={onChange} />
+        Enable 3D Perspective
+      </label>
+    </div>
+  );
 }

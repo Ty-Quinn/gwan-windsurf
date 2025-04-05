@@ -2,6 +2,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import './components/3d-perspective.css';
 
 /* Medieval Fantasy Theme */
 
@@ -134,6 +135,21 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(160, 100, 40, 0.7);
+}
+
+/* 3D toggle styles */
+.disable-3d .board-3d,
+.disable-3d .player-area,
+.disable-3d .opponent-area,
+.disable-3d .hand-container,
+.disable-3d .game-row-3d,
+.disable-3d .card-3d {
+  transform: none !important;
+  transition: none !important;
+}
+
+.disable-3d .perspective-container {
+  perspective: none;
 }
 
 /* Card rotation utility classes */

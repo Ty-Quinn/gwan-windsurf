@@ -58,7 +58,8 @@ export default function PlayerHand({
   };
 
   return (
-    <div className="mt-10 relative isolate gwan-board-container p-4">
+    <div className="mt-10 relative isolate gwan-board-container p-4 perspective-container">
+      <div className="hand-container">
       <div className="flex items-center justify-between mb-6 border-b border-amber-800/40 pb-3">
         <h2 className="text-xl font-medieval text-amber-200 flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-400"><path d="M9.5 14.5 3 21"/><path d="M9.5 14.5 21 3"/><path d="M9.5 14.5 14.5 9.5"/><path d="M14.5 9.5 21 3"/><path d="M14.5 9.5 17.5 6.5"/><path d="M6.5 17.5l3-3"/><path d="M3 21a8 8 0 0 0 4-1 8 8 0 0 1 8-7 8 8 0 0 1 6 3 8 8 0 0 0 0-10 4 4 0 0 0-6 0c-2 2-4 4-4 6-1.1 2-2 5.5-8 5.5l-3 3"/></svg>
@@ -315,6 +316,7 @@ export default function PlayerHand({
           </DialogContent>
         </Dialog>
       )}
+    </div>
     </div>
   )
 }

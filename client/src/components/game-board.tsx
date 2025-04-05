@@ -196,7 +196,8 @@ export default function GameBoard({
   };
 
   return (
-    <div className="mb-8 relative overflow-visible gwan-board-container p-4 z-0">
+    <div className="mb-8 relative overflow-visible gwan-board-container p-4 z-0 perspective-container">
+      <div className={`board-3d ${isOpponent ? 'opponent-area' : 'player-area'}`}>
       <div className="flex justify-between items-center mb-4 relative z-10">
         {isOpponent ? (
           <h2 className="text-xl font-semibold text-amber-200">
@@ -253,7 +254,7 @@ export default function GameBoard({
               <div className="text-xs text-amber-100/80">{rowLabels[rowKey].unitName}</div>
             </div>
             <motion.div 
-              className={`game-row flex-1 h-20 flex items-center p-2 pt-5 rounded-lg relative
+              className={`game-row game-row-3d lighting-effect flex-1 h-20 flex items-center p-2 pt-5 rounded-lg relative
                 ${gameState.weatherEffects[rowKey] ? "bg-gradient-to-r from-red-900/30 to-slate-800/20" : ""} 
                 ${targetRowSelection ? "border-2 border-amber-400 cursor-pointer" : ""}`}
               onClick={() => targetRowSelection && handleRowSelect(rowKey)}
@@ -353,6 +354,7 @@ export default function GameBoard({
             </motion.div>
           </div>
         ))}
+      </div>
       </div>
     </div>
   )
