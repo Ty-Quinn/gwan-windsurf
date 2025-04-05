@@ -1,6 +1,18 @@
 import { Card, Field, Player, GameState, WeatherEffects, PlayResult, BlightCard, BlightEffect } from "./types";
 
 export class GwanGameLogic {
+  // Static property to track if deck has been created (prevents duplicate jokers)
+  private static _deckCreated: boolean = false;
+  
+  // Static getter and setter for deck creation flag
+  static get deckCreated(): boolean {
+    return GwanGameLogic._deckCreated;
+  }
+  
+  static set deckCreated(value: boolean) {
+    GwanGameLogic._deckCreated = value;
+  }
+  
   private players: Player[];
   private deck: Card[];
   private currentPlayer: number;
@@ -58,6 +70,8 @@ export class GwanGameLogic {
     ];
 
     // Create and shuffle the deck
+    // Set the deckCreated flag when creating the initial deck
+    GwanGameLogic.deckCreated = true;
     this.createDeck();
     this.shuffleDeck();
 
@@ -768,13 +782,14 @@ export class GwanGameLogic {
     // Important: Set the deck count to match what's in the state
     // This prevents recreating the deck unnecessarily
     if (state.deckCount !== undefined) {
-      // If we have a valid deck count in the state, make sure our deck matches that size
-      if (this.deck.length !== state.deckCount) {
-        if (state.deckCount === 0) {
-          this.deck = []; // Empty deck case
-        } else if (this.deck.length === 0 && state.deckCount > 0 && this.currentRound === 1) {
-          // Only create a new deck if we don't have one yet and it's the first round
+      if (state.deckCount === 0) {
+        this.deck = []; // Empty deck case
+      } else if (this.deck.length === 0 && state.deckCount > 0) {
+        // We only need to create a new deck if we don't have one yet
+        // Using a static flag to ensure we don't recreate the deck multiple times
+        if (!GwanGameLogic.deckCreated) {
           console.log("Creating initial deck since none exists");
+          GwanGameLogic.deckCreated = true;
           this.createDeck();
           this.shuffleDeck();
           
@@ -785,11 +800,16 @@ export class GwanGameLogic {
           }
         }
       }
-    } else if (this.deck.length === 0 && this.currentRound === 1) {
+    } else if (this.deck.length === 0) {
       // Fallback for older states without deckCount
-      // Only create a new deck at the beginning of the game
-      if (!this.players.some(p => p.discardPile.length > 0 || p.field.clubs.length > 0 || p.field.diamonds.length > 0 || p.field.spades.length > 0)) {
+      // Only create a new deck if we don't have one yet and we haven't created one before
+      if (!GwanGameLogic.deckCreated && 
+          !this.players.some(p => p.discardPile.length > 0 || 
+                               p.field.clubs.length > 0 || 
+                               p.field.diamonds.length > 0 || 
+                               p.field.spades.length > 0)) {
         console.log("Creating initial deck (fallback)");
+        GwanGameLogic.deckCreated = true;
         this.createDeck();
         this.shuffleDeck();
       }
