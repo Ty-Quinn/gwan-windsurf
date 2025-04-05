@@ -1425,7 +1425,11 @@ export default function GwanGame() {
           }}
         />
       )}
-      <GameRulesModal />
+      {showRules && (
+        <GameRulesModal
+          onClose={() => setShowRules(false)}
+        />
+      )}
       <PerspectiveToggle show3D={show3D} onChange={() => setShow3D(!show3D)}/>
     </div>
   )
