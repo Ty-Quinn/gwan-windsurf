@@ -1,10 +1,3 @@
-// AI difficulty levels
-export enum AIDifficulty {
-  Easy = "easy",
-  Medium = "medium",
-  Hard = "hard"
-}
-
 export interface Card {
   suit: "clubs" | "spades" | "diamonds" | "hearts" | "joker";
   value: string;
@@ -58,7 +51,6 @@ export interface Player {
   blightCards: BlightCard[];
   hasUsedBlightThisTurn: boolean;
   wheelOfFortuneBonus: number; // Tracks the bonus from Wheel of Fortune blight card
-  isAI?: boolean; // Flag to indicate if player is AI controlled
 }
 
 export interface WeatherEffects {
@@ -77,8 +69,6 @@ export interface GameState {
   availableBlightCards: BlightCard[];
   isBlightCardBeingPlayed: boolean;
   isSuicideKingBeingPlayed: boolean;
-  isAIThinking?: boolean; // Flag to indicate if AI is currently thinking
-  aiDifficulty?: AIDifficulty; // Current AI difficulty setting
 }
 
 export interface PlayResult {
