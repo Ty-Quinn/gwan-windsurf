@@ -1,6 +1,6 @@
 export interface Card {
   suit: "clubs" | "spades" | "diamonds" | "hearts" | "joker";
-  value: number;
+  value: string;
   baseValue: number;
   isCommander: boolean;
   isWeather: boolean;
@@ -35,9 +35,9 @@ export enum BlightEffect {
 }
 
 export interface Field {
-  melee: Card[];   // Front row (clubs)
-  ranged: Card[];  // Middle row (spades)
-  siege: Card[];   // Back row (diamonds)
+  clubs: Card[];
+  spades: Card[];
+  diamonds: Card[];
 }
 
 export interface Player {
@@ -51,13 +51,12 @@ export interface Player {
   blightCards: BlightCard[];
   hasUsedBlightThisTurn: boolean;
   wheelOfFortuneBonus: number; // Tracks the bonus from Wheel of Fortune blight card
-  weatherEffects?: WeatherEffects; // Used for AI logic calculations
 }
 
 export interface WeatherEffects {
-  fog: boolean;    // affects ranged cards
-  frost: boolean;  // affects melee cards
-  rain: boolean;   // affects siege cards
+  clubs: boolean;
+  spades: boolean;
+  diamonds: boolean;
 }
 
 export interface GameState {

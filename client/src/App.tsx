@@ -4,14 +4,12 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import MainMenu from "@/pages/main-menu";
 import PlayPage from "@/pages/play";
-import AIGamePage from "@/pages/ai-game";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={MainMenu} />
       <Route path="/play" component={PlayPage} />
-      <Route path="/ai-game" component={AIGamePage} />
       <Route>
         {/* 404 fallback */}
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#1a0f0b] to-[#2a1a14] text-amber-100">

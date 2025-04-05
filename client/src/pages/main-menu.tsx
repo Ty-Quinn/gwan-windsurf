@@ -20,8 +20,9 @@ export default function MainMenu() {
   };
 
   const handlePlayAgainstAI = () => {
-    // Route to the AI game page
-    setLocation("/ai-game");
+    // In a real app, this would set up a game against AI
+    // For now, we'll just redirect to the game
+    setLocation("/play");
   };
   
   return (

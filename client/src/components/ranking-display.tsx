@@ -1,140 +1,95 @@
 'use client'
 
-import { useState, useEffect } from 'react';
-import { Card } from "@/components/ui/card";
-import { Trophy, Award, TrendingUp, Flame } from 'lucide-react';
+import { Card } from "@/components/ui/card"
+import { Medal, Crown, ChevronUp } from "lucide-react"
 
-interface RankedPlayer {
-  id: number;
-  name: string;
-  rank: number;
-  eloRating: number;
-  winRate: string;
-  streak: number;
-  isCurrentPlayer?: boolean;
+// Mock data - would be fetched from API in a real app
+const playerRanking = {
+  rank: 42,
+  totalPlayers: 1024,
+  percentile: 96,
+  topPlayers: [
+    { rank: 1, name: "GwanMaster", wins: 156 },
+    { rank: 2, name: "CardWizard", wins: 143 },
+    { rank: 3, name: "StrategyKing", wins: 137 },
+    { rank: 4, name: "BattleLord", wins: 129 },
+    { rank: 5, name: "VictoryQueen", wins: 122 },
+  ],
 }
 
 export default function RankingDisplay() {
-  // In a real app, this would be fetched from an API
-  const [topPlayers, setTopPlayers] = useState<RankedPlayer[]>([
-    {
-      id: 1,
-      name: "Dragonmaster",
-      rank: 1,
-      eloRating: 2187,
-      winRate: "89%",
-      streak: 12
-    },
-    {
-      id: 2,
-      name: "CardWizard",
-      rank: 2,
-      eloRating: 2145,
-      winRate: "87%",
-      streak: 9
-    },
-    {
-      id: 3,
-      name: "TacticalGenius",
-      rank: 3,
-      eloRating: 2102,
-      winRate: "84%",
-      streak: 7
-    },
-    {
-      id: 4,
-      name: "GwanChampion",
-      rank: 4,
-      eloRating: 1982,
-      winRate: "82%",
-      streak: 6
-    },
-    {
-      id: 5,
-      name: "StrategistPrime",
-      rank: 5,
-      eloRating: 1943,
-      winRate: "81%",
-      streak: 4
-    }
-  ]);
-  
-  // Current player's ranking
-  const [playerRanking, setPlayerRanking] = useState<RankedPlayer>({
-    id: 42,
-    name: "You",
-    rank: 42,
-    eloRating: 1345,
-    winRate: "67%",
-    streak: 2,
-    isCurrentPlayer: true
-  });
-  
   return (
     <Card className="bg-black/30 backdrop-blur-md border border-amber-900/50 p-6 rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.1)] overflow-hidden relative">
       <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-transparent pointer-events-none"></div>
       <div className="relative z-10">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-semibold text-amber-200">Global Rankings</h3>
-          <div className="flex items-center bg-amber-900/30 rounded-full py-1 px-3">
-            <Trophy className="mr-2 h-4 w-4 text-amber-400" />
-            <span className="text-amber-200 text-sm font-medium">Top Players</span>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-amber-200">Global Ranking</h2>
+          <div className="bg-amber-900/50 p-2 rounded-full">
+            <Medal className="h-5 w-5 text-amber-300" />
           </div>
         </div>
-        
-        <div className="space-y-3 mb-6">
-          {/* Table Header */}
-          <div className="grid grid-cols-12 gap-2 text-amber-200/60 text-xs font-medium px-3">
-            <div className="col-span-1">Rank</div>
-            <div className="col-span-5">Player</div>
-            <div className="col-span-2 text-center">Rating</div>
-            <div className="col-span-2 text-center">Win %</div>
-            <div className="col-span-2 text-center">Streak</div>
+
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-amber-900/30 to-black/40 p-5 rounded-xl border border-amber-800/30 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="bg-amber-900/60 h-14 w-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-200">
+                {playerRanking.rank}
+              </div>
+              <div>
+                <div className="text-amber-200/70 text-sm">Your Rank</div>
+                <div className="text-2xl font-bold text-amber-100">#{playerRanking.rank}</div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="flex items-center justify-end gap-1 text-emerald-400">
+                <ChevronUp className="h-4 w-4" />
+                <span className="font-medium">Top {playerRanking.percentile}%</span>
+              </div>
+              <div className="text-amber-200/70 text-sm">of all players</div>
+            </div>
           </div>
-          
-          {/* Top 5 Players List */}
-          {topPlayers.map((player) => (
-            <div 
-              key={player.id}
-              className="grid grid-cols-12 gap-2 bg-black/30 rounded-lg p-3 items-center text-sm transition-colors hover:bg-black/40"
-            >
-              <div className="col-span-1 flex justify-center items-center">
-                {player.rank === 1 ? (
-                  <div className="rounded-full bg-amber-400/20 p-1.5">
-                    <Trophy className="h-4 w-4 text-amber-400" />
+
+          <div>
+            <h3 className="text-xl font-bold mb-4 text-amber-200 flex items-center">
+              <Crown className="h-5 w-5 mr-2 text-amber-400" />
+              Leaderboard
+            </h3>
+            <div className="space-y-3">
+              {playerRanking.topPlayers.map((player) => (
+                <div
+                  key={player.rank}
+                  className="flex items-center justify-between p-3 bg-gradient-to-r from-black/40 to-black/20 rounded-lg border border-amber-900/30 transition-all duration-300 hover:border-amber-700/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-8 h-8 flex items-center justify-center rounded-full 
+                      ${
+                        player.rank === 1
+                          ? "bg-gradient-to-br from-amber-300 to-amber-500 text-black font-bold"
+                          : player.rank === 2
+                            ? "bg-gradient-to-br from-slate-300 to-slate-400 text-black font-bold"
+                            : player.rank === 3
+                              ? "bg-gradient-to-br from-amber-700 to-amber-800 text-amber-200 font-bold"
+                              : "bg-black/40 text-amber-200"
+                      }`}
+                    >
+                      {player.rank}
+                    </div>
+                    <span className="font-medium text-amber-100">{player.name}</span>
                   </div>
-                ) : (
-                  <span className="font-bold text-amber-300">#{player.rank}</span>
-                )}
-              </div>
-              <div className="col-span-5 font-medium text-amber-200">{player.name}</div>
-              <div className="col-span-2 text-center text-amber-400 font-semibold">{player.eloRating}</div>
-              <div className="col-span-2 text-center text-amber-300">{player.winRate}</div>
-              <div className="col-span-2 text-center flex justify-center items-center">
-                <span className="text-amber-300 mr-1">{player.streak}</span>
-                <Flame className="h-3 w-3 text-amber-400" />
-              </div>
+                  <div className="text-amber-400 font-semibold">{player.wins} wins</div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        
-        {/* Your ranking */}
-        <div className="mt-6 pt-4 border-t border-amber-900/30">
-          <h4 className="text-amber-200/80 text-sm font-medium mb-3">Your Ranking</h4>
-          <div className="grid grid-cols-12 gap-2 bg-amber-900/20 rounded-lg p-3 items-center text-sm border border-amber-500/20">
-            <div className="col-span-1 flex justify-center items-center">
-              <span className="font-bold text-amber-300">#{playerRanking.rank}</span>
-            </div>
-            <div className="col-span-5 font-medium text-amber-100">{playerRanking.name}</div>
-            <div className="col-span-2 text-center text-amber-400 font-semibold">{playerRanking.eloRating}</div>
-            <div className="col-span-2 text-center text-amber-300">{playerRanking.winRate}</div>
-            <div className="col-span-2 text-center flex justify-center items-center">
-              <span className="text-amber-300 mr-1">{playerRanking.streak}</span>
-              <Flame className="h-3 w-3 text-amber-400" />
-            </div>
+          </div>
+
+          <div className="text-center pt-2">
+            <span className="text-amber-200/60 text-sm">
+              Competing with {playerRanking.totalPlayers.toLocaleString()} total players worldwide
+            </span>
           </div>
         </div>
       </div>
     </Card>
-  );
+  )
 }
