@@ -273,7 +273,14 @@ export default function BlightDiceModal({
           )}
           
           {/* Roll button */}
-          {(rollCount < 6 && sixCount < 3) && (
+          {(
+            // For WHEEL effect, only show if no dice have been rolled yet
+            (effect === BlightEffect.WHEEL && currentDice.length === 0) ||
+            // For DEVIL effect, show while under the roll limit and not enough 6's
+            (effect === BlightEffect.DEVIL && rollCount < 6 && sixCount < 3) ||
+            // For other effects, only show if no dice have been rolled yet
+            (effect !== BlightEffect.WHEEL && effect !== BlightEffect.DEVIL && currentDice.length === 0)
+          ) && (
             <Button 
               onClick={handleRoll} 
               disabled={isRolling}
@@ -289,7 +296,7 @@ export default function BlightDiceModal({
           )}
         </div>
 
-        <DialogFooter className="flex justify-between">
+        <DialogFooter className="flex justify-center gap-4">
           <Button 
             variant="outline" 
             onClick={onCancel}
