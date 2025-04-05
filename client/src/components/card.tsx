@@ -171,7 +171,7 @@ export default function CardComponent({
     return (
       <div 
         className={cn(
-          "card card-3d lighting-effect text-foreground font-serif rounded-md flex flex-col items-center justify-center w-14 h-16 relative",
+          "card text-foreground font-serif rounded-md flex flex-col items-center justify-center w-14 h-16 relative",
           cardType.bg || "bg-gradient-to-b from-card to-secondary",
           cardType.border && `border ${cardType.border}`,
           selected && "ring-2 ring-amber-500",

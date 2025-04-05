@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=MedievalSharp&display=swap');
-@import './3d-perspective.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -135,21 +134,6 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(160, 100, 40, 0.7);
-}
-
-/* 3D toggle styles */
-.disable-3d .board-3d,
-.disable-3d .player-area,
-.disable-3d .opponent-area,
-.disable-3d .hand-container,
-.disable-3d .game-row-3d,
-.disable-3d .card-3d {
-  transform: none !important;
-  transition: none !important;
-}
-
-.disable-3d .perspective-container {
-  perspective: none;
 }
 
 /* Card rotation utility classes */

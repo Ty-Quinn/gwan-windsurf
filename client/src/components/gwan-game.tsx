@@ -90,9 +90,6 @@ export default function GwanGame() {
   const [isSecondBlightSelection, setIsSecondBlightSelection] = useState<boolean>(false)
   const [excludedBlightCardIds, setExcludedBlightCardIds] = useState<string[]>([])
 
-  // 3D perspective toggle
-  const [show3D, setShow3D] = useState(false);
-
   // Initialize the game
   useEffect(() => {
     const newGame = new GwanGameLogic()
@@ -220,7 +217,7 @@ export default function GwanGame() {
 
       // Always keep turnEnded false when a card is played so undo is available
       setTurnEnded(false)
-
+      
       // Recalculate scores immediately after a successful card play
       if (game) {
         game.calculateScores()
@@ -1120,45 +1117,6 @@ export default function GwanGame() {
           handleRowSelect={() => {}}
         />
       </div>
-      
-      {/* Weather Effects Section - 3D Styled */}
-      <div className="weather-section-3d my-4 p-4 rounded-lg bg-gradient-to-r from-amber-950/30 to-stone-900/40 border border-amber-900/40">
-        <h3 className="text-lg font-medieval text-amber-200 flex items-center justify-center mb-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-400">
-            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
-          </svg>
-          Weather Effects
-        </h3>
-        <div className="grid grid-cols-3 gap-4">
-          <div className={`p-3 rounded-md text-center ${gameState.weatherEffects.clubs ? 'bg-red-900/30 border border-red-700/60' : 'bg-stone-800/40 border border-amber-900/20'}`}>
-            <div className="font-medieval text-sm mb-1">Tundra</div>
-            <div className="text-xs">
-              {gameState.weatherEffects.clubs ? 
-                <span className="text-red-400">Close Range Units = 1</span> : 
-                <span className="text-gray-400">No Effect</span>
-              }
-            </div>
-          </div>
-          <div className={`p-3 rounded-md text-center ${gameState.weatherEffects.spades ? 'bg-red-900/30 border border-red-700/60' : 'bg-stone-800/40 border border-amber-900/20'}`}>
-            <div className="font-medieval text-sm mb-1">Rain</div>
-            <div className="text-xs">
-              {gameState.weatherEffects.spades ? 
-                <span className="text-red-400">Mid Range Units = 1</span> : 
-                <span className="text-gray-400">No Effect</span>
-              }
-            </div>
-          </div>
-          <div className={`p-3 rounded-md text-center ${gameState.weatherEffects.diamonds ? 'bg-red-900/30 border border-red-700/60' : 'bg-stone-800/40 border border-amber-900/20'}`}>
-            <div className="font-medieval text-sm mb-1">Fog</div>
-            <div className="text-xs">
-              {gameState.weatherEffects.diamonds ? 
-                <span className="text-red-400">Long Range Units = 1</span> : 
-                <span className="text-gray-400">No Effect</span>
-              }
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="gwan-board-container">
         <GameBoard
@@ -1462,11 +1420,6 @@ export default function GwanGame() {
             setPendingSuicideKingCardIndex(null);
             setMessage("Suicide King ability cancelled");
           }}
-        />
-      )}
-      {showRules && (
-        <GameRulesModal
-          onClose={() => setShowRules(false)}
         />
       )}
     </div>
