@@ -1023,13 +1023,13 @@ export default function GwanGame() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-card p-3 rounded-lg text-center flex flex-col">
           <span className="text-sm text-muted-foreground">Player 1</span>
-          <span className="text-2xl font-bold text-primary">{gameState.players[0].score}</span>
+          <span className="text-2xl font-bold text-yellow-400">{gameState.players[0].score}</span>
           <span className="text-xs text-muted-foreground mt-1">Total Score</span>
         </div>
         
         <div className="bg-card p-3 rounded-lg text-center flex flex-col">
           <span className="text-sm text-muted-foreground">Player 2</span>
-          <span className="text-2xl font-bold text-primary">{gameState.players[1].score}</span>
+          <span className="text-2xl font-bold text-yellow-400">{gameState.players[1].score}</span>
           <span className="text-xs text-muted-foreground mt-1">Total Score</span>
         </div>
         
