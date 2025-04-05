@@ -46,6 +46,7 @@ export default function DiscardPileModal({
                 card={card}
                 compact={true}
                 disabled={true}
+                hideLabel={true}
               />
             </div>
           ))}

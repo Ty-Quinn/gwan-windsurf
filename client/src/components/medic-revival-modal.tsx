@@ -60,6 +60,7 @@ export default function MedicRevivalModal({
                 card={card}
                 compact={true}
                 disabled={false}
+                hideLabel={true}
               />
             </div>
           ))}

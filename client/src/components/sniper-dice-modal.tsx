@@ -54,7 +54,7 @@ export default function SniperDiceModal({ open, card, onComplete, onCancel }: Sn
         </DialogHeader>
         
         <div className="flex justify-center my-4">
-          <CardComponent card={card} compact={false} />
+          <CardComponent card={card} compact={false} hideLabel={true} />
         </div>
         
         <div className="py-4 flex flex-col items-center">

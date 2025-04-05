@@ -33,7 +33,7 @@ export default function SuicideKingModal({
         </DialogHeader>
         
         <div className="flex justify-center my-4">
-          {card && <CardComponent card={card} compact={false} />}
+          {card && <CardComponent card={card} compact={false} hideLabel={true} />}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">

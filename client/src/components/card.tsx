@@ -9,6 +9,7 @@ interface CardComponentProps {
   onClick?: () => void
   disabled?: boolean
   compact?: boolean
+  hideLabel?: boolean
 }
 
 export default function CardComponent({
@@ -17,6 +18,7 @@ export default function CardComponent({
   onClick,
   disabled = false,
   compact = false,
+  hideLabel = false,
 }: CardComponentProps) {
   const getSuitSymbol = (suit: string) => {
     switch (suit) {
@@ -226,7 +228,7 @@ export default function CardComponent({
         <div className={`text-base ${suitColor}`}>{suitSymbol}</div>
       </div>
       
-      {cardType.label && (
+      {cardType.label && !hideLabel && (
         <div className="absolute bottom-0 left-0 right-0 text-center text-xs py-1 bg-stone-950/70 font-medieval">
           <span className={cardType.text}>{cardType.label}</span>
           {cardType.value !== 0 && cardType.value !== "?" && <span> ({cardType.value})</span>}

@@ -71,6 +71,7 @@ export default function DevilRevivalModal({
                             setSelectedPlayerIndex(pIndex)
                             setSelectedCardIndex(index)
                           }}
+                          hideLabel={true}
                         />
                       </div>
                     ))}

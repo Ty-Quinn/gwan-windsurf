@@ -81,7 +81,7 @@ export default function DecoyRetrievalModal({
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                     {player.field.clubs.map((card, index) => (
                       <div key={`clubs-${index}`} className="text-center" onClick={() => onSelectCard("clubs", index)}>
-                        <CardComponent card={card} />
+                        <CardComponent card={card} hideLabel={true} />
                         <p className="mt-1 text-xs">Click to retrieve</p>
                       </div>
                     ))}
@@ -97,7 +97,7 @@ export default function DecoyRetrievalModal({
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                     {player.field.spades.map((card, index) => (
                       <div key={`spades-${index}`} className="text-center" onClick={() => onSelectCard("spades", index)}>
-                        <CardComponent card={card} />
+                        <CardComponent card={card} hideLabel={true} />
                         <p className="mt-1 text-xs">Click to retrieve</p>
                       </div>
                     ))}
@@ -113,7 +113,7 @@ export default function DecoyRetrievalModal({
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                     {player.field.diamonds.map((card, index) => (
                       <div key={`diamonds-${index}`} className="text-center" onClick={() => onSelectCard("diamonds", index)}>
-                        <CardComponent card={card} />
+                        <CardComponent card={card} hideLabel={true} />
                         <p className="mt-1 text-xs">Click to retrieve</p>
                       </div>
                     ))}
