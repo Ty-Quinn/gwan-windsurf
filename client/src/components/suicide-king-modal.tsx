@@ -39,16 +39,16 @@ export default function SuicideKingModal({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
           <Button 
             variant="ghost"
-            className="flex flex-col items-center p-4 border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full h-auto min-h-[180px]"
+            className="flex items-center justify-center p-4 border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full h-auto min-h-[180px]"
             onClick={() => {
               console.log("Clear Weather option clicked");
               onClearWeather();
             }}
           >
-            <div className="flex flex-col items-center h-full">
+            <div className="flex flex-col items-center justify-center w-full">
               <Shield className="h-8 w-8 text-sky-400 mb-2" />
               <h3 className="text-lg font-medium mb-2 text-sky-400">Clear All Weather</h3>
-              <p className="text-xs text-center text-amber-100/80 line-clamp-3">
+              <p className="text-xs text-center text-amber-100/80 line-clamp-3 w-full px-4">
                 Remove all weather effects from the entire board, restoring all rows to their full power.
               </p>
             </div>
@@ -56,16 +56,16 @@ export default function SuicideKingModal({
           
           <Button 
             variant="ghost"
-            className="flex flex-col items-center p-4 border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full h-auto min-h-[180px]"
+            className="flex items-center justify-center p-4 border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full h-auto min-h-[180px]"
             onClick={() => {
               console.log("Second Blight option clicked");
               onSelectSecondBlight();
             }}
           >
-            <div className="flex flex-col items-center h-full">
+            <div className="flex flex-col items-center justify-center w-full">
               <Sparkles className="h-8 w-8 text-purple-400 mb-2" />
               <h3 className="text-lg font-medium mb-2 text-purple-400">Second Blight</h3>
-              <p className="text-xs text-center text-amber-100/80 line-clamp-3">
+              <p className="text-xs text-center text-amber-100/80 line-clamp-3 w-full px-4">
                 Select an additional Blight card. If you've already used your first Blight card, this will allow you to use another one.
               </p>
             </div>
