@@ -45,10 +45,10 @@ export default function SuicideKingModal({
               onClearWeather();
             }}
           >
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center w-full">
               <Shield className="h-8 w-8 text-sky-400 mb-2" />
               <h3 className="text-lg font-medium mb-2 text-sky-400">Clear All Weather</h3>
-              <p className="text-xs text-center px-1 break-words">
+              <p className="text-xs text-center px-3 w-full">
                 Remove all weather effects from the entire board, restoring all rows to their full power. This ends your turn.
               </p>
             </div>
@@ -62,10 +62,10 @@ export default function SuicideKingModal({
               onSelectSecondBlight();
             }}
           >
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center w-full">
               <Sparkles className="h-8 w-8 text-purple-400 mb-2" />
               <h3 className="text-lg font-medium mb-2 text-purple-400">Second Blight</h3>
-              <p className="text-xs text-center px-1 break-words">
+              <p className="text-xs text-center px-3 w-full">
                 Select an additional Blight card. If you've already used your first Blight card, this will allow you to use another one. This ends your turn.
               </p>
             </div>
