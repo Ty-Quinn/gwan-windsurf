@@ -62,22 +62,20 @@ export default function RogueDiceModal({ open, card, onComplete, onCancel }: Rog
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid grid-cols-2 gap-4 my-2">
-          <div className="flex flex-col items-center">
-            <p className="mb-1 text-xs text-muted-foreground">Original Card</p>
-            <CardComponent card={card} compact={true} />
-          </div>
-          
-          <div className="flex flex-col items-center">
-            <p className="mb-1 text-xs text-muted-foreground">With Dice Value</p>
-            {diceTotal !== null && cardWithValue ? (
-              <CardComponent card={cardWithValue} compact={true} />
-            ) : (
-              <div className="w-20 h-28 flex items-center justify-center rounded-lg border-2 border-dashed border-primary/50">
-                <p className="text-muted-foreground text-xs text-center">Roll dice<br/>to see</p>
-              </div>
-            )}
-          </div>
+        <div className="flex flex-col items-center my-2">
+          {diceTotal !== null && cardWithValue ? (
+            <>
+              <CardComponent card={cardWithValue} compact={false} />
+              <p className="mt-2 text-center text-sm">
+                Your Rogue card value has been set to <span className="font-bold">{diceTotal}</span>
+              </p>
+            </>
+          ) : (
+            <>
+              <CardComponent card={card} compact={false} />
+              <p className="mt-2 text-center text-sm text-muted-foreground">Roll dice to determine card value</p>
+            </>
+          )}
         </div>
         
         <div className="py-2">
@@ -93,7 +91,7 @@ export default function RogueDiceModal({ open, card, onComplete, onCancel }: Rog
               <p className="text-sm">You rolled: <span className="font-bold">{diceResults.join(" + ")} = {diceTotal}</span></p>
               {diceTotal !== null && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Your Rogue card will have a value of {diceTotal} when played
+                  Your Rogue card will have a value of {diceTotal} when played to the field
                 </p>
               )}
             </div>
