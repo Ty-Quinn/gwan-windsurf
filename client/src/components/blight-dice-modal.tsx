@@ -279,7 +279,12 @@ export default function BlightDiceModal({
               disabled={isRolling}
               className="bg-amber-700 hover:bg-amber-600"
             >
-              {isRolling ? "Rolling..." : rollCount === 0 ? "Roll 3d6" : `Roll Again (${rollCount}/6)`}
+              {isRolling ? 
+                "Rolling..." : 
+                rollCount === 0 ? 
+                  (effect === BlightEffect.WHEEL ? "Roll 1D20" : "Roll 3d6") : 
+                  `Roll Again (${rollCount}/6)`
+              }
             </Button>
           )}
         </div>
