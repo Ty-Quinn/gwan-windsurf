@@ -113,7 +113,7 @@ export default function MagicianEffectModal({
   
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">Magician Blight Card</DialogTitle>
           <DialogDescription className="text-lg">
@@ -122,98 +122,117 @@ export default function MagicianEffectModal({
         </DialogHeader>
         
         <div className="space-y-4 py-4">
-          <div className="text-center text-lg font-medium mb-4">
-            Step 1: Select an opponent's row to target
+          {/* Always show the step status at the top */}
+          <div className="flex items-center justify-center space-x-2 mb-2">
+            <div className={`h-2 w-2 rounded-full ${selectedRow ? 'bg-green-500' : 'bg-muted-foreground'}`}></div>
+            <div className="text-sm">Select Row</div>
+            <div className="h-px w-8 bg-muted-foreground"></div>
+            <div className={`h-2 w-2 rounded-full ${diceRolled ? 'bg-green-500' : 'bg-muted-foreground'}`}></div>
+            <div className="text-sm">Roll Dice</div>
           </div>
           
-          <Tabs defaultValue="clubs" onValueChange={(value) => handleSelectRow(value as keyof Field)}>
-            <TabsList className="grid grid-cols-3 w-full">
-              <TabsTrigger value="clubs">Clubs</TabsTrigger>
-              <TabsTrigger value="spades">Spades</TabsTrigger>
-              <TabsTrigger value="diamonds">Diamonds</TabsTrigger>
-            </TabsList>
+          {/* Row Selection */}
+          <div className="pb-4 border-b border-border">
+            <div className="text-center text-lg font-medium mb-2">
+              Step 1: Select an opponent's row to target
+            </div>
             
-            {(["clubs", "spades", "diamonds"] as const).map((row) => (
-              <TabsContent key={row} value={row} className="space-y-4">
-                <div className="bg-muted rounded-md p-3">
-                  <h3 className="font-medium">{getRowDisplayName(row)}</h3>
-                  <div className="flex items-center justify-between mt-2">
-                    <span>Cards in row: {players[opponentIndex].field[row].length}</span>
-                    <span>Total value: {calculateRowValue(row)}</span>
+            <Tabs defaultValue="clubs" onValueChange={(value) => handleSelectRow(value as keyof Field)}>
+              <TabsList className="grid grid-cols-3 w-full">
+                <TabsTrigger value="clubs">Clubs</TabsTrigger>
+                <TabsTrigger value="spades">Spades</TabsTrigger>
+                <TabsTrigger value="diamonds">Diamonds</TabsTrigger>
+              </TabsList>
+              
+              {(["clubs", "spades", "diamonds"] as const).map((row) => (
+                <TabsContent key={row} value={row} className="space-y-4">
+                  <div className={`bg-muted rounded-md p-3 ${selectedRow === row ? 'ring-2 ring-primary' : ''}`}>
+                    <h3 className="font-medium">{getRowDisplayName(row)}</h3>
+                    <div className="flex items-center justify-between mt-2">
+                      <span>Cards in row: {players[opponentIndex].field[row].length}</span>
+                      <span>Total value: {calculateRowValue(row)}</span>
+                    </div>
+                    
+                    <div className="flex flex-wrap mt-3 gap-2">
+                      {players[opponentIndex].field[row].map((card, idx) => (
+                        <div 
+                          key={idx} 
+                          className="bg-card border border-border rounded-md p-2 text-xs"
+                        >
+                          {card.suit} {card.value} ({card.baseValue})
+                        </div>
+                      ))}
+                      {players[opponentIndex].field[row].length === 0 && (
+                        <div className="text-muted-foreground italic">No cards in this row</div>
+                      )}
+                    </div>
+                  </div>
+                </TabsContent>
+              ))}
+            </Tabs>
+          </div>
+          
+          {/* Dice Rolling Section - Always visible but may be disabled */}
+          <div className="pt-2">
+            <div className="text-center text-lg font-medium mb-2">
+              Step 2: Roll the dice to determine effect
+            </div>
+            
+            <Card className="p-4">
+              {selectedRow ? (
+                <>
+                  <div className="text-center mb-2">
+                    Target Row: <span className="font-bold">{getRowDisplayName(selectedRow)}</span>
+                  </div>
+                  <div className="text-center mb-4">
+                    Row Value: <span className="font-bold">{calculateRowValue(selectedRow)}</span>
                   </div>
                   
-                  <div className="flex flex-wrap mt-3 gap-2">
-                    {players[opponentIndex].field[row].map((card, idx) => (
-                      <div 
-                        key={idx} 
-                        className="bg-card border border-border rounded-md p-2 text-xs"
-                      >
-                        {card.suit} {card.value} ({card.baseValue})
-                      </div>
-                    ))}
-                    {players[opponentIndex].field[row].length === 0 && (
-                      <div className="text-muted-foreground italic">No cards in this row</div>
-                    )}
-                  </div>
+                  <DiceRoller 
+                    sides={20} 
+                    count={1} 
+                    onRollComplete={handleDiceRollComplete}
+                    label="D20"
+                    disabled={!selectedRow}
+                  />
+                  
+                  {diceRolled && (
+                    <div className="mt-4 p-3 rounded-md text-center font-medium" 
+                         style={{ 
+                           backgroundColor: success ? "rgba(0, 255, 0, 0.1)" : "rgba(255, 0, 0, 0.1)",
+                           color: success ? "rgb(0, 180, 0)" : "rgb(180, 0, 0)"
+                         }}>
+                      {success 
+                        ? `Success! Roll (${rollTotal}) > Row Value (${calculateRowValue(selectedRow)}). All cards in this row will be destroyed.`
+                        : `Failed! Roll (${rollTotal}) ≤ Row Value (${calculateRowValue(selectedRow)}). No effect.`
+                      }
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center text-muted-foreground py-3">
+                  Please select a row first to continue
                 </div>
-              </TabsContent>
-            ))}
-          </Tabs>
-          
-          {selectedRow && (
-            <>
-              <div className="text-center text-lg font-medium mt-6 mb-2">
-                Step 2: Roll the dice to determine effect
-              </div>
-              
-              <Card className="p-4">
-                <div className="text-center mb-2">
-                  Target Row: <span className="font-bold">{getRowDisplayName(selectedRow)}</span>
-                </div>
-                <div className="text-center mb-4">
-                  Row Value: <span className="font-bold">{calculateRowValue(selectedRow)}</span>
-                </div>
-                
-                <DiceRoller 
-                  sides={20} 
-                  count={1} 
-                  onRollComplete={handleDiceRollComplete}
-                  label="D20"
-                />
-                
-                {diceRolled && (
-                  <div className="mt-4 p-3 rounded-md text-center font-medium" 
-                       style={{ 
-                         backgroundColor: success ? "rgba(0, 255, 0, 0.1)" : "rgba(255, 0, 0, 0.1)",
-                         color: success ? "rgb(0, 180, 0)" : "rgb(180, 0, 0)"
-                       }}>
-                    {success 
-                      ? `Success! Roll (${rollTotal}) > Row Value (${calculateRowValue(selectedRow)}). All cards in this row will be destroyed.`
-                      : `Failed! Roll (${rollTotal}) ≤ Row Value (${calculateRowValue(selectedRow)}). No effect.`
-                    }
-                  </div>
-                )}
-              </Card>
-            </>
-          )}
+              )}
+            </Card>
+          </div>
         </div>
         
-        <div className="flex justify-between">
+        {/* Dialog footer - always visible and fixed to bottom */}
+        <div className="flex justify-between sticky bottom-0 bg-background pt-2">
           <Button variant="outline" onClick={onCancel}>
             Cancel
           </Button>
           
-          {diceRolled && (
-            <Button 
-              onClick={handleConfirmEffect}
-              variant={success ? "default" : "secondary"}
-              disabled={!selectedRow || !diceRolled}
-            >
-              {success 
-                ? "Confirm Destroy Cards" 
-                : "Confirm No Effect"}
-            </Button>
-          )}
+          <Button 
+            onClick={handleConfirmEffect}
+            variant={success ? "default" : "secondary"}
+            disabled={!selectedRow || !diceRolled}
+          >
+            {diceRolled 
+              ? (success ? "Confirm Destroy Cards" : "Confirm No Effect")
+              : "Roll Dice First"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

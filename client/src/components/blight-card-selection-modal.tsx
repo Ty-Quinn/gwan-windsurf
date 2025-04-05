@@ -152,6 +152,7 @@ export default function BlightCardSelectionModal({
                     onClick={(e) => {
                       e.stopPropagation()
                       setSelectedCard(card)
+                      // When clicking Select button, immediately select the card
                       onSelectCard(playerIndex, card)
                     }}
                   >

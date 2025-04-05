@@ -1834,7 +1834,7 @@ export class GwanGameLogic {
     // Reset the flag
     this.isSuicideKingBeingPlayed = false;
     
-    // Reset player's Blight card status so they can select a new one
+    // Reset player's Blight card status so they can select a new one and also use it this turn if desired
     // We don't need to clear existing blight cards, just mark the player as able to use another one
     this.players[playerIndex].hasUsedBlightThisTurn = false;
 
@@ -1877,10 +1877,9 @@ export class GwanGameLogic {
       };
     }
 
-    // Switch to the next player if they haven't passed
-    if (!this.players[1 - playerIndex].pass) {
-      this.currentPlayer = 1 - this.currentPlayer;
-    }
+    // We don't want to switch players here since the player hasn't completed their turn yet
+    // They've just selected to get a new blight card, but haven't actually played a card
+    // DO NOT switch players
 
     return { 
       success: true, 

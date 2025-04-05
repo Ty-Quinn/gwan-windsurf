@@ -155,7 +155,15 @@ export default function BlightDiceModal({
       )
     } 
     else if (effect === BlightEffect.WHEEL) {
-      return <p className="text-center py-2 text-lg font-medium">You rolled a {totalValue}! {totalValue} points will be added to your score.</p>
+      return (
+        <div className="text-center py-2">
+          <p className="text-lg font-medium">You rolled a {totalValue}!</p>
+          <p className="text-green-500 font-bold">{totalValue} points will be added to your score.</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            (Score will be updated after confirming)
+          </p>
+        </div>
+      )
     }
     else if (effect === BlightEffect.MAGICIAN) {
       return (

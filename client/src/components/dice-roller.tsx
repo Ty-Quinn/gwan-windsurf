@@ -16,7 +16,7 @@ interface DiceRollerProps {
 const DiceRoller = ({ 
   sides = 6, 
   count = 1, 
-  onRollComplete = null, 
+  onRollComplete, 
   autoRoll = false, 
   label = `D${sides}`,
   disabled = false 
@@ -34,6 +34,10 @@ const DiceRoller = ({
 
   const rollDice = () => {
     setRolling(true)
+
+    // First set initial state for visual consistency (all 1s)
+    const initialResults = Array(count).fill(1);
+    setResults(initialResults);
 
     // Simulate dice rolls with animation
     let rollCount = 0
