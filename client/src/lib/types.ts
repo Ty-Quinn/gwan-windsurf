@@ -50,6 +50,7 @@ export interface Player {
   discardPile: Card[];
   blightCards: BlightCard[];
   hasUsedBlightThisTurn: boolean;
+  wheelOfFortuneBonus: number; // Tracks the bonus from Wheel of Fortune blight card
 }
 
 export interface WeatherEffects {

@@ -40,7 +40,8 @@ export class GwanGameLogic {
         pass: false,
         discardPile: [],
         blightCards: [],
-        hasUsedBlightThisTurn: false
+        hasUsedBlightThisTurn: false,
+        wheelOfFortuneBonus: 0
       },
       {
         name: "Player 2",
@@ -51,7 +52,8 @@ export class GwanGameLogic {
         pass: false,
         discardPile: [],
         blightCards: [],
-        hasUsedBlightThisTurn: false
+        hasUsedBlightThisTurn: false,
+        wheelOfFortuneBonus: 0
       },
     ];
 
@@ -82,9 +84,10 @@ export class GwanGameLogic {
         player.field[row] = [];
       }
 
-      // Reset score and pass status
+      // Reset score, pass status, and wheel of fortune bonus
       player.score = 0;
       player.pass = false;
+      player.wheelOfFortuneBonus = 0;
 
       // Note: We don't clear the hand - players keep their unplayed cards
     }
@@ -747,7 +750,14 @@ export class GwanGameLogic {
 
   // Initialize game from a saved state (for undo functionality)
   public initializeGameFromState(state: GameState): void {
-    this.players = JSON.parse(JSON.stringify(state.players));
+    // Copy players, making sure to set wheelOfFortuneBonus if it doesn't exist
+    this.players = JSON.parse(JSON.stringify(state.players)).map((player: Player) => {
+      if (player.wheelOfFortuneBonus === undefined) {
+        player.wheelOfFortuneBonus = 0;
+      }
+      return player;
+    });
+    
     this.currentPlayer = state.currentPlayer;
     this.currentRound = state.currentRound;
     this.weatherEffects = JSON.parse(JSON.stringify(state.weatherEffects));
@@ -840,6 +850,9 @@ export class GwanGameLogic {
 
         totalScore += rowScore;
       }
+
+      // Add any Wheel of Fortune bonus to the total score
+      totalScore += player.wheelOfFortuneBonus;
 
       player.score = totalScore;
     }
@@ -1680,8 +1693,9 @@ export class GwanGameLogic {
         break;
 
       case BlightEffect.WHEEL:
-        // Add dice roll to player's score
-        this.players[playerIndex].score += diceTotal;
+        // Add dice roll to player's wheel of fortune bonus (not directly to score)
+        // The calculateScores method will add this to the total score when calculating
+        this.players[playerIndex].wheelOfFortuneBonus += diceTotal;
 
         message = `Used Wheel of Fortune - Rolled ${diceTotal} and added it to your score!`;
         break;
