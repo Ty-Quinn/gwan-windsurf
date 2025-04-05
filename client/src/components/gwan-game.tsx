@@ -33,7 +33,19 @@ interface LastAction {
   targetRow: string | null;
 }
 
-export default function GwanGame() {
+// Import AI strategy
+import { AIStrategy, AIDifficulty } from "@/lib/ai-strategy"
+import AIThinking from "./ai-thinking"
+
+interface GwanGameProps {
+  mode?: "pvp" | "ai";
+  aiDifficulty?: AIDifficulty;
+}
+
+export default function GwanGame({ 
+  mode = "pvp", 
+  aiDifficulty = AIDifficulty.MEDIUM 
+}: GwanGameProps) {
   // Game state
   const [game, setGame] = useState<GwanGameLogic | null>(null)
   const [gameState, setGameState] = useState<GameState | null>(null)
@@ -51,6 +63,12 @@ export default function GwanGame() {
   const [roundTied, setRoundTied] = useState<boolean>(false)
   const [gameWinner, setGameWinner] = useState<number | undefined>(undefined)
   const [nextRoundPending, setNextRoundPending] = useState<boolean>(false)
+  
+  // AI-specific state
+  const [isAIMode] = useState<boolean>(mode === "ai")
+  const [aiPlayerIndex] = useState<number>(1) // AI is always player 2
+  const [ai] = useState<AIStrategy>(new AIStrategy(aiDifficulty))
+  const [showAIThinking, setShowAIThinking] = useState<boolean>(false)
 
   // Special card functionality
   const [showMedicRevival, setShowMedicRevival] = useState<boolean>(false)
@@ -597,7 +615,108 @@ export default function GwanGame() {
       setGameState(game.getGameState())
     }
 
-    setPlayerView(1 - playerView)
+    const nextPlayerIndex = 1 - playerView;
+    setPlayerView(nextPlayerIndex);
+    
+    // If it's AI mode and the next player is the AI, handle AI turn
+    if (isAIMode && nextPlayerIndex === aiPlayerIndex) {
+      handleAITurn();
+    }
+  }
+  
+  // Handle AI's turn
+  const handleAITurn = () => {
+    if (!game || !gameState) return;
+    
+    // Show thinking animation
+    setShowAIThinking(true);
+    
+    // Simulate AI thinking time with random duration between 1-3 seconds
+    const thinkingTime = 1000 + Math.random() * 2000;
+    
+    setTimeout(() => {
+      if (!game || !gameState) return;
+      
+      // Make AI decision
+      const aiDecision = ai.makeDecision(gameState, aiPlayerIndex);
+      
+      if (aiDecision.action === "pass") {
+        // AI decides to pass
+        const result = game.pass(aiPlayerIndex);
+        
+        if (result.success) {
+          // Calculate and update scores
+          game.calculateScores();
+          setGameState(game.getGameState());
+          setMessage("AI passed their turn.");
+          
+          // Check game/round end conditions
+          if (result.gameEnded) {
+            setRoundWinner(result.roundWinner);
+            setGameWinner(result.roundWinner);
+            setShowGameEnd(true);
+          } else if (result.roundWinner !== undefined || result.roundTied) {
+            setRoundWinner(result.roundWinner);
+            setRoundTied(result.roundTied || false);
+            setShowRoundSummary(true);
+            setNextRoundPending(true);
+          } else {
+            // Switch back to human player
+            setPlayerView(1 - aiPlayerIndex);
+          }
+        }
+      } else if (aiDecision.action === "play" && aiDecision.cardIndex !== undefined) {
+        // AI plays a card
+        const result = game.playCard(
+          aiPlayerIndex, 
+          aiDecision.cardIndex, 
+          aiDecision.targetRow || null
+        );
+        
+        if (result.success) {
+          // Calculate and update scores
+          game.calculateScores();
+          setGameState(game.getGameState());
+          setMessage("AI played a card.");
+          
+          // Handle special card effects if needed
+          if (result.isRogueDiceRoll) {
+            // Handle Rogue dice roll for AI
+            const diceValue = Math.floor(Math.random() * 6) + 1; // 1-6
+            game.completeRoguePlay(aiPlayerIndex, aiDecision.cardIndex, diceValue, aiDecision.targetRow);
+            game.calculateScores();
+            setGameState(game.getGameState());
+          }
+          
+          if (result.isSniperDiceRoll) {
+            // Handle Sniper dice roll for AI
+            const isDoubles = Math.random() < 0.3; // 30% chance of doubles
+            const diceResults = isDoubles ? [3, 3] : [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1];
+            game.completeSniperPlay(aiPlayerIndex, aiDecision.cardIndex, diceResults, isDoubles, aiDecision.targetRow);
+            game.calculateScores();
+            setGameState(game.getGameState());
+          }
+          
+          // Check game/round end conditions
+          if (result.gameEnded) {
+            setRoundWinner(result.roundWinner);
+            setGameWinner(result.roundWinner);
+            setShowGameEnd(true);
+          } else if (result.roundWinner !== undefined || result.roundTied) {
+            setRoundWinner(result.roundWinner);
+            setRoundTied(result.roundTied || false);
+            setShowRoundSummary(true);
+            setNextRoundPending(true);
+          } else {
+            // Switch back to human player
+            setPlayerView(1 - aiPlayerIndex);
+          }
+        }
+      }
+      
+      // Stop showing AI thinking animation
+      setShowAIThinking(false);
+    }, thinkingTime);
   }
 
   // Start a new round
@@ -1138,6 +1257,7 @@ export default function GwanGame() {
         handleUndo={handleUndo}
         canUndo={!!lastAction && !turnEnded}
         showBlightCard={() => setShowBlightCardPlay(true)}
+        isAIOpponent={isAIMode && playerView === 1} // Show AI cards as face-down when viewing opponent
       />
 
       {targetRowSelection && (
@@ -1422,6 +1542,13 @@ export default function GwanGame() {
           }}
         />
       )}
+      
+      {/* AI Thinking Indicator */}
+      <AIThinking 
+        isVisible={showAIThinking} 
+        onComplete={() => setShowAIThinking(false)} 
+        duration={2000}
+      />
     </div>
   )
 }
