@@ -1755,10 +1755,12 @@ export class GwanGameLogic {
       return { success: false, message: "No Suicide King is being played" };
     }
 
-    // Check if there are any available Blight cards left
-    if (this.availableBlightCards.length === 0) {
-      return { success: false, message: "No Blight cards are available" };
-    }
+    // When using Suicide King's second blight option, we don't need to check availableBlightCards
+    // because the BlightCardSelectionModal component contains its own list of Blight cards
+    // For debugging purposes, let's log what's in availableBlightCards
+    console.log("Available Blight cards when using Suicide King:", this.availableBlightCards);
+    
+    // Skip the check for available Blight cards because we'll show all cards from the modal
 
     // Log the state before removal for debugging
     console.log("completeSuicideKingSelectBlight called with:", {

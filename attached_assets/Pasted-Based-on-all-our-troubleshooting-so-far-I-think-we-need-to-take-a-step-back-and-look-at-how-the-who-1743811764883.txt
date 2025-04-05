@@ -1,0 +1,151 @@
+Based on all our troubleshooting so far, I think we need to take a step back and look at how the whole Suicide King flow is implemented. Let's make a completely fresh implementation of the functionality with a focus on simplicity and reliability.
+Here's a modified approach for handling the Suicide King effect:
+jsxCopy// Step 1: First, when a Suicide King is played, set up the initial state
+// In handlePlayCard function:
+if (card.isSuicideKing) {
+  console.log("Setting up Suicide King choice");
+  setSelectedCard(null);
+  setTargetRowSelection(false);
+  setPendingSuicideKingCardIndex(cardIndex);
+  setShowSuicideKingModal(true);
+  return;
+}
+
+// Step 2: Implement the "Clear Weather" handler
+const handleSuicideKingClearWeather = () => {
+  console.log("Clear Weather option clicked");
+  
+  if (!game || !gameState || pendingSuicideKingCardIndex === null) {
+    console.log("Missing dependencies for Suicide King");
+    return;
+  }
+  
+  // Store the card index locally
+  const cardIndex = pendingSuicideKingCardIndex;
+  
+  // Close the modal first
+  setShowSuicideKingModal(false);
+  setPendingSuicideKingCardIndex(null);
+  
+  // Then call the game logic
+  const result = game.completeSuicideKingClearWeather(playerView, cardIndex);
+  
+  if (result.success) {
+    // Update game state to reflect the change
+    setGameState(game.getGameState());
+    setMessage(result.message || "The Suicide King cleared all weather effects!");
+  } else {
+    setMessage(result.message || "Failed to clear weather effects");
+  }
+};
+
+// Step 3: Implement the "Second Blight" handler
+const handleSuicideKingSelectBlight = () => {
+  console.log("Second Blight option clicked");
+  
+  if (!game || !gameState || pendingSuicideKingCardIndex === null) {
+    console.log("Missing dependencies for Suicide King");
+    return;
+  }
+  
+  // Store the card index locally
+  const cardIndex = pendingSuicideKingCardIndex;
+  
+  // Get current blight cards for exclusion
+  const currentPlayerBlightCardIds = gameState.players[playerView].blightCards.map(card => card.id);
+  
+  // Close the modal first
+  setShowSuicideKingModal(false);
+  setPendingSuicideKingCardIndex(null);
+  
+  // Then call the game logic
+  const result = game.completeSuicideKingSelectBlight(playerView, cardIndex);
+  console.log("Game logic result:", result);
+  
+  if (result.success) {
+    // Update game state first to reflect card removal
+    setGameState(game.getGameState());
+    
+    // Show the message
+    setMessage(result.message || "Choose your second Blight card!");
+    
+    // Set up blight selection
+    setExcludedBlightCardIds(currentPlayerBlightCardIds);
+    setIsSecondBlightSelection(true);
+    
+    // Show blight selection modal
+    setShowBlightCardSelection(true);
+  } else {
+    setMessage(result.message || "Failed to use Suicide King");
+  }
+};
+And let's modify the SuicideKingModal component to make it more straightforward:
+jsxCopyexport default function SuicideKingModal({ 
+  open, 
+  card, 
+  onClearWeather, 
+  onSelectSecondBlight, 
+  onCancel 
+}: SuicideKingModalProps) {
+  return (
+    <Dialog 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onCancel();
+      }}
+    >
+      <DialogContent className="sm:max-w-md md:max-w-xl">
+        <DialogHeader>
+          <DialogTitle className="text-xl text-center font-medieval">The Suicide King's Sacrifice</DialogTitle>
+          <DialogDescription className="text-center">
+            The King of Hearts - the Suicide King - offers two powerful abilities at the cost of removing himself from the game entirely.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="flex justify-center my-4">
+          {card && <CardComponent card={card} compact={false} />}
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+          <Button 
+            className="bg-amber-950 hover:bg-amber-900 text-white p-4 h-auto"
+            onClick={onClearWeather}
+          >
+            <div className="flex flex-col items-center">
+              <Shield className="h-8 w-8 text-sky-400 mb-2" />
+              <h3 className="text-lg font-medium mb-2">Clear All Weather</h3>
+              <p className="text-xs text-center">
+                Remove all weather effects
+              </p>
+            </div>
+          </Button>
+          
+          <Button 
+            className="bg-amber-950 hover:bg-amber-900 text-white p-4 h-auto"
+            onClick={onSelectSecondBlight}
+          >
+            <div className="flex flex-col items-center">
+              <Sparkles className="h-8 w-8 text-purple-400 mb-2" />
+              <h3 className="text-lg font-medium mb-2">Second Blight</h3>
+              <p className="text-xs text-center">
+                Select an additional Blight card
+              </p>
+            </div>
+          </Button>
+        </div>
+        
+        <DialogFooter className="flex justify-between sm:justify-between mt-4">
+          <Button variant="outline" onClick={onCancel}>Cancel</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+This simplified approach focuses on:
+
+Making the buttons more straightforward (regular Buttons instead of styled divs)
+Simplifying the content to avoid any rendering issues
+Ensuring clean separation between closing the modal and calling the handlers
+Using a more direct approach to updating the game state
+
+If this approach still doesn't work, we may need to look for issues in the game logic itself, specifically in how completeSuicideKingSelectBlight is implemented. It's possible there's a bug in that function that's preventing the card from being properly removed.
