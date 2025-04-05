@@ -31,7 +31,9 @@ export default function GameBoard({
 
   // Track score changes
   useEffect(() => {
-    if (currentPlayer.score !== prevScore) {
+    // Only show score animation when there's an actual change
+    // and not on initial render or when it's the player's first turn
+    if (currentPlayer.score !== prevScore && prevScore !== 0) {
       const change = currentPlayer.score - prevScore
       setScoreChange(change)
       setShowScoreAnimation(true)
@@ -42,6 +44,9 @@ export default function GameBoard({
       }, 2000)
       
       return () => clearTimeout(timer)
+    } else {
+      // Update prevScore without animation for initial state
+      setPrevScore(currentPlayer.score)
     }
   }, [currentPlayer.score, prevScore])
 
@@ -185,8 +190,8 @@ export default function GameBoard({
   };
 
   return (
-    <div className="mb-8 relative overflow-visible gwan-board-container p-4">
-      <div className="flex justify-between items-center mb-4">
+    <div className="mb-8 relative overflow-visible gwan-board-container p-4 z-0">
+      <div className="flex justify-between items-center mb-4 relative z-10">
         {isOpponent ? (
           <h2 className="text-xl font-semibold text-amber-200">
             Opponent's Field ({currentPlayer.name})
@@ -209,10 +214,13 @@ export default function GameBoard({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   className={cn(
-                    "absolute -right-2 -top-8 px-2 py-1 rounded-md font-bold text-white z-50", // Add z-50 to ensure it's above other elements
+                    "absolute -right-2 -top-12 px-2 py-1 rounded-md font-bold text-white z-50", // Moved up further and ensured z-index is high
                     scoreChange > 0 ? "bg-green-700/90" : "bg-red-700/90"
                   )}
-                  style={{ pointerEvents: "none" }} /* Ensures it doesn't block interactions */
+                  style={{ 
+                    pointerEvents: "none", /* Ensures it doesn't block interactions */
+                    filter: "drop-shadow(0 0 4px rgba(0,0,0,0.5))" /* Add shadow to make it stand out */
+                  }}
                 >
                   {scoreChange > 0 ? `+${scoreChange}` : scoreChange}
                 </motion.div>
