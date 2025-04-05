@@ -1,0 +1,72 @@
+Now I see where the issue is coming from! Looking at your DiceRoller component, I can identify the problem:
+In the rollDice function of your DiceRoller component, there's this section:
+javascriptCopy// First set initial state for visual consistency (all 1s)
+const initialResults = Array(count).fill(1);
+setResults(initialResults);
+This is forcing the dice to show all 1's at the beginning of each roll sequence, before the animation starts. Then the real random values are only shown during the animation.
+Here's how to fix it in the DiceRoller component:
+javascriptCopyconst rollDice = () => {
+  setRolling(true)
+
+  // Generate random values immediately to avoid showing all 1s first
+  const animate = () => {
+    // Generate random dice values
+    const newResults = Array(count)
+      .fill(0)
+      .map(() => Math.floor(Math.random() * sides) + 1)
+    setResults(newResults)
+    setTotalValue(newResults.reduce((sum, val) => sum + val, 0))
+  }
+
+  // Start animation
+  let rollCount = 0
+  const maxRolls = 10 // Number of visual "rolls" before settling
+  
+  // Immediately show random values instead of all 1s
+  animate()
+  
+  const interval = setInterval(() => {
+    animate()
+    
+    rollCount++
+    if (rollCount >= maxRolls) {
+      clearInterval(interval)
+      setRolling(false)
+      
+      // Get the final results
+      const finalResults = Array(count)
+        .fill(0)
+        .map(() => Math.floor(Math.random() * sides) + 1)
+      setResults(finalResults)
+      const finalTotal = finalResults.reduce((sum, val) => sum + val, 0)
+      setTotalValue(finalTotal)
+      
+      if (onRollComplete) {
+        onRollComplete(finalResults, finalTotal)
+      }
+    }
+  }, 100)
+}
+The key change is removing the initialResults = Array(count).fill(1) line that was forcing all dice to show 1's initially, and instead generating random values right away.
+If you're not able to modify the DiceRoller component directly, you can alternatively modify how you use it in the BlightDiceModal:
+jsxCopy// In BlightDiceModal.tsx, modify how the DiceRoller is used:
+{effect === BlightEffect.DEVIL && rollCount > 0 && rollCount < 6 && sixCount < 3 && (
+  <div className="flex flex-col items-center gap-3 w-full mt-2">
+    <p className="text-amber-500 font-medium text-sm text-center">
+      Roll additional dice - you need {3 - sixCount} more 6's in {6 - rollCount} attempts
+    </p>
+    
+    {/* Force a completely new component instance by changing the key */}
+    <div key={`dice-roller-${Date.now()}`}>
+      <DiceRoller
+        sides={6}
+        count={3}
+        onRollComplete={handleDiceRollComplete}
+        autoRoll={false}
+        disabled={rolling}
+        label={`Roll Again (${rollCount}/6)`}
+      />
+    </div>
+  </div>
+)}
+By using a timestamp in the key prop of the parent div, you force React to completely recreate the DiceRoller component each time, which should bypass the issue with the initial display of all 1's.

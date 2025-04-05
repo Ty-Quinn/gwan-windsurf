@@ -22,8 +22,16 @@ const DiceRoller = ({
   disabled = false 
 }: DiceRollerProps) => {
   const [rolling, setRolling] = useState(false)
-  const [results, setResults] = useState(Array(count).fill(1))
-  const [totalValue, setTotalValue] = useState(count)
+  // Initialize with random values instead of all 1s and calculate total value
+  const [results, setResults] = useState(() => {
+    const initialDice = Array(count).fill(0).map(() => Math.floor(Math.random() * sides) + 1);
+    return initialDice;
+  });
+  
+  // Initialize totalValue from the same random dice values
+  const [totalValue, setTotalValue] = useState(() => 
+    results.reduce((sum, val) => sum + val, 0)
+  )
 
   // Handle auto-roll on mount
   useEffect(() => {
@@ -35,18 +43,24 @@ const DiceRoller = ({
   const rollDice = () => {
     setRolling(true)
 
-    // First set initial state for visual consistency (all 1s)
-    const initialResults = Array(count).fill(1);
+    // Generate random values immediately instead of showing all 1s
+    const generateRandomDice = () => {
+      return Array(count)
+        .fill(0)
+        .map(() => Math.floor(Math.random() * sides) + 1);
+    };
+
+    // Set initial random dice values immediately
+    const initialResults = generateRandomDice();
     setResults(initialResults);
+    setTotalValue(initialResults.reduce((sum, val) => sum + val, 0));
 
     // Simulate dice rolls with animation
     let rollCount = 0
     const maxRolls = 10 // Number of visual "rolls" before settling
     const interval = setInterval(() => {
       // Generate random dice values
-      const newResults = Array(count)
-        .fill(0)
-        .map(() => Math.floor(Math.random() * sides) + 1)
+      const newResults = generateRandomDice();
       setResults(newResults)
       setTotalValue(newResults.reduce((sum, val) => sum + val, 0))
 
@@ -54,11 +68,15 @@ const DiceRoller = ({
       if (rollCount >= maxRolls) {
         clearInterval(interval)
         setRolling(false)
+        
+        // Generate final results
+        const finalResults = generateRandomDice();
+        setResults(finalResults);
+        const finalTotal = finalResults.reduce((sum, val) => sum + val, 0);
+        setTotalValue(finalTotal);
+        
         if (onRollComplete) {
-          onRollComplete(
-            newResults,
-            newResults.reduce((sum, val) => sum + val, 0),
-          )
+          onRollComplete(finalResults, finalTotal);
         }
       }
     }, 100)
