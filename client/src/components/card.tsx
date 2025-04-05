@@ -115,7 +115,7 @@ export default function CardComponent({
     if (card.isRogue) return { 
       border: "border-amber-500", 
       text: "text-amber-400", 
-      label: "Rogue", 
+      label: "", // Empty label to avoid bottom text
       value: card.diceValue || "?",
       bg: "bg-gradient-to-b from-amber-800/95 to-amber-900/95" 
     }
