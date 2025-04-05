@@ -58,7 +58,7 @@ export default function SuicideKingModal({
             variant="ghost"
             className="flex flex-col items-center p-4 border border-amber-700 rounded-lg bg-amber-950/40 hover:bg-amber-900/30 transition-colors w-full h-auto"
             onClick={() => {
-              console.log("Second Blight option clicked - SuicideKingModal");
+              console.log("Second Blight option clicked");
               onSelectSecondBlight();
             }}
           >

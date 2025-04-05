@@ -930,7 +930,7 @@ export default function GwanGame() {
   // Using the state variables declared at the top of the component
   
   const handleSuicideKingSelectBlight = () => {
-    console.log("handleSuicideKingSelectBlight called - GwanGame");
+    console.log("handleSuicideKingSelectBlight called");
     
     if (!game || !gameState || pendingSuicideKingCardIndex === null) {
       console.log("Early return: missing dependencies", { 
@@ -980,15 +980,11 @@ export default function GwanGame() {
       setGameState(freshState);
       
       // Set up for blight selection
-      console.log("Setting up for second blight selection - GwanGame");
-      console.log("Excluded card IDs:", currentPlayerBlightCardIds);
       setExcludedBlightCardIds(currentPlayerBlightCardIds);
       setIsSecondBlightSelection(true);
       
       // Show the blight selection modal last
-      console.log("Will show blight selection modal after timeout");
       setTimeout(() => {
-        console.log("Timeout reached - showing blight selection modal");
         setShowBlightCardSelection(true);
         setMessage(result.message || "Choose your second Blight card!");
       }, 100);
