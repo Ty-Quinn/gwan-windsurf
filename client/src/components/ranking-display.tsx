@@ -1,0 +1,95 @@
+'use client'
+
+import { Card } from "@/components/ui/card"
+import { Medal, Crown, ChevronUp } from "lucide-react"
+
+// Mock data - would be fetched from API in a real app
+const playerRanking = {
+  rank: 42,
+  totalPlayers: 1024,
+  percentile: 96,
+  topPlayers: [
+    { rank: 1, name: "GwanMaster", wins: 156 },
+    { rank: 2, name: "CardWizard", wins: 143 },
+    { rank: 3, name: "StrategyKing", wins: 137 },
+    { rank: 4, name: "BattleLord", wins: 129 },
+    { rank: 5, name: "VictoryQueen", wins: 122 },
+  ],
+}
+
+export default function RankingDisplay() {
+  return (
+    <Card className="bg-black/30 backdrop-blur-md border border-amber-900/50 p-6 rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.1)] overflow-hidden relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-900/20 to-transparent pointer-events-none"></div>
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-amber-200">Global Ranking</h2>
+          <div className="bg-amber-900/50 p-2 rounded-full">
+            <Medal className="h-5 w-5 text-amber-300" />
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-amber-900/30 to-black/40 p-5 rounded-xl border border-amber-800/30 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="bg-amber-900/60 h-14 w-14 rounded-full flex items-center justify-center text-2xl font-bold text-amber-200">
+                {playerRanking.rank}
+              </div>
+              <div>
+                <div className="text-amber-200/70 text-sm">Your Rank</div>
+                <div className="text-2xl font-bold text-amber-100">#{playerRanking.rank}</div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="flex items-center justify-end gap-1 text-emerald-400">
+                <ChevronUp className="h-4 w-4" />
+                <span className="font-medium">Top {playerRanking.percentile}%</span>
+              </div>
+              <div className="text-amber-200/70 text-sm">of all players</div>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold mb-4 text-amber-200 flex items-center">
+              <Crown className="h-5 w-5 mr-2 text-amber-400" />
+              Leaderboard
+            </h3>
+            <div className="space-y-3">
+              {playerRanking.topPlayers.map((player) => (
+                <div
+                  key={player.rank}
+                  className="flex items-center justify-between p-3 bg-gradient-to-r from-black/40 to-black/20 rounded-lg border border-amber-900/30 transition-all duration-300 hover:border-amber-700/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-8 h-8 flex items-center justify-center rounded-full 
+                      ${
+                        player.rank === 1
+                          ? "bg-gradient-to-br from-amber-300 to-amber-500 text-black font-bold"
+                          : player.rank === 2
+                            ? "bg-gradient-to-br from-slate-300 to-slate-400 text-black font-bold"
+                            : player.rank === 3
+                              ? "bg-gradient-to-br from-amber-700 to-amber-800 text-amber-200 font-bold"
+                              : "bg-black/40 text-amber-200"
+                      }`}
+                    >
+                      {player.rank}
+                    </div>
+                    <span className="font-medium text-amber-100">{player.name}</span>
+                  </div>
+                  <div className="text-amber-400 font-semibold">{player.wins} wins</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-center pt-2">
+            <span className="text-amber-200/60 text-sm">
+              Competing with {playerRanking.totalPlayers.toLocaleString()} total players worldwide
+            </span>
+          </div>
+        </div>
+      </div>
+    </Card>
+  )
+}
