@@ -45,12 +45,12 @@ export default function SuicideKingModal({
               onClearWeather();
             }}
           >
-            <div className="flex flex-col items-center justify-center h-full w-full">
+            <div className="flex flex-col items-center h-full">
               <Shield className="h-8 w-8 text-sky-400 mb-2" />
-              <h3 className="text-lg font-medium mb-3 text-sky-400">Clear All Weather</h3>
-              <div className="text-xs text-center text-amber-100/80 px-4 mt-2 max-w-[200px] mx-auto">
-                Remove all weather effects from the entire board, restoring all rows to their full power. This ends your turn.
-              </div>
+              <h3 className="text-lg font-medium mb-2 text-sky-400">Clear All Weather</h3>
+              <p className="text-xs text-center text-amber-100/80 line-clamp-3">
+                Remove all weather effects from the entire board, restoring all rows to their full power.
+              </p>
             </div>
           </Button>
           
@@ -62,12 +62,12 @@ export default function SuicideKingModal({
               onSelectSecondBlight();
             }}
           >
-            <div className="flex flex-col items-center justify-center h-full w-full">
+            <div className="flex flex-col items-center h-full">
               <Sparkles className="h-8 w-8 text-purple-400 mb-2" />
-              <h3 className="text-lg font-medium mb-3 text-purple-400">Second Blight</h3>
-              <div className="text-xs text-center text-amber-100/80 px-4 mt-2 max-w-[200px] mx-auto">
-                Select an additional Blight card. If you've already used your first Blight card, this will allow you to use another one. This ends your turn.
-              </div>
+              <h3 className="text-lg font-medium mb-2 text-purple-400">Second Blight</h3>
+              <p className="text-xs text-center text-amber-100/80 line-clamp-3">
+                Select an additional Blight card. If you've already used your first Blight card, this will allow you to use another one.
+              </p>
             </div>
           </Button>
         </div>
