@@ -31,24 +31,30 @@ export default function GameBoard({
 
   // Track score changes
   useEffect(() => {
-    // Only show score animation when there's an actual change
-    // and not on initial render or when it's the player's first turn
-    if (currentPlayer.score !== prevScore && prevScore !== 0) {
-      const change = currentPlayer.score - prevScore
-      setScoreChange(change)
-      setShowScoreAnimation(true)
+    // Check if this is an actual score change (not initial render)
+    const isInitialRender = prevScore === 0 && currentPlayer.score > 0;
+    
+    if (currentPlayer.score !== prevScore) {
+      // Calculate the change in score
+      const change = currentPlayer.score - prevScore;
       
-      const timer = setTimeout(() => {
-        setShowScoreAnimation(false)
-        setPrevScore(currentPlayer.score)
-      }, 2000)
-      
-      return () => clearTimeout(timer)
-    } else {
-      // Update prevScore without animation for initial state
-      setPrevScore(currentPlayer.score)
+      // Only show animation if it's not the initial render and we're on the player's board
+      if (!isInitialRender && !isOpponent && change !== 0) {
+        setScoreChange(change);
+        setShowScoreAnimation(true);
+        
+        const timer = setTimeout(() => {
+          setShowScoreAnimation(false);
+          setPrevScore(currentPlayer.score);
+        }, 2000);
+        
+        return () => clearTimeout(timer);
+      } else {
+        // Just update the score without animation
+        setPrevScore(currentPlayer.score);
+      }
     }
-  }, [currentPlayer.score, prevScore])
+  }, [currentPlayer.score, prevScore, isOpponent])
 
   // Track card additions to rows
   useEffect(() => {
@@ -214,12 +220,13 @@ export default function GameBoard({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   className={cn(
-                    "absolute -right-2 -top-12 px-2 py-1 rounded-md font-bold text-white z-50", // Moved up further and ensured z-index is high
-                    scoreChange > 0 ? "bg-green-700/90" : "bg-red-700/90"
+                    "absolute -right-2 -top-16 px-3 py-2 rounded-md font-bold text-white z-[100]", // Increased z-index and moved higher
+                    scoreChange > 0 ? "bg-green-600" : "bg-red-600"
                   )}
                   style={{ 
                     pointerEvents: "none", /* Ensures it doesn't block interactions */
-                    filter: "drop-shadow(0 0 4px rgba(0,0,0,0.5))" /* Add shadow to make it stand out */
+                    filter: "drop-shadow(0 0 8px rgba(0,0,0,0.7))", /* Enhanced shadow */
+                    fontSize: "1.1rem"
                   }}
                 >
                   {scoreChange > 0 ? `+${scoreChange}` : scoreChange}
